@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eat.today.qna_rounge_report.rounge.query.repository.PhotoReviewMapper">
+    <resultMap id="photoReviewMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
+        <id     column="review_no"      property="reviewNo"/>
+        <result column="board_no"       property="boardNo"/>
+        <result column="member_no"      property="memberNo"/>
+        <result column="review_title"   property="reviewTitle"/>
+        <result column="review_date"    property="reviewDate"/>
+        <result column="review_content" property="reviewContent"/>
+        <result column="review_like"    property="reviewLike"/>
+    </resultMap>
+
+    <!-- 날짜 내림차순 -->
+    <select id="selectAllOrderByDateDesc" resultMap="photoReviewMap">
+        SELECT
+               review_no
+             , board_no
+             , member_no
+             , review_title
+             , review_date
+             , review_content
+             , review_like
+          FROM photo_review
+         ORDER BY review_date DESC;
+    </select>
+
+    <!-- 좋아요 수 내림차순 -->
+    <select id="selectAllOrderByLikeDesc" resultMap="photoReviewMap">
+        SELECT
+               review_no
+             , board_no
+             , member_no
+             , review_title
+             , review_date
+             , review_content
+             , review_like
+          FROM photo_review
+         ORDER BY review_like DESC;
+    </select>
+</mapper>
