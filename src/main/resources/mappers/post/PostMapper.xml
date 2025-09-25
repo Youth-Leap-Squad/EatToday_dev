@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eat.today.post.query.mapper.PostMapper">
+
+    <!-- 기존: 술 전체 조회 -->
+    <select id="selectAlcoholList" resultType="com.eat.today.post.query.dto.AlcoholDTO">
+        SELECT
+        alcohol_no      AS alcohol_no,
+        alcohol_type    AS alcohol_type,
+        alcohol_explain AS alcohol_explain,
+        alcohol_picture AS alcohol_picture
+        FROM alcohol
+        ORDER BY alcohol_no DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 승인된 게시글 목록 -->
+    <select id="selectFoodList" resultType="com.eat.today.post.query.dto.FoodDTO">
+        SELECT
+        fp.board_no     AS board_no,
+        fp.board_title  AS board_title,
+        fp.food_picture AS food_picture,
+        m.member_id     AS member_id,
+        fp.board_date   AS board_date,
+        fp.board_seq    AS board_seq,
+        fp.likes_no_1   AS likes_no_1,
+        fp.likes_no_2   AS likes_no_2,
+        fp.likes_no_3   AS likes_no_3,
+        fp.likes_no_4   AS likes_no_4
+        FROM food_post AS fp
+        INNER JOIN member AS m ON fp.member_no = m.member_no
+        WHERE fp.confirmed_yn = TRUE
+        ORDER BY fp.board_no DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- alcohol: 설명/사진만 -->
+    <select id="selectAlcoholExplainAndPicture" resultType="com.eat.today.post.query.dto.AlcoholSimpleDTO">
+        SELECT
+        alcohol_explain AS alcohol_explain,
+        alcohol_picture AS alcohol_picture
+        FROM alcohol
+    </select>
+
+    <!-- bookmark: 특정 회원 즐겨찾기 목록 -->
+    <select id="selectBookmarksByMember" resultType="com.eat.today.post.query.dto.BookmarkDTO">
+        SELECT
+        b.favorites    AS favorites,
+        m.member_id    AS member_id,
+        p.board_title  AS board_title,
+        p.food_picture AS food_picture
+        FROM bookmark AS b
+        INNER JOIN food_post AS p ON b.board_no = p.board_no
+        INNER JOIN member  AS m ON b.member_no = m.member_no
+        WHERE b.member_no = #{memberNo}
+    </select>
+
+    <!-- food_post_likes: 특정 게시글 반응 통계 -->
+    <select id="selectFoodPostLikeStats" resultType="com.eat.today.post.query.dto.FoodPostLikesStatDTO">
+        SELECT
+        likes_type               AS likes_type,
+        COUNT(*)                 AS reaction_count
+        FROM food_post_likes
+        WHERE board_no = #{boardNo}
+        GROUP BY likes_type
+    </select>
+
+    <!-- food_comment: 특정 게시글 댓글 목록 -->
+    <select id="selectFoodComments" resultType="com.eat.today.post.query.dto.FoodCommentDTO">
+        SELECT
+        fc.food_comment_no AS food_comment_no,
+        m.member_id        AS member_id,
+        fc.fc_content      AS fc_content,
+        fc.fc_date         AS fc_date
+        FROM food_comment fc
+        INNER JOIN member m ON fc.member_no = m.member_no
+        WHERE fc.board_no = #{boardNo}
+        ORDER BY fc.food_comment_no DESC
+    </select>
+
+    <!-- 내가 쓴 댓글(회원별, 최신순) -->
+    <select id="selectMyComments" resultType="com.eat.today.post.query.dto.MyCommentDTO">
+        SELECT
+        m.member_id    AS member_id,
+        p.board_title  AS board_title,
+        fc.fc_content  AS fc_content,
+        fc.fc_date     AS fc_date
+        FROM food_comment AS fc
+        INNER JOIN member    AS m ON fc.member_no = m.member_no
+        INNER JOIN food_post AS p ON fc.board_no = p.board_no
+        WHERE fc.member_no = #{memberNo}
+        ORDER BY fc.food_comment_no DESC
+    </select>
+
+
+
+    <!-- 인기 게시글 TOP N -->
+    <select id="selectPopularFoods" resultType="com.eat.today.post.query.dto.PopularFoodDTO">
+        SELECT
+        fp.board_no     AS board_no,
+        fp.board_title  AS board_title,
+        fp.food_picture AS food_picture,
+        m.member_id     AS member_id,
+        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS total_likes
+        FROM food_post AS fp
+        INNER JOIN member AS m ON fp.member_no = m.member_no
+        WHERE fp.confirmed_yn = TRUE
+        ORDER BY total_likes DESC, fp.board_no DESC
+        LIMIT #{limit}
+    </select>
+
+
+</mapper>
