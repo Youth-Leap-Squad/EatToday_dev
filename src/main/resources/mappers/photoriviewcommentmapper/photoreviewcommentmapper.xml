@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.eat.today.sns.query.repository.PhotoReviewCommentMapper">
+
+    <resultMap id="PhotoReviewCommentMap" type="com.eat.today.sns.query.dto.PhotoReviewCommentDTO">
+        <id property="prcNo" column="prc_no"/>
+        <result property="memberNo" column="member_no"/>
+        <result property="reviewNo" column="review_no"/>
+        <result property="prcDetail" column="prc_detail"/>
+        <result property="prcAt" column="prc_at"/>
+        <result property="prcDeleted" column="prc_deleted"/>
+    </resultMap>
+
+    <!-- 사진 리뷰에 달린 댓글 조회 -->
+    <select id="getByReviewNo" parameterType="int" resultMap="PhotoReviewCommentMap">
+        SELECT
+               prc_no
+             , member_no
+             , prc_detail
+             , prc_at
+             , review_no
+             , prc_deleted
+          FROM photo_review_comment
+         WHERE review_no = #{reviewNo}
+           AND prc_deleted = FALSE
+         ORDER BY prc_no DESC
+    </select>
+
+</mapper>
