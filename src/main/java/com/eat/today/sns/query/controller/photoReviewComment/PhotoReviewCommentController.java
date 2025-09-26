@@ -14,17 +14,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/prc")
 public class PhotoReviewCommentController {
-
-    private final PhotoReviewCommentService photoReviewCommentservice;
+    private final PhotoReviewCommentService service;
 
     @Autowired
-    public PhotoReviewCommentController(PhotoReviewCommentService photoReviewCommentservice) {
-        this.photoReviewCommentservice = photoReviewCommentservice;
+    public PhotoReviewCommentController(PhotoReviewCommentService service) {
+        this.service = service;
     }
 
     @GetMapping("/{reviewNo}")
     public ResponseEntity<List<PhotoReviewCommentDTO>> list(@PathVariable int reviewNo) {
-        return ResponseEntity.ok(photoReviewCommentservice.getByReviewNo(reviewNo));
+        return ResponseEntity.ok(service.getByReviewNo(reviewNo));
     }
 }
 

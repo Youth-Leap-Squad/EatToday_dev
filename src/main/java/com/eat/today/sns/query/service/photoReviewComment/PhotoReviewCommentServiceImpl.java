@@ -17,3 +17,4 @@ public class PhotoReviewCommentServiceImpl implements PhotoReviewCommentService 
         return mapper.getByReviewNo(reviewNo);
     }
 }
+
