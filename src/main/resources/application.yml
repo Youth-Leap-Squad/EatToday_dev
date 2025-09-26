@@ -1,21 +1,19 @@
 server:
-  port: 17284
-
+  port: 8003
 spring:
-  security:
-    user:
-      name: user
-      password: 1234
+  application:
+    name: eat-today
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/yls
-    username: swcamp
-    password: swcamp
+    url: jdbc:mariadb://localhost:3306/mydb
+    username: root
+    password: mariadb
 
 mybatis:
   mapper-locations: classpath*:/mappers/**/*.xml
   configuration:
-    map-underscore-to-camel-case: true  # DTO 에서 이름이랑 xml 파일에서 이름이랑 형식 안맞는거 매핑해줌
+    map-underscore-to-camel-case: true
+
 logging:
   level:
     com:
@@ -23,3 +21,4 @@ logging:
         today:
           member:
             query: debug
+
