@@ -10,15 +10,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class WebSecurity {
 
-    @Bean
-    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable());
-
-        http.authorizeHttpRequests(authz ->
-                        authz.requestMatchers("/**").permitAll()
-                                .anyRequest().authenticated()
-                );
-
-        return http.build();
-    }
+//    @Bean
+//    protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+//        http.csrf(csrf -> csrf.disable());
+//
+//        http.authorizeHttpRequests(authz ->
+//                        authz.requestMatchers("/**").permitAll()
+//                                .anyRequest().authenticated()
+//                );
+//
+//        return http.build();
+//    }
 }
