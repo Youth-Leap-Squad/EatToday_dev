@@ -12,4 +12,9 @@ public interface PhotoReviewService {
     /** 좋아요 수 내림차순 전체 조회 */
     List<PhotoReviewDTO> getAllByLikeDesc();
 
+    /** 검색 조회(제목, 내용) */
+    List<PhotoReviewDTO> search(String keyword);
+
+    /** 검색을 통한 리뷰 조회 */
+    List<PhotoReviewDTO> getByAlcoholNo(int alcoholNo);
 }
