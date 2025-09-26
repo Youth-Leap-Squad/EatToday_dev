@@ -7,7 +7,7 @@
 
     <!-- worldcup 테이블 매핑 -->
     <resultMap id="worldcup" type="com.eat.today.event.worldcup.query.dto.WorldcupDTO">
-        <id property="worldcup_no" column="worldcuptable_worldcup_no"/>
+<!--        <id property="worldcup_no" column="worldcuptable_worldcup_no"/>-->
         <result property="worldcup_start_date" column="worldcuptable_worldcup_start_date"/>
         <result property="worldcup_finish_date" column="worldcuptable_worldcup_finish_date"/>
     </resultMap>
@@ -35,7 +35,7 @@
             GROUP BY wc.worldcup_start_date, wc.worldcup_finish_date
         )
         SELECT
-            wc.worldcup_no                 AS worldcuptable_worldcup_no,
+<!--            wc.worldcup_no                 AS worldcuptable_worldcup_no,-->
             w.worldcup_start_date          AS worldcuptable_worldcup_start_date,
             w.worldcup_finish_date         AS worldcuptable_worldcup_finish_date,
             ef.worldcup_winning_food       AS worldcupeventfood_worldcup_winning_food,
