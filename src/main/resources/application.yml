@@ -21,3 +21,4 @@ logging:
         today:
           member:
             query: debug
+
