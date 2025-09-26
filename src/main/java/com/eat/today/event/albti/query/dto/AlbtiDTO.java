@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class AlbtiDTO {
 
-    private int alBTI_no;
+//    private int alBTI_no;
     private String alBTI_category;
     private String alBTI_detail;
-    private int alcohol_no;
+//    private int alcohol_no;
 
 }

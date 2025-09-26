@@ -4,8 +4,9 @@ import lombok.Data;
 
 @Data
 public class AlbtiOutputDTO {
-    private int alBTI_no;
+
+//    private int alBTI_no;
     private String alBTI_alcohol_explain;
-    private int board_no;
+//    private int board_no;
 
 }
