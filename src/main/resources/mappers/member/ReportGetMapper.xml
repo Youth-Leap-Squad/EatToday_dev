@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.eat.today.member.query.mapper.ReportMapper">
+    <!--    들어온 신고 내용(처리) 확인    -->
+    <select id="checkReport" resultType="com.eat.today.member.query.dto.ReportDTO">
+        SELECT
+            r.report_no AS reportNo,
+            m1.member_no AS memberNo,
+            m2.member_no AS memberNo2,
+            r.report_title AS reportTitle,
+            r.report_content AS reportContent,
+            r.report_date AS reportDate
+        FROM report r
+                 JOIN member m1 ON r.member_no = m1.member_no  -- 신고자
+                 JOIN member m2 ON r.member_no2 = m2.member_no  -- 피신고자
+                 LEFT JOIN report_history rh
+                           ON rh.report_no = r.report_no
+                               AND rh.member_no = r.member_no2
+        WHERE r.report_yn = 0
+    </select>
+</mapper>

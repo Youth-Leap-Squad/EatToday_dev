@@ -13,7 +13,7 @@
     </select>
 
     <!-- 내 프로필 조회 -->
-    <select id="findMyProfile" parameterType="string" resultType="com.eat.today.member.query.dto.MemberDTO">
+    <select id="findMyProfile" parameterType="string" resultType="com.eat.today.member.query.dto.FindProfileDTO">
         SELECT m.member_name,
                m.member_birth,
                m.member_phone,
@@ -26,6 +26,21 @@
         WHERE m.member_no = #{memberNo};
     </select>
 
+<!--   받은 포인트에 따른 등급을 확인할 수 있다.-->
+    <select id="findMyLevel" resultType="com.eat.today.member.query.dto.FindMyLevelDTO">
+    SELECT
+    m.member_name AS memberName,
+    m.member_level AS memberLevel,
+    CASE
+    WHEN m.member_level IS NULL THEN '관리자'
+    WHEN m.member_level >= 500 THEN '골드'
+    WHEN m.member_level >= 300 THEN '실버'
+    ELSE '브론즈'
+    END AS memberLevelLabel
+    FROM member m
+    LEFT JOIN role r ON r.role_no = m.member_role_no
+    WHERE m.member_no = #{memberNo};
+    </select>
 </mapper>
 
 

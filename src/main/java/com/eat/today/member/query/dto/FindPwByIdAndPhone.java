@@ -1,12 +1,9 @@
 package com.eat.today.member.query.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-public class MemberDTO {
-
+public class FindPwByIdAndPhone {
     private int memberNo;
     private int memberRoleNo;
     private String memberId;
@@ -18,6 +15,4 @@ public class MemberDTO {
     private boolean memberActive;
     private String memberAt;
     private int memberLevel;
-
-    private MemberDTO role;   // FK 매핑
 }
