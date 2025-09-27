@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.eat.today.event.albti.query.mapper.AlbtiMapper">
+
+
+    <resultMap id="AlbtiResultMap" type="com.eat.today.event.albti.query.dto.SelectAlbtiDTO">
+
+        <association property="albti_join_member" javaType="com.eat.today.event.albti.query.dto.AlbtiJoinMemberDTO">
+            <id property="member_no" column="member_no"/>
+        </association>
+        <association property="albti_dto" javaType="com.eat.today.event.albti.query.dto.AlbtiDTO">
+            <result property="alBTI_category" column="alBTI_category"/>
+            <result property="alBTI_detail" column="alBTI_detail"/>
+        </association>
+        <association property="albti_output" javaType="com.eat.today.event.albti.query.dto.AlbtiOutputDTO">
+            <result property="alBTI_alcohol_explain" column="alBTI_alcohol_explain"/>
+        </association>
+        <association property="foodpost_dto" javaType="com.eat.today.event.albti.query.dto.FoodPostDTO">
+            <result property="food_picture" column="food_picture"/>
+            <result property="food_explain" column="food_explain"/>
+        </association>
+
+    </resultMap>
+
+    <!-- 술bti 검사 결과 조회 -->
+    <select id="selectAlbti" parameterType="java.lang.String" resultMap="AlbtiResultMap">
+        SELECT
+               b.member_no
+             , a.alBTI_category
+             , a.alBTI_detail
+             , c.alBTI_alcohol_explain
+             , d.food_picture
+             , d.food_explain
+          FROM albti AS a
+          JOIN albti_join_member AS b ON a.alBTI_no = b.alBTI_no
+          JOIN albti_output AS c on a.alBTI_no = c.alBTI_no
+          JOIN food_post AS d ON d.board_no = c.board_no
+         WHERE b.member_no = #{member_no};              <!-- 자신의 회원번호를 통해 자신의 술BTI검사 결과 조회 -->
+
+    </select>
+</mapper>
