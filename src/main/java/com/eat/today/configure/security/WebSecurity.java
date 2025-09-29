@@ -37,7 +37,7 @@ public class WebSecurity {
         );
 
         http.addFilter(getAuthenticationFilter(authenticationManager()));
-        
+
         // 로그아웃 설정
         http.logout(logout -> logout
                 .logoutUrl("/logout")
@@ -56,12 +56,12 @@ public class WebSecurity {
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    
+
                     String memberPhone = (String) request.getAttribute("logoutUser");
                     if (memberPhone == null) {
                         memberPhone = "";
                     }
-                    
+
                     String jsonResponse = "{\"message\":\"" + memberPhone + " 회원 로그아웃.\"}";
                     response.getWriter().write(jsonResponse);
                     response.getWriter().flush();

@@ -82,4 +82,6 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
         return new User(loginMember.getMemberPhone(), loginMember.getMemberPw(),
                 true,true,true,true,grantedAuthorities);
     }
+
+
 }
