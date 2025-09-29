@@ -2,7 +2,6 @@ package com.eat.today.event.worldcup.query.service;
 
 import com.eat.today.event.worldcup.query.dto.SelectWorldcupDTO;
 import com.eat.today.event.worldcup.query.mapper.WorldcupMapper;
-import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
