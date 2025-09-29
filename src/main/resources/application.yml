@@ -1,18 +1,26 @@
 server:
-  port: 8003
+  port: 17284
+
 spring:
-  application:
-    name: eat-today
+  security:
+    user:
+      name: user
+      password: 1234
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/mydb
-    username: root
-    password: mariadb
+    username: swcamp
+    password: swcamp
+  jpa:
+    hibernate:
+     ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        '[format_sql]': true    # jpa 기본 설정
 
-mybatis:
-  mapper-locations: classpath*:/mappers/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
+hello:
+  message: Welcome to 19 SW-Camp
 
 logging:
   level:
@@ -20,5 +28,6 @@ logging:
       eat:
         today:
           member:
-            query: debug
+            query: debug  # 로그찍기
+
 
