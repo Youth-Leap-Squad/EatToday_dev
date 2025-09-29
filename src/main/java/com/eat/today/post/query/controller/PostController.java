@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping // 루트 경로에서 바로 노출 (/alcohols, /foods, ...)
+@RequestMapping
 public class PostController {
 
     private final PostService postService;
@@ -24,12 +24,6 @@ public class PostController {
         return postService.getAlcohols(page, size);
     }
 
-    /** 안주 전체 조회 (페이징) */
-    @GetMapping("/foods")
-    public List<FoodDTO> getFoods(@RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10") int size) {
-        return postService.getFoods(page, size);
-    }
     // ========= alcohol 추가 조회 =========
 
     /** 술: 설명/사진만 간단 조회 */
@@ -38,20 +32,50 @@ public class PostController {
         return postService.getAlcoholExplainAndPicture();
     }
 
-    // ========= bookmark =========
+    // ========= foods 조회 =========
 
-    /** 특정 회원의 즐겨찾기 목록 */
-    @GetMapping("/bookmarks")
-    public List<BookmarkDTO> getBookmarks(@RequestParam int memberNo) {
-        return postService.getBookmarksByMember(memberNo);
+    /** 승인된 안주만 조회 */
+    @GetMapping("/foods/approved")
+    public List<FoodDTO> getApprovedFoods(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "10") int size) {
+        return postService.getApprovedFoods(page, size);
+    }
+
+    /** 승인 안된(미승인) 안주만 조회 */
+    @GetMapping("/foods/unapproved")
+    public List<FoodDTO> getUnapprovedFoods(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size) {
+        return postService.getUnapprovedFoods(page, size);
+    }
+
+    /** 승인 여부 무관 전체 안주 조회 */
+    @GetMapping("/foods/all")
+    public List<FoodDTO> getAllFoods(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size) {
+        return postService.getAllFoods(page, size);
+    }
+
+    @GetMapping("/members/{memberNo}/foods")
+    public List<MyFoodDTO> getMyFoods(@PathVariable int memberNo,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "10") int size) {
+        return postService.getMyFoods(memberNo, page, size);
+    }
+
+    /** 특정 술에 매칭되는 승인된 안주 조회 */
+    @GetMapping("/{alcoholNo}/foods")
+    public List<FoodDTO> getApprovedFoodsByAlcohol(@PathVariable int alcoholNo,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size) {
+        return postService.getApprovedFoodsByAlcohol(alcoholNo, page, size);
     }
 
     // ========= reactions / comments =========
 
     /** 특정 게시글의 반응(종류별 집계) */
     @GetMapping("/foods/{boardNo}/reactions")
-    public List<FoodPostLikesStatDTO> getFoodReactions(@PathVariable int boardNo) {
-        return postService.getFoodPostLikeStats(boardNo);
+    public List<FoodPostLikesDTO> getFoodReactions(@PathVariable int boardNo) {
+        return postService.getFoodPostLikesFromPost(boardNo);
     }
 
     /** 특정 게시글의 댓글 목록 */
@@ -66,8 +90,15 @@ public class PostController {
         return postService.getMyComments(memberNo);
     }
 
-    // ========= 승인/인기 목록 =========
+    // ========= bookmark =========
 
+    /** 특정 회원의 즐겨찾기 목록 */
+    @GetMapping("/bookmarks/{memberNo}")
+    public List<BookmarkDTO> getBookmarks(@PathVariable int memberNo) {
+        return postService.getBookmarksByMember(memberNo);
+    }
+
+    // ========= 승인/인기 목록 =========
 
     /** 인기 게시글 TOP N */
     @GetMapping("/foods/popular")

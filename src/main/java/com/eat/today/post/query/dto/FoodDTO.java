@@ -1,11 +1,13 @@
-// FoodListWithReactionsDTO.java
 package com.eat.today.post.query.dto;
+
 import lombok.Data;
 
 @Data
 public class FoodDTO {
     private int boardNo;
     private String boardTitle;
+    private String boardContent;
+    private String foodExplain;
     private String foodPicture;
     private String memberId;
     private String boardDate;
