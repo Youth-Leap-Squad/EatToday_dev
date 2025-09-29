@@ -1,6 +1,5 @@
 package com.eat.today.member.command.application.service;
 
-import com.eat.today.configure.MemberRole;
 import com.eat.today.member.command.application.dto.CommandMemberDTO;
 import com.eat.today.member.command.domain.aggregate.MemberEntity;
 
