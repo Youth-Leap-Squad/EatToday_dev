@@ -1,4 +1,4 @@
-package com.eat.today.sns.query.dto;
+package com.eat.today.sns.query.dto.photoReviewComment;
 
 import lombok.Data;
 

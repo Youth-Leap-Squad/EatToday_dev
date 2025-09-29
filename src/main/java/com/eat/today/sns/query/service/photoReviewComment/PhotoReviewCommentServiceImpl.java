@@ -1,7 +1,7 @@
-package com.eat.today.sns.query.service;
+package com.eat.today.sns.query.service.photoReviewComment;
 
-import com.eat.today.sns.query.dto.PhotoReviewCommentDTO;
-import com.eat.today.sns.query.repository.PhotoReviewCommentMapper;
+import com.eat.today.sns.query.dto.photoReviewComment.PhotoReviewCommentDTO;
+import com.eat.today.sns.query.repository.photoReviewComment.PhotoReviewCommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

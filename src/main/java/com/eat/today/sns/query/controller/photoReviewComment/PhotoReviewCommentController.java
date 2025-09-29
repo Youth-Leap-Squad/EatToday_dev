@@ -1,11 +1,8 @@
-package com.eat.today.sns.query.controller;
+package com.eat.today.sns.query.controller.photoReviewComment;
 
-import com.eat.today.sns.query.dto.PhotoReviewCommentDTO;
-import com.eat.today.sns.query.repository.PhotoReviewCommentMapper;
-import com.eat.today.sns.query.service.PhotoReviewCommentService;
-import lombok.RequiredArgsConstructor;
+import com.eat.today.sns.query.dto.photoReviewComment.PhotoReviewCommentDTO;
+import com.eat.today.sns.query.service.photoReviewComment.PhotoReviewCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +14,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/prc")
 public class PhotoReviewCommentController {
-
     private final PhotoReviewCommentService service;
 
-    // 생성자 주입 (권장)
+    @Autowired
     public PhotoReviewCommentController(PhotoReviewCommentService service) {
         this.service = service;
     }

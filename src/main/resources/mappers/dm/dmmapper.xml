@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.eat.today.sns.query.repository.dm.DmMapper">
+    <resultMap id="dmMap" type="com.eat.today.sns.query.dto.dm.DmDTO">
+        <id property="messageNo" column="message_no"/>
+        <result property="sendMemberId" column="send_member_id"/>
+        <result property="receiveMemberId" column="receive_member_id"/>
+        <result property="dmContent" column="dm_content"/>
+        <result property="dmDate" column="dm_date"/>
+        <result property="dmRead" column="dm_read"/>
+    </resultMap>
+
+    <!-- 사용자와 사용자가 디엠한 내용 조회 -->
+    <select id="selectByMessageNo" parameterType="int" resultMap="dmMap">
+        SELECT
+               dm.receive_member_id
+             , dm.send_member_id
+             , dm.dm_content
+             , dm.dm_read
+             , dm.dm_date
+          FROM direct_message AS dm
+         WHERE (send_member_id = 2 AND receive_member_id = 3)
+            OR (send_member_id = 3 AND receive_member_id = 2);
+    </select>
+</mapper>
+

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.eat.today.sns.query.repository.follow.FollowMapper">
+
+    <!-- FollowDTO 필드에 맞게 조정하세요 -->
+    <resultMap id="FollowWithMemberMap" type="com.eat.today.sns.query.dto.follow.FollowDTO">
+        <!-- 복합키라면 두 개를 id로 선언 가능 -->
+        <id     property="followerNo"  column="follower_no"/>
+        <id     property="followingNo" column="following_no"/>
+        <result property="createdAt"   column="created_at"/>
+
+        <!-- FollowDTO 안에 member 필드가 있고, MemberDTO에 아래 필드가 있어야 함 -->
+        <association property="member" javaType="com.eat.today.member.query.dto.MemberDTO">
+            <result property="memberNo"   column="member_no"/>
+            <result property="memberName" column="member_name"/>
+            <result property="memberId"   column="member_id"/>
+        </association>
+    </resultMap>
+
+    <!-- 나를 팔로우한 사람 목록: following_no = 나, 상대는 follower_no -->
+    <select id="selectByFollowerNo" parameterType="int" resultMap="FollowWithMemberMap">
+        SELECT
+            f.follower_no,
+            f.following_no,
+            f.created_at,
+            m.member_no,
+            m.member_name,
+            m.member_id
+        FROM follow f
+                 JOIN member m ON f.follower_no = m.member_no
+        WHERE f.following_no = #{followingNo}
+        ORDER BY f.created_at DESC
+    </select>
+
+    <!-- 내가 팔로잉한 사람 목록: follower_no = 나, 상대는 following_no -->
+    <select id="selectByFollowingNo" parameterType="int" resultMap="FollowWithMemberMap">
+        SELECT
+            f.follower_no,
+            f.following_no,
+            f.created_at,
+            m.member_no,
+            m.member_name,
+            m.member_id
+        FROM follow f
+                 JOIN member m ON f.following_no = m.member_no
+        WHERE f.follower_no = #{followerNo}
+        ORDER BY f.created_at DESC
+    </select>
+
+</mapper>

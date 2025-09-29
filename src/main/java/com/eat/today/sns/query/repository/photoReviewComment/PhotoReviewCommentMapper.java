@@ -1,8 +1,8 @@
-package com.eat.today.sns.query.repository;
+package com.eat.today.sns.query.repository.photoReviewComment;
 
-import com.eat.today.sns.query.dto.PhotoReviewCommentDTO;
+import com.eat.today.sns.query.dto.photoReviewComment.PhotoReviewCommentDTO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 @Mapper
