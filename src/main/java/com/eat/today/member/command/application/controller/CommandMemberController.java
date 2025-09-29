@@ -1,6 +1,5 @@
 package com.eat.today.member.command.application.controller;
 
-import com.eat.today.member.command.application.dto.CommandHelloDTO;
 import com.eat.today.member.command.application.dto.CommandRequestRegisterMemberDTO;
 import com.eat.today.member.command.application.dto.CommandResponseRegisterMemberDTO;
 import com.eat.today.member.command.application.dto.CommandMemberDTO;
@@ -21,17 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommandMemberController {
 
     private Environment env;
-    private CommandHelloDTO hello;
     private CommandMemberService memberService;
     private ModelMapper modelMapper;
 
     @Autowired
     public CommandMemberController(Environment env,
-                                   CommandHelloDTO hello,
                                    CommandMemberService memberService,
                                    ModelMapper modelMapper) {
         this.env = env;
-        this.hello = hello;
         this.memberService = memberService;
         this.modelMapper = modelMapper;
     }
@@ -41,10 +37,7 @@ public class CommandMemberController {
         return ("Member Service 에서 작동중" + env.getProperty("spring.profiles.active"));
     }
 
-    @GetMapping("/welcome")
-    public String welcome() {
-        return hello.getMessage();
-    }
+
 
     // 로그인 기능 전 회원가입 기능
     @PostMapping("/members")

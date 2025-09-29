@@ -1,13 +1,14 @@
 package com.eat.today.member.query.service;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
-import com.eat.today.member.query.dto.MemberDTO;
+import com.eat.today.member.query.dto.FindProfileDTO;
 import com.eat.today.member.query.dto.ReportCheckDTO;
 import com.eat.today.member.query.mapper.MemberMapper;
 import com.eat.today.member.query.mapper.ReportMapper;
-import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 //
@@ -44,7 +45,7 @@ public class MemberServiceImpl implements  MemberService{
 
     // 본인의 프로필, 활동 기록 등을 확인할 수 있다.
     @Override
-    public MemberDTO findMyProfile(Integer memberNo) {
+    public FindProfileDTO findMyProfile(Integer memberNo) {
         return sqlSession.getMapper(MemberMapper.class)
                 .findMyProfile(memberNo);
     }
@@ -62,6 +63,16 @@ public class MemberServiceImpl implements  MemberService{
     public List<ReportCheckDTO> checkReport() {
         return sqlSession.getMapper(ReportMapper.class)
                 .checkReport();
+    }
+
+    @Override
+    public UserDetails loadMemberByMemberName(String memberPhone) {
+        return null;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
     }
 
 

@@ -8,5 +8,6 @@ public class FindProfileDTO {
     private String memberBirth;
     private String memberPhone;
     private int memberLevel;
+
     private boolean memberActive;
 }
