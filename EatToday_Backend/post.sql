@@ -8,7 +8,6 @@ FROM
 -- bookmark
 -- 특정 회원의 즐겨찾기 목록 조회
 SELECT
-    b.favorites,
     m.member_id,
     p.board_title,
     p.food_picture

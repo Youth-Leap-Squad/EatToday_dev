@@ -1,5 +1,5 @@
-// PopularFoodDTO.java
 package com.eat.today.post.query.dto;
+
 import lombok.Data;
 
 @Data

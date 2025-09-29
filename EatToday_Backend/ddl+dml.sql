@@ -63,7 +63,7 @@ CREATE TABLE `secession` (
 
 CREATE TABLE `alcohol` (
                            `alcohol_no` INT NOT NULL AUTO_INCREMENT,
-                           `alcohol_type` INT NOT NULL,
+                           `alcohol_type` VARCHAR(255) NOT NULL,
                            `alcohol_explain` VARCHAR(255) NOT NULL,
                            `alcohol_picture` VARCHAR(255) NOT NULL,
                            CONSTRAINT PK_ALCOHOL PRIMARY KEY (alcohol_no)
@@ -218,15 +218,13 @@ CREATE TABLE IF NOT EXISTS `report_history` (
 
 
 
-
-CREATE TABLE `bookmark` (
-                            `favorites` INT NOT NULL AUTO_INCREMENT,
-                            `member_no` INT NOT NULL,
-                            `board_no` INT NOT NULL,
-                            CONSTRAINT PK_BOOKMARK  PRIMARY KEY (favorites),
-                            CONSTRAINT FK_BOOKMARK_MEMBER  FOREIGN KEY (member_no) REFERENCES member(member_no),
-                            CONSTRAINT FK_BOOKMARK_FOOD_POST  FOREIGN KEY (board_no) REFERENCES food_post(board_no)
-) ENGINE=INNODB COMMENT '즐겨찾기';
+CREATE TABLE bookmark (
+                          member_no INT NOT NULL,
+                          board_no  INT NOT NULL,
+                          PRIMARY KEY (member_no, board_no),
+                          CONSTRAINT FK_BOOKMARK_MEMBER     FOREIGN KEY (member_no) REFERENCES member(member_no),
+                          CONSTRAINT FK_BOOKMARK_FOOD_POST  FOREIGN KEY (board_no)  REFERENCES food_post(board_no)
+) ENGINE=InnoDB COMMENT='즐겨찾기';
 
 
 
@@ -304,12 +302,12 @@ CREATE TABLE `dm_file_upload` (
 
 CREATE TABLE `food_post_likes` (
                                    `member_no` INT NOT NULL,
-                                   `board_no` INT NOT NULL,
-                                   `likes_type` ENUM('술술 들어가요', '참신해요', '맛없어요', '궁금해요') NOT NULL,
-                                   CONSTRAINT PK_FOOD_LIKES PRIMARY KEY(member_no, board_no, likes_type),
-                                   CONSTRAINT FK_FOOD_POST_LIKES_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no),
-                                   CONSTRAINT FK_FOOD_POST_LIKES_FOOD_POST FOREIGN KEY (board_no) REFERENCES food_post(board_no)
-) ENGINE=INNODB COMMENT='안주게시글반응';
+                                   `board_no`  INT NOT NULL,
+                                   `likes_type` ENUM('맛없어요','궁금해요','참신해요','술술 들어가요') NOT NULL,
+                                   CONSTRAINT `PK_FOOD_LIKES` PRIMARY KEY (`member_no`, `board_no`),
+                                   CONSTRAINT `FK_FOOD_POST_LIKES_MEMBER`    FOREIGN KEY (`member_no`) REFERENCES `member`(`member_no`),
+                                   CONSTRAINT `FK_FOOD_POST_LIKES_FOOD_POST`  FOREIGN KEY (`board_no`)  REFERENCES `food_post`(`board_no`)
+) ENGINE=InnoDB COMMENT='안주게시글반응';
 
 
 CREATE TABLE `login` (
@@ -326,7 +324,8 @@ CREATE TABLE `food_comment` (
                                 `board_no` INT NOT NULL,
                                 `fc_content` VARCHAR(255) NOT NULL,
                                 `fc_date` VARCHAR(255) NOT NULL,
-                                CONSTRAINT PK_FOOD_COMMENT PRIMARY KEY(food_comment_no),  -- 이 부분 수정!
+                                `fc_udate` VARCHAR(255) NULL,
+                                CONSTRAINT PK_FOOD_COMMENT PRIMARY KEY(food_comment_no),
                                 CONSTRAINT FK_FOOD_COMMENT_MEMBER  FOREIGN KEY (member_no) REFERENCES member(member_no),
                                 CONSTRAINT FK_FOOD_COMMENT_FOOD_POST  FOREIGN KEY (board_no) REFERENCES food_post(board_no)
 ) ENGINE=INNODB COMMENT '안주게시글댓글';
@@ -398,15 +397,15 @@ VALUES
 
 INSERT INTO alcohol (alcohol_type, alcohol_explain, alcohol_picture)
 VALUES
-    (1, '탄산감과 청량감이 특징인 맥주', '/images/alcohol/beer.jpg'),
-    (2, '대한민국 국민 술 소주', '/images/alcohol/soju.jpg'),
-    (3, '쌀로 빚은 전통 발효주 막걸리', '/images/alcohol/makgeolli.jpg'),
-    (4, '축하 자리에서 빠질 수 없는 샴페인', '/images/alcohol/champagne.jpg'),
-    (5, '일본의 전통 쌀 술 사케', '/images/alcohol/sake.jpg'),
-    (6, '중국 대표 고도주 고량주', '/images/alcohol/gaoliang.jpg'),
-    (7, '위스키와 탄산을 섞은 하이볼', '/images/alcohol/highball.jpg'),
-    (8, '포도로 만든 서양 와인', '/images/alcohol/wine.jpg'),
-    (9, '기타 주류 (전통주, 리큐르 등)', '/images/alcohol/etc.jpg');
+    ('맥주', '탄산감과 청량감이 특징인 맥주', '/images/alcohol/beer.jpg'),
+    ('소주', '대한민국 국민 술 소주', '/images/alcohol/soju.jpg'),
+    ('막걸리', '쌀로 빚은 전통 발효주 막걸리', '/images/alcohol/makgeolli.jpg'),
+    ('샴페인', '축하 자리에서 빠질 수 없는 샴페인', '/images/alcohol/champagne.jpg'),
+    ('사케', '일본의 전통 쌀 술 사케', '/images/alcohol/sake.jpg'),
+    ('고량주', '중국 대표 고도주 고량주', '/images/alcohol/gaoliang.jpg'),
+    ('하이볼', '위스키와 탄산을 섞은 하이볼', '/images/alcohol/highball.jpg'),
+    ('와인', '포도로 만든 서양 와인', '/images/alcohol/wine.jpg'),
+    ('기타', '기타 주류 (전통주, 리큐르 등)', '/images/alcohol/etc.jpg');
 
 INSERT INTO food_post (alcohol_no, board_title, board_content, food_explain, member_no, food_picture, board_date, board_seq, confirmed_yn, likes_no_1, likes_no_2, likes_no_3, likes_no_4)
 VALUES
