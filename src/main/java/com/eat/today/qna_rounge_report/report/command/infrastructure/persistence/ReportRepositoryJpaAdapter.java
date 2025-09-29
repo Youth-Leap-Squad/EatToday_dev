@@ -18,4 +18,9 @@ public class ReportRepositoryJpaAdapter implements ReportRepository {
     @Override public Optional<Report> findById(Integer id) {
         return delegate.findById(id);
     }
+
+    @Override
+    public int markProcessedIfNot(Integer id) {
+        return delegate.markProcessedIfNot(id);
+    }
 }
