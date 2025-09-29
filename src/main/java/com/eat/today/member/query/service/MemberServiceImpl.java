@@ -47,7 +47,7 @@ public class MemberServiceImpl implements  MemberService{
     @Override
     public FindProfileDTO findMyProfile(Integer memberNo) {
         return sqlSession.getMapper(MemberMapper.class)
-                .findMyProfile(memberNo);
+                .findMyProfile(memberNo.toString());
     }
 
 

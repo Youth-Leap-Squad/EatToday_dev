@@ -9,4 +9,7 @@ public interface CommandMemberService {
     void registMember(CommandMemberDTO commandMemberDTO);
     
     UserDetails loadUserByUsername(String phone) throws UsernameNotFoundException;
+
+
+
 }
