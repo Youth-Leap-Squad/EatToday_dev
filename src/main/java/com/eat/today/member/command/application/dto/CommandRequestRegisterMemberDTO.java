@@ -8,5 +8,7 @@ public class CommandRequestRegisterMemberDTO {
     private String memberPw;
     private String memberName;
 
+
     private String memberId;
+    private String memberBirth;
 }

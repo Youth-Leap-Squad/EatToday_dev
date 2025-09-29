@@ -8,6 +8,7 @@ public class CommandMemberDTO {
     private String memberPw;
     private String memberName;
 
-    private String memberId;
 
+    private String memberId;
+    private String memberBirth;
 }

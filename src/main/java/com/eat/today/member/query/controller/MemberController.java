@@ -1,6 +1,7 @@
 package com.eat.today.member.query.controller;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
+import com.eat.today.member.query.dto.FindProfileDTO;
 import com.eat.today.member.query.dto.MemberDTO;
 import com.eat.today.member.query.dto.ReportCheckDTO;
 import com.eat.today.member.query.service.MemberService;
@@ -26,7 +27,7 @@ public class MemberController {
     }
 
         @GetMapping("/getprofile")
-    public MemberDTO findMyProfile(@RequestParam Integer memberNo) {
+    public FindProfileDTO findMyProfile(@RequestParam Integer memberNo) {
         return memberService.findMyProfile(memberNo);  // ex> member_no가 4
     }
 

@@ -6,5 +6,6 @@ import lombok.Data;
 public class FindMyLevelDTO {
     private String memberName;
     private String memberLevel;
+    private String memberRole;
     private String memberLevelLabel;
 }
