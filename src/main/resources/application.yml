@@ -1,11 +1,15 @@
 server:
-  port: 8003
+  port: 0
+
 spring:
-  application:
-    name: eat-today
+  security:
+    user:
+      name: user
+      password: 1234
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/mydb
+
     username: root
     password: mariadb
   jpa:
@@ -30,5 +34,6 @@ logging:
       eat:
         today:
           member:
-            query: debug
+            query: debug  # 로그찍기
+
 

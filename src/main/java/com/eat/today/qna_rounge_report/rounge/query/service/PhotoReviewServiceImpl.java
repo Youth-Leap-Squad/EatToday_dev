@@ -24,4 +24,14 @@ public class PhotoReviewServiceImpl implements PhotoReviewService {
     public List<PhotoReviewDTO> getAllByLikeDesc() {
         return photoReviewMapper.selectAllOrderByLikeDesc();
     }
+
+    @Override
+    public List<PhotoReviewDTO> search(String keyword) {
+        return photoReviewMapper.searchByKeyword(keyword);
+    }
+
+    @Override
+    public List<PhotoReviewDTO> getByAlcoholNo(int alcoholNo) {
+        return photoReviewMapper.selectByAlcoholNo(alcoholNo);
+    }
 }

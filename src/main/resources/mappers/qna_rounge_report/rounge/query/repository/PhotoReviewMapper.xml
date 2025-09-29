@@ -4,40 +4,77 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.eat.today.qna_rounge_report.rounge.query.repository.PhotoReviewMapper">
     <resultMap id="photoReviewMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
-        <id     column="review_no"      property="reviewNo"/>
-        <result column="board_no"       property="boardNo"/>
-        <result column="member_no"      property="memberNo"/>
         <result column="review_title"   property="reviewTitle"/>
         <result column="review_date"    property="reviewDate"/>
         <result column="review_content" property="reviewContent"/>
         <result column="review_like"    property="reviewLike"/>
+        <association property="member" resultMap="memberMap"/>
+    </resultMap>
+    <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestLoungeDTO">
+        <result column="member_name" property="memberName"/>
     </resultMap>
 
     <!-- 날짜 내림차순 -->
     <select id="selectAllOrderByDateDesc" resultMap="photoReviewMap">
         SELECT
-               review_no
-             , board_no
-             , member_no
-             , review_title
-             , review_date
-             , review_content
-             , review_like
-          FROM photo_review
-         ORDER BY review_date DESC;
+               m.member_name
+             , pr.review_title
+             , pr.review_date
+             , pr.review_content
+             , pr.review_like
+          FROM photo_review pr
+          JOIN member m ON m.member_no = pr.member_no
+         ORDER BY pr.review_date DESC
     </select>
 
     <!-- 좋아요 수 내림차순 -->
     <select id="selectAllOrderByLikeDesc" resultMap="photoReviewMap">
         SELECT
-               review_no
-             , board_no
-             , member_no
-             , review_title
-             , review_date
-             , review_content
-             , review_like
-          FROM photo_review
-         ORDER BY review_like DESC;
+               m.member_name
+             , pr.review_title
+             , pr.review_date
+             , pr.review_content
+             , pr.review_like
+          FROM photo_review pr
+          JOIN member m ON m.member_no = pr.member_no
+         ORDER BY pr.review_like DESC
+    </select>
+
+    <!-- 키워드 검색(제목/내용) -->
+    <select id="searchByKeyword" parameterType="string" resultMap="photoReviewMap">
+        SELECT
+               m.member_name
+             , pr.review_title
+             , pr.review_date
+             , pr.review_content
+             , pr.review_like
+          FROM photo_review pr
+          JOIN member m ON m.member_no = pr.member_no
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (pr.review_title   LIKE CONCAT('%', #{keyword}, '%')
+                OR pr.review_content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="keyword == null or keyword == ''">
+                1 = 0
+            </if>
+        </where>
+        ORDER BY pr.review_date DESC
+    </select>
+
+    <!--    술 번호로 리뷰 조회-->
+    <select id="selectByAlcoholNo" resultMap="photoReviewMap">
+        SELECT
+               m.member_name
+             , pr.review_title
+             , pr.review_date
+             , pr.review_content
+             , pr.review_like
+          FROM lounge lg
+          JOIN photo_review pr ON pr.review_no = lg.review_no
+          JOIN alcohol a       ON a.alcohol_no = lg.alcohol_no
+          JOIN member m        ON m.member_no = pr.member_no
+         WHERE a.alcohol_no = #{alcoholNo}
+         ORDER BY pr.review_no DESC
     </select>
 </mapper>

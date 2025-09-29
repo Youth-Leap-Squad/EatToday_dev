@@ -3,17 +3,12 @@ package com.eat.today.member.query.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.lang.reflect.Member;
-
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-@Setter
 public class MemberDTO {
 
     private int memberNo;
+    private String memberRole;
     private int memberRoleNo;
     private String memberId;
     private String memberPw;
@@ -25,5 +20,5 @@ public class MemberDTO {
     private String memberAt;
     private int memberLevel;
 
-    private RoleDTO role;   // FK 매핑
+    private MemberDTO role;   // FK 매핑
 }
