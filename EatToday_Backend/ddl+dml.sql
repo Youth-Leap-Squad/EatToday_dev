@@ -1,5 +1,3 @@
--- 제일 깊은 자식부터 제거
-use mydb;
 DROP TABLE IF EXISTS `dm_file_upload`;
 DROP TABLE IF EXISTS `photo_review_comment`;
 DROP TABLE IF EXISTS `pr_file_upload`;
@@ -12,6 +10,7 @@ DROP TABLE IF EXISTS `food_comment`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
 DROP TABLE IF EXISTS `individual_world_cup_food`;
+DROP TABLE IF EXISTS `qna_comment`;
 
 -- 중간 계층
 DROP TABLE IF EXISTS `direct_message`;
@@ -33,15 +32,9 @@ DROP TABLE IF EXISTS `alcohol`;
 DROP TABLE IF EXISTS `member`;
 DROP TABLE IF EXISTS `role`;
 
-CREATE TABLE `role` (
-                        role_no INT NOT NULL AUTO_INCREMENT COMMENT '권한번호',
-                        role_name VARCHAR(255) NOT NULL COMMENT '권한명',
-                        CONSTRAINT `PK_role` PRIMARY KEY (role_no)
-) ENGINE=INNODB COMMENT '권한 정보';
-
 CREATE TABLE `member` (
                           member_no INT NOT NULL AUTO_INCREMENT COMMENT '회원번호',
-                          member_role_no INT NOT NULL COMMENT '권한번호',
+                          member_role ENUM('USER','ADMIN') NOT NULL COMMENT '권한',
                           member_id VARCHAR(255) NOT NULL COMMENT '아이디',
                           member_pw VARCHAR(255) NOT NULL COMMENT '비밀번호',
                           member_name VARCHAR(255) NOT NULL COMMENT '회원명',
@@ -51,9 +44,10 @@ CREATE TABLE `member` (
                           member_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT '회원 활동여부',
                           member_at VARCHAR(255) NOT NULL DEFAULT 0 COMMENT '계정 생성일',
                           member_level INT COMMENT '회원등급',
-                          CONSTRAINT PK_member PRIMARY KEY (member_no),
-                          CONSTRAINT FK_member_role FOREIGN KEY (member_role_no) REFERENCES role(role_no)
+                          CONSTRAINT PK_member PRIMARY KEY (member_no)
+
 ) ENGINE=INNODB COMMENT '회원 정보';
+
 
 CREATE TABLE `secession` (
                              member_no INT NOT NULL COMMENT '회원번호',
@@ -89,7 +83,6 @@ CREATE TABLE `food_post` (
                              CONSTRAINT `FK_FOOD_POST_MEMBER` FOREIGN KEY (`member_no`) REFERENCES `member`(`member_no`)
 ) ENGINE=INNODB COMMENT='안주 게시글';
 
-
 CREATE TABLE `photo_review` (
                                 review_no     INT NOT NULL AUTO_INCREMENT,
                                 board_no      INT NOT NULL,
@@ -121,6 +114,18 @@ CREATE TABLE `qna_post` (
                             CONSTRAINT FK_qna_post_member FOREIGN KEY (member_no) REFERENCES member (member_no)
 ) ENGINE=INNODB COMMENT '문의사항 게시글';
 
+CREATE TABLE `qna_comment` (
+                               `comment_no` INT NOT NULL AUTO_INCREMENT COMMENT '문의사항 댓글 번호',
+                               `qna_post_no` INT NOT NULL COMMENT '문의사항 번호',
+                               `comment_member_no` INT NOT NULL COMMENT '답변자 번호(운영자)',
+                               `comment_content` VARCHAR(255) NOT NULL COMMENT '답변 내용',
+                               `comment_at` VARCHAR(255) NOT NULL COMMENT '작성 일시',
+                               CONSTRAINT PK_qna_comment PRIMARY KEY (comment_no),
+                               KEY `idx_qna_comment_post` (`qna_post_no`),
+                               CONSTRAINT FK_qna_post_no FOREIGN KEY (qna_post_no) REFERENCES qna_post (qna_post_no) ON UPDATE CASCADE ON DELETE CASCADE,
+                               CONSTRAINT FK_comment_post_member FOREIGN KEY (comment_member_no) REFERENCES member (member_no) ON UPDATE CASCADE ON DELETE CASCADE
+
+) ENGINE=INNODB COMMENT='문의사항 답변';
 
 CREATE TABLE `follow` (
                           follower_no  INT NOT NULL,
@@ -193,16 +198,16 @@ CREATE TABLE IF NOT EXISTS `report` (
                                         `member_no` INT NOT NULL,
                                         `member_no2` INT NOT NULL,
                                         `report_title` VARCHAR(255) NOT NULL,
-    `report_content` VARCHAR(255) NOT NULL,
-    `report_yn` BOOLEAN DEFAULT FALSE,
-    `report_date` VARCHAR(255) NOT NULL,
-    `report_source` VARCHAR(255) NOT NULL,
-    CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
-    CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
-    ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
-    ON UPDATE CASCADE ON DELETE CASCADE
-    ) ENGINE=INNODB COMMENT '신고';
+                                        `report_content` VARCHAR(255) NOT NULL,
+                                        `report_yn` BOOLEAN DEFAULT FALSE,
+                                        `report_date` VARCHAR(255) NOT NULL,
+                                        `report_source` VARCHAR(255) NOT NULL,
+                                        CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
+                                        CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
+                                            ON UPDATE CASCADE ON DELETE CASCADE,
+                                        CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
+                                            ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=INNODB COMMENT '신고';
 
 
 CREATE TABLE IF NOT EXISTS `report_history` (
@@ -210,11 +215,12 @@ CREATE TABLE IF NOT EXISTS `report_history` (
                                                 `member_no` INT NOT NULL,
                                                 `report_count` INT DEFAULT 0,
                                                 CONSTRAINT PK_report_history PRIMARY KEY (report_no, member_no),
-    CONSTRAINT FK_report_history_REPORT FOREIGN KEY (report_no) REFERENCES report(report_no)
-    ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_report_history_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
-    ON UPDATE CASCADE ON DELETE CASCADE
-    ) ENGINE=INNODB COMMENT '게시글 신고이력';
+                                                CONSTRAINT FK_report_history_REPORT FOREIGN KEY (report_no) REFERENCES report(report_no)
+                                                    ON UPDATE CASCADE ON DELETE CASCADE,
+                                                CONSTRAINT FK_report_history_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
+                                                    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=INNODB COMMENT '게시글 신고이력';
+
 
 
 
@@ -224,7 +230,8 @@ CREATE TABLE bookmark (
                           PRIMARY KEY (member_no, board_no),
                           CONSTRAINT FK_BOOKMARK_MEMBER     FOREIGN KEY (member_no) REFERENCES member(member_no),
                           CONSTRAINT FK_BOOKMARK_FOOD_POST  FOREIGN KEY (board_no)  REFERENCES food_post(board_no)
-) ENGINE=InnoDB COMMENT='즐겨찾기';
+) ENGINE=INNODB COMMENT='즐겨찾기';
+
 
 
 
@@ -309,7 +316,6 @@ CREATE TABLE `food_post_likes` (
                                    CONSTRAINT `FK_FOOD_POST_LIKES_FOOD_POST`  FOREIGN KEY (`board_no`)  REFERENCES `food_post`(`board_no`)
 ) ENGINE=InnoDB COMMENT='안주게시글반응';
 
-
 CREATE TABLE `login` (
                          record_id INT NOT NULL AUTO_INCREMENT COMMENT '내역 번호 ',
                          member_no INT NOT NULL COMMENT '회원 번호',
@@ -356,45 +362,37 @@ CREATE TABLE `albti_output` (
 
 
 -- 더미데이터 삽입
-
--- 권한: ID를 명시적으로 고정
-INSERT INTO role (role_no, role_name) VALUES
-                                          (1, '관리자'),
-                                          (2, '일반회원');
-
--- 회원: 관리자 계정은 role_no=1, 일반 회원은 role_no=2로 교정 삽입
 INSERT INTO `member`
-(member_role_no, member_id, member_pw, member_name, member_birth, member_phone, member_status, member_active, member_at, member_level)
+(member_role, member_id, member_pw, member_name, member_birth, member_phone, member_status, member_active, member_at, member_level)
 VALUES
-    (1, 'admin01', 'adminpw!', '관리자', '1988-10-10', '010-1111-1111', 'normal', TRUE, '2025-01-05',NULL),
-    (2, 'soju_love', 'drinkpw1!', '박철수', '1995-07-07', '010-2222-2222', 'normal', TRUE, '2025-03-11', 200),
-    (2, 'beer_queen', 'beerpw2!', '김민지', '1998-11-23', '010-3333-3333', 'suspended', FALSE, '2025-04-02', 300),
-    (2, 'wine_master', 'winepw3!', '최영희', '1990-02-17', '010-4444-4444', 'normal', TRUE, '2025-05-20', 220),
-    (2, 'makgeolli', 'makpw4!', '정우성', '1993-12-30', '010-5555-5555', 'normal', TRUE, '2025-06-01', 60),
-    (2, 'cocktail_girl', 'cockpw5!', '한지민', '2000-09-09', '010-6666-6666', 'normal', TRUE, '2025-07-18', 50),
-    (2, 'sake_lover', 'sakpw6!', '오다유키', '1994-01-25', '010-7777-7777', 'normal', TRUE, '2025-08-03', 340),
-    (2, 'champagne_boy', 'champpw7!', '박상혁', '1992-04-19', '010-8888-8888', 'normal', TRUE, '2025-08-25', 200),
-    (2, 'highballer', 'highpw8!', '이진우', '1999-07-15', '010-9999-9999', 'normal', TRUE, '2025-09-01', 50),
-    (2, 'vodka_star', 'vodkapw9!', '안지수', '1997-12-12', '010-1010-1010', 'normal', TRUE, '2025-09-05', 50),
-    (2, 'gin_tonic', 'ginpw10!', '서민호', '1996-06-30', '010-1111-2222', 'normal', TRUE, '2025-09-07', 50),
-    (2, 'whisky_time', 'whiskypw11!', '김성훈', '1989-08-21', '010-2222-3333', 'withdrawn', FALSE, '2025-09-10', 500),
-    (2, 'rum_rider', 'rumpw12!', '홍길동', '1991-09-15', '010-3333-4444', 'normal', TRUE, '2025-09-11', 50),
-    (2, 'tequila99', 'teqpw13!', '최다혜', '1998-05-22', '010-4444-5555', 'normal', TRUE, '2025-09-12', 60),
-    (2, 'soju_kim', 'sojupw14!', '김철민', '1995-11-30', '010-5555-6666', 'normal', TRUE, '2025-09-13',340),
-    (2, 'beer_lee', 'beerpw15!', '이수진', '1993-03-18', '010-6666-7777', 'suspended', FALSE, '2025-09-14', 200),
-    (2, 'wine_park', 'winepw16!', '박지영', '1990-01-07', '010-7777-8888', 'normal', TRUE, '2025-09-15', 200),
-    (1, 'admin02', 'adminpw2!', '서관리', '1985-06-05', '010-8888-9999', 'normal', TRUE, '2025-09-16', NULL),
-    (2, 'bbq_master', 'pw1!', '이서준', '1994-02-14', '010-1212-1212', 'normal', TRUE, '2025-09-16', 150),
-    (2, 'sool_scholar', 'pw2!', '김하늘', '1997-03-01', '010-1313-1313', 'normal', TRUE, '2025-09-16', 140),
-    (2, 'wine_beginner', 'pw3!', '최다연', '2001-09-09', '010-1414-1414', 'normal', TRUE, '2025-09-17', 200),
-    (2, 'beer_coder', 'pw4!', '박도윤', '1996-05-22', '010-1515-1515', 'normal', TRUE, '2025-09-17', 340),
-    (2, 'mak_fan', 'pw5!', '정윤아', '1999-08-30', '010-1616-1616', 'normal', TRUE, '2025-09-17', 340),
-    (2, 'high_holic', 'pw6!', '오세준', '1995-12-02', '010-1717-1717', 'normal', TRUE, '2025-09-18', 200),
-    (2, 'sake_trip', 'pw7!', '장유나', '1998-01-28', '010-1818-1818', 'normal', TRUE, '2025-09-18', 340),
-    (2, 'wine_note', 'pw8!', '신태훈', '1992-06-06', '010-1919-1919', 'normal', TRUE, '2025-09-18', 700),
-    (2, 'beer_runner', 'pw9!', '한유진', '1997-11-11', '010-2020-2020', 'normal', TRUE, '2025-09-19', 200),
-    (2, 'soju_writer', 'pw10!', '노수현', '1993-07-17', '010-2121-2121', 'normal', TRUE, '2025-09-19', 800);
-
+    ('ADMIN', 'admin01', 'adminpw!', '관리자', '1988-10-10', '010-1111-1111', 'normal', TRUE, '2025-01-05',NULL),
+    ('USER', 'soju_love', 'drinkpw1!', '박철수', '1995-07-07', '010-2222-2222', 'normal', TRUE, '2025-03-11', 200),
+    ('USER', 'beer_queen', 'beerpw2!', '김민지', '1998-11-23', '010-3333-3333', 'suspended', FALSE, '2025-04-02', 300),
+    ('USER', 'wine_master', 'winepw3!', '최영희', '1990-02-17', '010-4444-4444', 'normal', TRUE, '2025-05-20', 220),
+    ('USER', 'makgeolli', 'makpw4!', '정우성', '1993-12-30', '010-5555-5555', 'normal', TRUE, '2025-06-01', 60),
+    ('USER', 'cocktail_girl', 'cockpw5!', '한지민', '2000-09-09', '010-6666-6666', 'normal', TRUE, '2025-07-18', 50),
+    ('USER', 'sake_lover', 'sakpw6!', '오다유키', '1994-01-25', '010-7777-7777', 'normal', TRUE, '2025-08-03', 340),
+    ('USER', 'champagne_boy', 'champpw7!', '박상혁', '1992-04-19', '010-8888-8888', 'normal', TRUE, '2025-08-25', 200),
+    ('USER', 'highballer', 'highpw8!', '이진우', '1999-07-15', '010-9999-9999', 'normal', TRUE, '2025-09-01', 50),
+    ('USER', 'vodka_star', 'vodkapw9!', '안지수', '1997-12-12', '010-1010-1010', 'normal', TRUE, '2025-09-05', 50),
+    ('USER', 'gin_tonic', 'ginpw10!', '서민호', '1996-06-30', '010-1111-2222', 'normal', TRUE, '2025-09-07', 50),
+    ('USER', 'whisky_time', 'whiskypw11!', '김성훈', '1989-08-21', '010-2222-3333', 'withdrawn', FALSE, '2025-09-10', 500),
+    ('USER', 'rum_rider', 'rumpw12!', '홍길동', '1991-09-15', '010-3333-4444', 'normal', TRUE, '2025-09-11', 50),
+    ('USER', 'tequila99', 'teqpw13!', '최다혜', '1998-05-22', '010-4444-5555', 'normal', TRUE, '2025-09-12', 60),
+    ('USER', 'soju_kim', 'sojupw14!', '김철민', '1995-11-30', '010-5555-6666', 'normal', TRUE, '2025-09-13',340),
+    ('USER', 'beer_lee', 'beerpw15!', '이수진', '1993-03-18', '010-6666-7777', 'suspended', FALSE, '2025-09-14', 200),
+    ('USER', 'wine_park', 'winepw16!', '박지영', '1990-01-07', '010-7777-8888', 'normal', TRUE, '2025-09-15', 200),
+    ('ADMIN', 'admin02', 'adminpw2!', '서관리', '1985-06-05', '010-8888-9999', 'normal', TRUE, '2025-09-16', NULL),
+    ('USER', 'bbq_master', 'pw1!', '이서준', '1994-02-14', '010-1212-1212', 'normal', TRUE, '2025-09-16', 150),
+    ('USER', 'sool_scholar', 'pw2!', '김하늘', '1997-03-01', '010-1313-1313', 'normal', TRUE, '2025-09-16', 140),
+    ('USER', 'wine_beginner', 'pw3!', '최다연', '2001-09-09', '010-1414-1414', 'normal', TRUE, '2025-09-17', 200),
+    ('USER', 'beer_coder', 'pw4!', '박도윤', '1996-05-22', '010-1515-1515', 'normal', TRUE, '2025-09-17', 340),
+    ('USER', 'mak_fan', 'pw5!', '정윤아', '1999-08-30', '010-1616-1616', 'normal', TRUE, '2025-09-17', 340),
+    ('USER', 'high_holic', 'pw6!', '오세준', '1995-12-02', '010-1717-1717', 'normal', TRUE, '2025-09-18', 200),
+    ('USER', 'sake_trip', 'pw7!', '장유나', '1998-01-28', '010-1818-1818', 'normal', TRUE, '2025-09-18', 340),
+    ('USER', 'wine_note', 'pw8!', '신태훈', '1992-06-06', '010-1919-1919', 'normal', TRUE, '2025-09-18', 700),
+    ('USER', 'beer_runner', 'pw9!', '한유진', '1997-11-11', '010-2020-2020', 'normal', TRUE, '2025-09-19', 200),
+    ('USER', 'soju_writer', 'pw10!', '노수현', '1993-07-17', '010-2121-2121', 'normal', TRUE, '2025-09-19', 800);
 INSERT INTO alcohol (alcohol_type, alcohol_explain, alcohol_picture)
 VALUES
     ('맥주', '탄산감과 청량감이 특징인 맥주', '/images/alcohol/beer.jpg'),
@@ -581,6 +579,14 @@ VALUES
 --     worldcup 1: 맥주(1), 와인(8)
 --     worldcup 2: 소주(2), 하이볼(7)
 --     일관 참조를 위해 worldcup_alcohol_no를 명시적으로 고정
+
+-- 문의 게시글 답변
+INSERT INTO qna_comment (qna_post_no, comment_member_no, comment_content, comment_at)
+VALUES
+    (1, 1, '안녕하세요. 파일 업로드 오류는 금일 중 조치하겠습니다.', '2025-09-12 10:30:00'),
+    (2, 1, '월드컵 일정은 매주 월요일에 공지됩니다.', '2025-09-13 09:15:00'),
+    (1, 1, '추가 문의 있으시면 언제든 연락주세요.', '2025-09-14 15:00:00');
+
 INSERT INTO worldcup_alcohol (worldcup_alcohol_no, alcohol_no, worldcup_no)
 VALUES
     (1, 1, 1),
