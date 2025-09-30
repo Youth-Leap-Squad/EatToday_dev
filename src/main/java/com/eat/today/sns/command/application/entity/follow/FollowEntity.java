@@ -19,7 +19,6 @@ public class FollowEntity {
     @Column(name = "following_no", nullable = false)
     private int followingNo;
 
-    // createdAt 을 String 으로, 널 허용
     @Column(name = "created_at", nullable = true, length = 50)
     private String createdAt;
 }

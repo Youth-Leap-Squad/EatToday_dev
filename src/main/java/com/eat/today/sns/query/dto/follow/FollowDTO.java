@@ -10,6 +10,6 @@ public class FollowDTO {
     private int followingNo;
     private String createdAt;
 
-    private MemberDTO member;        // association 매핑 대상
+    private MemberDTO member;
 
 }

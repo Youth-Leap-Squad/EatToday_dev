@@ -16,7 +16,7 @@ public class PhotoReviewCommentCommandController {
 
     private final PhotoReviewCommentCommandService service;
 
-    // 수정
+    // 삽입
     @PostMapping(path = "/reviews/{reviewNo}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<PrcDTO.CreateResponse> create(
             @PathVariable int reviewNo,

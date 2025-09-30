@@ -46,7 +46,7 @@ public class PhotoReviewCommentCommandService {
                 .orElse(0);
     }
 
-    /** 하드 삭제: 존재하고 본인 글이면 1, 아니면 0 */
+    // 삭제
     @Transactional
     public int deleteHard(int memberNo, int prcNo) {
         return repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo)
@@ -57,7 +57,6 @@ public class PhotoReviewCommentCommandService {
                 .orElse(0);
     }
 
-    /** 소프트 삭제 예시 */
     @Transactional
     public int deleteSoft(int memberNo, int prcNo) {
         return repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo)
