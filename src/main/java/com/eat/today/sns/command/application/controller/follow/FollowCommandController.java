@@ -2,7 +2,7 @@ package com.eat.today.sns.command.application.controller.follow;
 
 import com.eat.today.sns.command.application.entity.follow.FollowEntity;
 import com.eat.today.sns.command.domain.repository.follow.FollowRepository;
-import com.eat.today.sns.command.domain.service.FollowService;
+import com.eat.today.sns.command.domain.service.FollowCommandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 public class FollowCommandController {
 
     private final FollowRepository followRepository;
-    private final FollowService followCommandService;
+    private final FollowCommandService followCommandService;
 
     @Autowired
-    public FollowCommandController(FollowRepository followRepository, FollowService followCommandService) {
+    public FollowCommandController(FollowRepository followRepository, FollowCommandService followCommandService) {
         this.followRepository = followRepository;
         this.followCommandService = followCommandService;
     }

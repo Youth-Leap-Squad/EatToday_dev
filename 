@@ -1,0 +1,40 @@
+Merge remote-tracking branch 'origin/sns'
+
+# Conflicts:
+#	src/main/java/com/eat/today/sns/command/application/entity/photoReview/PhotoReview.java
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please run
+#	git update-ref -d MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch is up to date with 'origin/main'.
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes to be committed:
+#	modified:   src/main/java/com/eat/today/sns/command/application/controller/dm/DmCommandController.java
+#	modified:   src/main/java/com/eat/today/sns/command/application/controller/follow/FollowCommandController.java
+#	deleted:    src/main/java/com/eat/today/sns/command/application/controller/photoReview/PhotoReview.java
+#	new file:   src/main/java/com/eat/today/sns/command/application/controller/photoReview/PhotoReviewCommandController.java
+#	modified:   src/main/java/com/eat/today/sns/command/application/controller/photoReviewComet/PhotoReviewCommentCommandController.java
+#	new file:   src/main/java/com/eat/today/sns/command/application/dto/photoReviewDTO/CreateRequest.java
+#	new file:   src/main/java/com/eat/today/sns/command/application/dto/photoReviewDTO/UpdateRequest.java
+#	modified:   src/main/java/com/eat/today/sns/command/application/entity/follow/FollowEntity.java
+#	modified:   src/main/java/com/eat/today/sns/command/application/entity/photoReview/PhotoReview.java
+#	new file:   src/main/java/com/eat/today/sns/command/application/entity/photoReview/PhotoReviewEntity.java
+#	new file:   src/main/java/com/eat/today/sns/command/domain/repository/photoReview/PhotoReviewRepository.java
+#	modified:   src/main/java/com/eat/today/sns/command/domain/service/DmService.java
+#	new file:   src/main/java/com/eat/today/sns/command/domain/service/FollowService.java
+#	new file:   src/main/java/com/eat/today/sns/command/domain/service/PhotoReviewCommandService.java
+#	modified:   src/main/java/com/eat/today/sns/command/domain/service/PhotoReviewCommentCommandService.java
+#	new file:   src/main/java/com/eat/today/sns/query/dto/dm/DmUpdateDTO.java
+#	modified:   src/main/java/com/eat/today/sns/query/dto/follow/FollowDTO.java
+#	modified:   src/main/java/com/eat/today/sns/query/dto/photoReviewComment/PhotoReviewCommentDTO.java
+#	modified:   src/main/java/com/eat/today/sns/query/dto/photoReviewComment/PrcDTO.java
+#

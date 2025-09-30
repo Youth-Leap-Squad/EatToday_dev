@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "member")
 @Data
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class MemberEntity {
 
     // 권한 Enum
@@ -48,6 +48,9 @@ public class MemberEntity {
     private Integer reportCount = 0;
 
     /** 편의 메서드들 */
+
+    public MemberEntity() {}
+
     public void increaseReportCount() {
         this.reportCount++;
     }
