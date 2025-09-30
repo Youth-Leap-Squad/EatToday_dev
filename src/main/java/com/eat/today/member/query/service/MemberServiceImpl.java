@@ -47,13 +47,13 @@ public class MemberServiceImpl implements  MemberService{
     @Override
     public FindProfileDTO findMyProfile(Integer memberNo) {
         return sqlSession.getMapper(MemberMapper.class)
-                .findMyProfile(memberNo.toString());
+                .findMyProfile(memberNo);
     }
 
 
     // 받은 포인트에 따른 등급을 확인할 수 있다.
     @Override
-    public FindMyLevelDTO findMyLevel(int memberNo) {
+    public FindMyLevelDTO findMyLevel(Integer memberNo) {
         return sqlSession.getMapper(MemberMapper.class)
                 .findMyLevel(memberNo);
     }
