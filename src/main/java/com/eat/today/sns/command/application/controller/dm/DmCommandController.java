@@ -1,11 +1,8 @@
 package com.eat.today.sns.command.application.controller.dm;
 
-import com.eat.today.post.command.application.dto.FoodPostResponse;
-import com.eat.today.post.command.application.dto.UpdateFoodPostRequest;
-import com.eat.today.sns.command.application.dto.photoReviewDTO.UpdateRequest;
 import com.eat.today.sns.command.application.entity.dm.DmEntity;
 import com.eat.today.sns.command.domain.repository.dm.DmRepository;
-import com.eat.today.sns.command.domain.service.DmService;
+import com.eat.today.sns.command.domain.service.DmCommandService;
 import com.eat.today.sns.query.dto.dm.DmSendDTO;
 import com.eat.today.sns.query.dto.dm.DmUpdateDTO;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +16,7 @@ import java.util.Map;
 @RequestMapping("/command/dm")
 @RequiredArgsConstructor
 public class DmCommandController {
-    private final DmService dmService;
+    private final DmCommandService dmService;
     private final DmRepository dmRepository;
 
     @PostMapping("/send")
