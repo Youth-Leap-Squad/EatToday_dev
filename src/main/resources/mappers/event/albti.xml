@@ -28,18 +28,30 @@
 
     <!-- 술bti 검사 결과 조회 -->
     <select id="selectAlbti" parameterType="java.lang.String" resultMap="AlbtiResultMap">
+<!--        SELECT-->
+        <!--               b.member_no-->
+        <!--             , a.alBTI_category-->
+        <!--             , a.alBTI_detail-->
+        <!--             , c.alBTI_alcohol_explain-->
+        <!--             , d.food_picture-->
+        <!--             , d.food_explain-->
+        <!--          FROM albti AS a-->
+        <!--          JOIN albti_join_member AS b ON a.alBTI_no = b.alBTI_no-->
+        <!--          JOIN albti_output AS c on a.alBTI_no = c.alBTI_no-->
+        <!--          JOIN food_post AS d ON d.board_no = c.board_no-->
+
         SELECT
                b.member_no
-             , a.alBTI_category
-             , a.alBTI_detail
-             , c.alBTI_alcohol_explain
+             , c.alBTI_category
+             , c.alBTI_detail
+             , a.alBTI_alcohol_explain
              , d.food_picture
              , d.food_explain
-          FROM albti AS a
-          JOIN albti_join_member AS b ON a.alBTI_no = b.alBTI_no
-          JOIN albti_output AS c on a.alBTI_no = c.alBTI_no
-          JOIN food_post AS d ON d.board_no = c.board_no
-         WHERE b.member_no = #{member_no};              <!-- 자신의 회원번호를 통해 자신의 술BTI검사 결과 조회 -->
+         FROM albti_output AS a
+         JOIN albti_join_member AS b ON a.alBTI_member_no = b.alBTI_member_no
+         JOIN albti AS c on a.alBTI_no = c.alBTI_no
+         JOIN food_post AS d ON d.board_no = a.board_no
+        WHERE b.member_no = #{member_no};              <!-- 자신의 회원번호를 통해 자신의 술BTI검사 결과 조회 -->
 
     </select>
 </mapper>
