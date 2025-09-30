@@ -5,7 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "member")
-@Getter @Setter
+@Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberEntity {
 
@@ -37,7 +37,10 @@ public class MemberEntity {
     @Column(name="member_birth", nullable = false)
     private String memberBirth;
 
-    // ✅ 신고 상태 + 카운트 필드 추가
+    @Column(name="member_active", nullable = false)
+    private boolean memberActive =true;
+
+    //  신고 상태 + 카운트 필드 추가
     @Column(name = "member_status", nullable = false)
     private String memberStatus = "normal";
 

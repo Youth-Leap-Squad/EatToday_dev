@@ -8,7 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 public class AppConfig {
     
-    /* 설명. DTO <-> DTO <-> Entity. 필요한 순간에 의존성 주입 받기위해 bean으로 ㅈ ㄷㅡㅇ록*/
+    /* 설명. DTO <-> DTO <-> Entity. 필요한 순간에 의존성 주입 받기위해 bean으로 등록*/
     @Bean
     public ModelMapper getModelMapper() {
         return new ModelMapper();

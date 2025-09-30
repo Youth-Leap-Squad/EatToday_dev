@@ -11,7 +11,7 @@ public interface MemberMapper {
    // String selectIdByPhone(String memberPhone);
     String selectIdByPhone(@Param("memberPhone") String memberPhone);
 
-    FindProfileDTO findMyProfile(@Param("memberNo") String memberNo);
+    FindProfileDTO findMyProfile(@Param("memberNo") Integer memberNo);
     
-    FindMyLevelDTO findMyLevel(@Param("memberNo") int memberNo);
+    FindMyLevelDTO findMyLevel(@Param("memberNo") Integer memberNo);
 }
