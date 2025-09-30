@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Table(name ="report")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Report {
 
@@ -52,4 +51,5 @@ public class Report {
         this.processed = true;
     }
 
+    public Report() {}
 }

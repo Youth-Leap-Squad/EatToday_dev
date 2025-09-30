@@ -1,9 +1,10 @@
 package com.eat.today.qna_rounge_report.report.command.application.service;
 
+
 import com.eat.today.member.command.domain.aggregate.MemberEntity;
 import com.eat.today.member.command.domain.repository.MemberRepository;
-import com.eat.today.qna_rounge_reportreport.report.domain.aggregate.ReportEntity;
-import com.eat.today.qna_rounge_report.report.domain.repository.ReportRepository;
+import com.eat.today.qna_rounge_report.report.command.domain.aggregate.Report;
+import com.eat.today.qna_rounge_report.report.command.domain.repository.ReportRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
-@ActiveProfiles("test")   // 👈 위 H2 설정 사용
+@ActiveProfiles("test")
 @Transactional
 public class ReportProcessService_UserTest {
     @Autowired ReportProcessService reportProcessService;
@@ -31,9 +32,10 @@ public class ReportProcessService_UserTest {
         member = memberRepository.save(member);
 
         // 그리고 이 회원을 대상으로 한 신고 저장
-        ReportEntity report = new ReportEntity();
-        report.setTargetMember(member);  // 도메인에 맞게 세팅
-        report.setReason("욕설");
+        Report report = new Report();
+        report.
+        report.setreportedIdmember();
+        report.setContent("욕설");
         report = reportRepository.save(report);
 
         // when: 신고 처리 실행
