@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class CommandResponseRegisterMemberDTO {
     private String memberPhone;
-    private String memberPw;
+   // private String memberPw;
     private String memberName;
 
-    private String memberId;
+   // private String memberId;
     private String memberBirth;
 }
