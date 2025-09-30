@@ -3,7 +3,6 @@ package com.eat.today.sns.command.domain.service;
 import com.eat.today.sns.command.application.entity.photoReviewComment.PhotoReviewCommentEntity;
 import com.eat.today.sns.command.domain.repository.PhotoReviewComment.PhotoReviewCommentRepository;
 import com.eat.today.sns.query.dto.photoReviewComment.PrcDTO;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
