@@ -11,8 +11,8 @@ import java.util.List;
 public interface MemberService extends UserDetailsService {
 
 
-    // 가입 시 입력한 전화번호를 통해 아이디를 확인.
-    public String getIdByPhone(String memberPhone);
+    // 가입 시 입력한 이메일을 통해 아이디를 확인.
+    public String getIdByEmail(String memberEmail);
 
     // 등록된 전화번호로 비밀번호 재설정 안내.
 
@@ -25,7 +25,7 @@ public interface MemberService extends UserDetailsService {
     // 신고 내용 확인
     public List<ReportCheckDTO> checkReport();
 
-    UserDetails loadMemberByMemberName(String memberPhone);
+    UserDetails loadMemberByMemberName(String memberEmail);
 
     // 등록된 ID와 핸드폰 번호로 비밀번호 찾기.
     // public String getPwByIdAndPhone(String memberPhone,)

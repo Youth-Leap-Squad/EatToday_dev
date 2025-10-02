@@ -8,8 +8,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface MemberMapper {
 
-   // String selectIdByPhone(String memberPhone);
-    String selectIdByPhone(@Param("memberPhone") String memberPhone);
+   // String selectIdByEmail(String memberEmail);
+    String selectIdByEmail(@Param("memberEmail") String memberEmail);
 
     FindProfileDTO findMyProfile(@Param("memberNo") Integer memberNo);
     

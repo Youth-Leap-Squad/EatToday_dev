@@ -5,11 +5,11 @@
 
 <mapper namespace="com.eat.today.member.query.mapper.MemberMapper">
 
-    <!-- 전화번호로 회원 아이디 조회 -->
-    <select id="selectIdByPhone" parameterType="string" resultType="string">
+    <!-- 이메일로 회원 아이디 조회 -->
+    <select id="selectIdByEmail" parameterType="string" resultType="string">
         SELECT m.member_id
         FROM member m
-        WHERE m.member_phone = #{memberPhone}
+        WHERE m.member_email = #{memberEmail}
     </select>
 
     <!-- 내 프로필 조회 -->
@@ -19,6 +19,7 @@
             m.member_name  AS memberName,
             m.member_birth AS memberBirth,
             m.member_phone AS memberPhone,
+            m.member_email AS memberEmail,
             m.member_level AS memberLevel,
             CASE
                 WHEN m.member_active = 1 THEN '활동회원'

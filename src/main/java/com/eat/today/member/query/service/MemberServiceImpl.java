@@ -33,11 +33,11 @@ public class MemberServiceImpl implements  MemberService{
 
     }
 
-    // 가입 시 입력한 전화번호를 통해 아이디를 확인.
+    // 가입 시 입력한 이메일을 통해 아이디를 확인.
     @Override
-    public String getIdByPhone(String memberPhone) {
+    public String getIdByEmail(String memberEmail) {
         return sqlSession.getMapper(MemberMapper.class)
-                .selectIdByPhone(memberPhone);
+                .selectIdByEmail(memberEmail);
     }
 
     // 등록된 전화번호로 비밀번호 재설정 안내.
@@ -66,7 +66,7 @@ public class MemberServiceImpl implements  MemberService{
     }
 
     @Override
-    public UserDetails loadMemberByMemberName(String memberPhone) {
+    public UserDetails loadMemberByMemberName(String memberEmail) {
         return null;
     }
 

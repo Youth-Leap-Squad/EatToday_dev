@@ -22,8 +22,8 @@ public class MemberController {
     private final MemberService memberService;
 
     @GetMapping("/getid")
-    public String getIdByPhone(@RequestParam String phone) {
-        return memberService.getIdByPhone(phone);  // ex) "010-9999-9999"
+    public String getIdByEmail(@RequestParam String email) {
+        return memberService.getIdByEmail(email);  // ex) "user@example.com"
     }
 
         @GetMapping("/getprofile")
