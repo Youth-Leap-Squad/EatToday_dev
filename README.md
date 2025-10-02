@@ -370,8 +370,10 @@
 ---
 
 ## ✅ 테스트 및 품질
+### 🔬TEST Summary 
+<img with= "900" height="800" src = "https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%84%9C%EB%A8%B8%EB%A6%AC.png">
 
-### TEST 코드 
+### 🧪TEST 코드 
 <details>
   <summary><b>회원, 관리자</b></summary>
  - 신고처리시 회원 상태와 신고 횟수 업데이트
