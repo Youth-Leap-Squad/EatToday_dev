@@ -418,8 +418,9 @@
 
 ## 🔭 회고록
 
-[📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/19_2nd_backendproject_presentation.pdf)
 
+-  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/19_2nd_backendproject_presentation.pdf)
+<br>
 
 |   조원 이름	  |   회고   |
 |---------------|----------|
