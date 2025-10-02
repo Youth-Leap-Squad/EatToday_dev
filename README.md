@@ -369,7 +369,10 @@
 
 ## ✅ 테스트 및 품질
 ### 🔬TEST Summary 
+<details>
+  <summary><b>TEST Summary </b></summary>
 <img with= "700" height="600" src = "https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%84%9C%EB%A8%B8%EB%A6%AC.png">
+</details>
 
 ### 🧪TEST 코드 
 <details>
