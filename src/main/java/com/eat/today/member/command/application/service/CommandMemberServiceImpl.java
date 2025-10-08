@@ -44,6 +44,7 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
     @Override
     public void registMember(CommandMemberDTO commandMemberDTO) {
 
+
         // 아이디 생성
         commandMemberDTO.setMemberId(UUID.randomUUID().toString());   //랜덤 식별자 -> 나중에 사용자 입력값으로 변경
 
