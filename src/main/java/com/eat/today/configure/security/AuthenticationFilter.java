@@ -29,7 +29,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
             RequestLoginDTO creds = new ObjectMapper().readValue(request.getInputStream(), RequestLoginDTO.class);
-                return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(creds.getMemberPhone(), creds.getMemberPw(),new ArrayList<>())
+                return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(creds.getMemberEmail(), creds.getMemberPw(),new ArrayList<>())
             );
 
 
@@ -51,7 +51,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         
-        String jsonResponse = "{\"message\":\"로그인 성공\",\"memberPhone\":\"" + authResult.getName() + "\"}";
+        String jsonResponse = "{\"message\":\"로그인 성공\",\"memberEmail\":\"" + authResult.getName() + "\"}";
         response.getWriter().write(jsonResponse);
         response.getWriter().flush();
     }

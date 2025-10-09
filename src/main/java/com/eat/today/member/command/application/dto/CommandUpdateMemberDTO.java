@@ -5,9 +5,13 @@ import lombok.Data;
 @Data
 public class CommandUpdateMemberDTO {
 
-    private String memberPhone;
+    private String memberEmail;
+    private String memberPw;
     private String memberName;
     private String memberBirth;
+    private String memberPhone;
+    private String memberStatus;
     private Boolean memberActive;
+
 
 }

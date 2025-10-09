@@ -25,6 +25,9 @@ public class MemberEntity {
     @Column(name="member_phone", nullable = false)
     private String memberPhone;
 
+    @Column(name="member_email", nullable = false, unique = true)
+    private String memberEmail;
+
     @Column(name="member_pw", nullable = false)
     private String memberPw;
 

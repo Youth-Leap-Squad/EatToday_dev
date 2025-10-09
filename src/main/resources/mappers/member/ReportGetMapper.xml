@@ -16,9 +16,6 @@
         FROM report r
                  JOIN member m1 ON r.member_no = m1.member_no  -- 신고자
                  JOIN member m2 ON r.member_no2 = m2.member_no  -- 피신고자
-                 LEFT JOIN report_history rh
-                           ON rh.report_no = r.report_no
-                               AND rh.member_no = r.member_no2
         WHERE r.report_yn = 0
     </select>
 </mapper>

@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class CommandRequestRegisterMemberDTO {
     private String memberPhone;
+    private String memberEmail;
     private String memberPw;
     private String memberName;
 
