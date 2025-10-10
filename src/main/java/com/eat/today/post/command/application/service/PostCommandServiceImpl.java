@@ -5,6 +5,7 @@ import com.eat.today.post.command.domain.aggregate.*;
 import com.eat.today.post.command.domain.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.eat.today.post.command.application.service.ImageStorageService;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,8 @@ public class PostCommandServiceImpl implements PostCommandService {
     private final FoodPostLikeRepository likeRepo;
     private final FoodCommentRepository commentRepo;
     private final BookmarkRepository bookmarkRepo;
+
+    private final ImageStorageService imageStorageService;
 
     private static String nowString() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -61,17 +67,19 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     /* ================= 술 종류 ================= */
 
+
     // 공통 매퍼
     private static AlcoholResponse toAlcoholResponse(Alcohol a) {
         return AlcoholResponse.builder()
                 .alcoholNo(a.getAlcoholNo())
-                .alcoholType(String.valueOf(a.getAlcoholType()))
+                .alcoholType(a.getAlcoholType())
                 .alcoholExplain(a.getAlcoholExplain())
                 .alcoholPicture(a.getAlcoholPicture())
                 .build();
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만
     public AlcoholResponse createAlcohol(CreateAlcoholRequest req) {
         Alcohol a = Alcohol.builder()
                 .alcoholNo(null)
@@ -85,18 +93,35 @@ public class PostCommandServiceImpl implements PostCommandService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만
     public AlcoholResponse updateAlcohol(Integer alcoholNo, UpdateAlcoholRequest req) {
         Alcohol a = alcoholRepo.findById(alcoholNo)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("해당 술 정보를 찾을 수 없습니다."));
         a.update(req.getAlcoholType(), req.getAlcoholExplain(), req.getAlcoholPicture());
-
         return toAlcoholResponse(a);
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만
     public void deleteAlcohol(Integer alcoholNo) {
         if (!alcoholRepo.existsById(alcoholNo)) throw new EntityNotFoundException("해당 술 정보를 찾을 수 없습니다.");
         alcoholRepo.deleteById(alcoholNo);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public AlcoholResponse createAlcoholWithImage(CreateAlcoholRequest req, MultipartFile image) {
+        String imageUrl = imageStorageService.store(image, "alcohols");
+        if (imageUrl != null) req.setAlcoholPicture(imageUrl);
+        return createAlcohol(req);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public AlcoholResponse updateAlcoholWithImage(Integer alcoholNo, UpdateAlcoholRequest req, MultipartFile image) {
+        String imageUrl = imageStorageService.store(image, "alcohols");
+        if (imageUrl != null) req.setAlcoholPicture(imageUrl);
+        return updateAlcohol(alcoholNo, req);
     }
 
     /* ================= 안주(게시글) ================= */
@@ -173,6 +198,24 @@ public class PostCommandServiceImpl implements PostCommandService {
         post.setConfirmedYn(approved);
         return toResponse(post);
     }
+
+    @Override
+    public FoodPostResponse createPostWithImage(CreateFoodPostRequest req, MultipartFile image) {
+        // 1) 이미지 저장 (옵션)
+        String imageUrl = imageStorageService.store(image, "foods");
+
+        // 2) 기존 createPost 로직 재사용하되 사진만 교체
+        if (imageUrl != null) req.setFoodPicture(imageUrl);
+        return createPost(req);
+    }
+
+    @Override
+    public FoodPostResponse updatePostWithImage(Integer boardNo, UpdateFoodPostRequest req, MultipartFile image) {
+        String imageUrl = imageStorageService.store(image, "foods");
+        if (imageUrl != null) req.setFoodPicture(imageUrl);
+        return updatePost(boardNo, req);
+    }
+
 
     /* ================= 댓글 ================= */
 
