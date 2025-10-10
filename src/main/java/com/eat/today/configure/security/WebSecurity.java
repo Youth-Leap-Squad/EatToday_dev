@@ -16,9 +16,12 @@ import java.util.Collections;
 public class WebSecurity {
 
     private JwtAuthenticationProvider jwtAuthenticationProvider;
+    private final JwtTokenService jwtTokenService;
 
-    public WebSecurity(JwtAuthenticationProvider jwtAuthenticationProvider) {
+    public WebSecurity(JwtAuthenticationProvider jwtAuthenticationProvider,
+                       JwtTokenService jwtTokenService) {
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
+        this.jwtTokenService = jwtTokenService;
     }
 
     // 만든 provider bean으로 등록
@@ -37,6 +40,7 @@ public class WebSecurity {
         );
 
         http.addFilter(getAuthenticationFilter(authenticationManager()));
+
 
         // 로그아웃 설정
         http.logout(logout -> logout
@@ -75,6 +79,6 @@ public class WebSecurity {
 
     // Filter을 등록하기 위해 사용하는 메소드
     private Filter getAuthenticationFilter(AuthenticationManager authenticationManager) {
-        return new AuthenticationFilter(authenticationManager);
+        return new AuthenticationFilter(authenticationManager, jwtTokenService);
     }
 }

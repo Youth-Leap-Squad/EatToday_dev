@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import java.util.List;
 
@@ -19,18 +22,23 @@ public class PostCommandController {
 
     /* ===== 술 종류 ===== */
 
-    @PostMapping("/alcohols")
-    public ResponseEntity<AlcoholResponse> createAlcohol(@RequestBody CreateAlcoholRequest req) {
-        AlcoholResponse body = svc.createAlcohol(req);
+    @PostMapping(value = "/alcohols", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AlcoholResponse> createAlcohol(
+            @RequestPart("meta") CreateAlcoholRequest req,
+            @RequestPart(value="image", required=false) MultipartFile image) {
+        AlcoholResponse body = svc.createAlcoholWithImage(req, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
-    @PatchMapping("/alcohols/{alcoholNo}")
-    public ResponseEntity<AlcoholResponse> updateAlcohol(@PathVariable Integer alcoholNo,
-                                                         @RequestBody UpdateAlcoholRequest req) {
-        AlcoholResponse resp = postCommandService.updateAlcohol(alcoholNo, req);
+    @PatchMapping(value = "/alcohols/{alcoholNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AlcoholResponse> updateAlcohol(
+            @PathVariable Integer alcoholNo,
+            @RequestPart("meta") UpdateAlcoholRequest req,
+            @RequestPart(value="image", required=false) MultipartFile image) {
+        AlcoholResponse resp = postCommandService.updateAlcoholWithImage(alcoholNo, req, image);
         return ResponseEntity.ok(resp);
     }
+
 
     @DeleteMapping("/alcohols/{alcoholNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -40,16 +48,20 @@ public class PostCommandController {
 
     /* ===== 안주(게시글) ===== */
 
-    @PostMapping("/foods")
-    public ResponseEntity<FoodPostResponse> createPost(@RequestBody CreateFoodPostRequest req) {
-        FoodPostResponse body = svc.createPost(req);
+    @PostMapping(value = "/foods", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FoodPostResponse> createPost(
+            @RequestPart("meta") CreateFoodPostRequest req,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        FoodPostResponse body = svc.createPostWithImage(req, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
-    @PatchMapping("/foods/{boardNo}")
-    public ResponseEntity<FoodPostResponse> updatePost(@PathVariable Integer boardNo,
-                                                       @RequestBody UpdateFoodPostRequest req) {
-        FoodPostResponse body = svc.updatePost(boardNo, req);
+    @PatchMapping(value = "/foods/{boardNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FoodPostResponse> updatePost(
+            @PathVariable Integer boardNo,
+            @RequestPart("meta") UpdateFoodPostRequest req,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        FoodPostResponse body = svc.updatePostWithImage(boardNo, req, image);
         return ResponseEntity.ok(body);
     }
 
