@@ -18,7 +18,7 @@ public class DmController {
     // 예: GET /dm/12/34
     @GetMapping("/{sendMemberId}/{receiveMemberId}")
     public ResponseEntity<List<DmDTO>> getByMembers(
-            @PathVariable("sendMemberId") Integer sendMemberId,    // ✅ @PathVariable + Integer
+            @PathVariable("sendMemberId") Integer sendMemberId,
             @PathVariable("receiveMemberId") Integer receiveMemberId
     ) {
         return ResponseEntity.ok(dmService.getByMessageNo(sendMemberId, receiveMemberId));
