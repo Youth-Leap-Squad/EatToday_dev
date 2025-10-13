@@ -31,10 +31,22 @@ public interface PostCommandService {
     List<BookmarkResponse> addBookmark(AddBookmarkRequest req);
     List<BookmarkResponse> removeBookmark(Integer memberNo, Integer boardNo);
 
-    // --- 이미지 업로드 ---
-    FoodPostResponse createPostWithImage(CreateFoodPostRequest req, org.springframework.web.multipart.MultipartFile image);
-    FoodPostResponse updatePostWithImage(Integer boardNo, UpdateFoodPostRequest req, org.springframework.web.multipart.MultipartFile image);
+    // --- 이미지 업로드(단일) ---
+    FoodPostResponse createPostWithImage(CreateFoodPostRequest req,
+                                         org.springframework.web.multipart.MultipartFile image);
+    FoodPostResponse updatePostWithImage(Integer boardNo,
+                                         UpdateFoodPostRequest req,
+                                         org.springframework.web.multipart.MultipartFile image);
 
-    AlcoholResponse createAlcoholWithImage(CreateAlcoholRequest req, org.springframework.web.multipart.MultipartFile image);
-    AlcoholResponse updateAlcoholWithImage(Integer alcoholNo, UpdateAlcoholRequest req, org.springframework.web.multipart.MultipartFile image);
+    AlcoholResponse createAlcoholWithImage(CreateAlcoholRequest req,
+                                           org.springframework.web.multipart.MultipartFile image);
+    AlcoholResponse updateAlcoholWithImage(Integer alcoholNo, UpdateAlcoholRequest req,
+                                           org.springframework.web.multipart.MultipartFile image);
+
+    // --- 이미지 업로드(복수) ---
+    FoodPostResponse createPostWithImages(CreateFoodPostRequest req,
+                                          org.springframework.web.multipart.MultipartFile[] images);
+    FoodPostResponse updatePostWithImages(Integer boardNo, UpdateFoodPostRequest req,
+                                          org.springframework.web.multipart.MultipartFile[] images);
+
 }
