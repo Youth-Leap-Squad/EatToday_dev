@@ -2,13 +2,13 @@ package com.eat.today.post.command.application.controller;
 
 import com.eat.today.post.command.application.dto.*;
 import com.eat.today.post.command.application.service.PostCommandService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.RequestPart;
 
 import java.util.List;
 
@@ -19,26 +19,36 @@ public class PostCommandController {
 
     private final PostCommandService svc;
     private final PostCommandService postCommandService;
+    private final ObjectMapper objectMapper; // meta 문자열 파싱
 
     /* ===== 술 종류 ===== */
 
     @PostMapping(value = "/alcohols", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AlcoholResponse> createAlcohol(
-            @RequestPart("meta") CreateAlcoholRequest req,
+            @RequestPart("meta") String metaJson,
             @RequestPart(value="image", required=false) MultipartFile image) {
-        AlcoholResponse body = svc.createAlcoholWithImage(req, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        try {
+            CreateAlcoholRequest req = objectMapper.readValue(metaJson, CreateAlcoholRequest.class);
+            AlcoholResponse body = svc.createAlcoholWithImage(req, image);
+            return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PatchMapping(value = "/alcohols/{alcoholNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AlcoholResponse> updateAlcohol(
             @PathVariable Integer alcoholNo,
-            @RequestPart("meta") UpdateAlcoholRequest req,
+            @RequestPart("meta") String metaJson,
             @RequestPart(value="image", required=false) MultipartFile image) {
-        AlcoholResponse resp = postCommandService.updateAlcoholWithImage(alcoholNo, req, image);
-        return ResponseEntity.ok(resp);
+        try {
+            UpdateAlcoholRequest req = objectMapper.readValue(metaJson, UpdateAlcoholRequest.class);
+            AlcoholResponse resp = postCommandService.updateAlcoholWithImage(alcoholNo, req, image);
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
-
 
     @DeleteMapping("/alcohols/{alcoholNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -50,19 +60,35 @@ public class PostCommandController {
 
     @PostMapping(value = "/foods", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FoodPostResponse> createPost(
-            @RequestPart("meta") CreateFoodPostRequest req,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-        FoodPostResponse body = svc.createPostWithImage(req, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+            @RequestPart("meta") String metaJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try {
+            CreateFoodPostRequest req = objectMapper.readValue(metaJson, CreateFoodPostRequest.class);
+            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
+            FoodPostResponse body = svc.createPostWithImages(req, toUse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PatchMapping(value = "/foods/{boardNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FoodPostResponse> updatePost(
             @PathVariable Integer boardNo,
-            @RequestPart("meta") UpdateFoodPostRequest req,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-        FoodPostResponse body = svc.updatePostWithImage(boardNo, req, image);
-        return ResponseEntity.ok(body);
+            @RequestPart("meta") String metaJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try {
+            UpdateFoodPostRequest req = objectMapper.readValue(metaJson, UpdateFoodPostRequest.class);
+            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
+            FoodPostResponse body = svc.updatePostWithImages(boardNo, req, toUse);
+            return ResponseEntity.ok(body);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/foods/{boardNo}")
@@ -91,7 +117,6 @@ public class PostCommandController {
     @PostMapping("/foods/{boardNo}/comments")
     public ResponseEntity<CommentResponse> addCommentOnFood(@PathVariable Integer boardNo,
                                                             @RequestBody CreateCommentOnFoodRequest req) {
-
         AddCommentRequest delegate = new AddCommentRequest();
         delegate.setBoardNo(boardNo);
         delegate.setMemberNo(req.getMemberNo());
@@ -107,7 +132,6 @@ public class PostCommandController {
         CommentResponse resp = svc.updateCommentById(commentId, req.getMemberNo(), req.getContent());
         return ResponseEntity.ok(resp);
     }
-
 
     @DeleteMapping("/comments/{foodCommentNo}")
     public void deleteCommentById(@PathVariable("foodCommentNo") Integer commentId,
@@ -152,5 +176,4 @@ public class PostCommandController {
         List<BookmarkResponse> body = svc.removeBookmark(memberNo, boardNo);
         return ResponseEntity.ok(body);
     }
-
 }

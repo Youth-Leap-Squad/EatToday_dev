@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,7 +33,6 @@ public class ImageStorageService {
             Files.createDirectories(dir);
             Path target = dir.resolve(filename).normalize();
 
-            // 간단 MIME 가드
             String ct = file.getContentType();
             if (ct == null || !ct.startsWith("image/")) {
                 throw new IllegalArgumentException("이미지 파일만 업로드할 수 있습니다.");
@@ -43,5 +44,17 @@ public class ImageStorageService {
 
         String subPath = (subDir == null || subDir.isBlank()) ? filename : (subDir + "/" + filename);
         return publicBaseUrl.replaceAll("/$", "") + "/" + subPath;
+    }
+
+    public List<String> storeAll(MultipartFile[] files, String subDir) {
+        if (files == null || files.length == 0) return List.of();
+        List<String> urls = new ArrayList<>();
+        for (MultipartFile f : files) {
+            if (f != null && !f.isEmpty()) {
+                String url = store(f, subDir);
+                if (url != null) urls.add(url);
+            }
+        }
+        return urls;
     }
 }
