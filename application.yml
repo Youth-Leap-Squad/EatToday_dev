@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  security:
+    user:
+      name: user
+      password: 1234
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/mydb
+    username: root
+    password: root
+  jpa:
+    generate-ddl: false
+    show-sql: true
+    database: mysql
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username: rlawlsgh6@naver.com
+    password: J91BUCLNX5CM
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.naver.com
+        debug: true
+        timeout: 10000
+        connectiontimeout: 10000
+
+mybatis:
+  mapper-locations: classpath*:/mappers/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com:
+      eat:
+        today:
+          member:
+            query: debug  # 로그찍기
+
+# 이메일 설정 예시 (Gmail 사용 시)
+# 실제 사용 시에는 환경변수나 별도 설정 파일로 관리하는 것을 권장합니다.
+# Gmail의 경우 앱 비밀번호를 사용해야 합니다.
