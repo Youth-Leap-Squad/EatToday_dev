@@ -7,6 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 public class PhotoReviewDTO {
+    private Integer boardNo;
+    private Integer memberNo;
     private String reviewTitle;
     private String reviewDate;
     private String reviewContent;
