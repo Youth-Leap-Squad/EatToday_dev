@@ -3,53 +3,73 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.eat.today.qna_rounge_report.rounge.query.repository.PhotoReviewMapper">
+
     <resultMap id="photoReviewMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
+        <result column="board_no"       property="boardNo"/>
+        <result column="member_no"      property="memberNo"/>
         <result column="review_title"   property="reviewTitle"/>
         <result column="review_date"    property="reviewDate"/>
         <result column="review_content" property="reviewContent"/>
         <result column="review_like"    property="reviewLike"/>
         <association property="member" resultMap="memberMap"/>
     </resultMap>
+
     <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestLoungeDTO">
         <result column="member_name" property="memberName"/>
     </resultMap>
 
-    <!-- 날짜 내림차순 -->
-    <select id="selectAllOrderByDateDesc" resultMap="photoReviewMap">
+    <!-- 날짜 내림차순 (페이징) -->
+    <select id="selectAllOrderByDateDescPaged" resultMap="photoReviewMap">
         SELECT
-               m.member_name
+            pr.board_no
+             , pr.member_no
+             , m.member_name
              , pr.review_title
              , pr.review_date
              , pr.review_content
              , pr.review_like
-          FROM photo_review pr
-          JOIN member m ON m.member_no = pr.member_no
-         ORDER BY pr.review_date DESC
+        FROM photo_review pr
+                 JOIN member m ON m.member_no = pr.member_no
+        ORDER BY pr.review_date DESC
+            LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 좋아요 수 내림차순 -->
-    <select id="selectAllOrderByLikeDesc" resultMap="photoReviewMap">
-        SELECT
-               m.member_name
-             , pr.review_title
-             , pr.review_date
-             , pr.review_content
-             , pr.review_like
-          FROM photo_review pr
-          JOIN member m ON m.member_no = pr.member_no
-         ORDER BY pr.review_like DESC
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM photo_review
     </select>
 
-    <!-- 키워드 검색(제목/내용) -->
-    <select id="searchByKeyword" parameterType="string" resultMap="photoReviewMap">
+    <!-- 좋아요 수 내림차순 (페이징) -->
+    <select id="selectAllOrderByLikeDescPaged" resultMap="photoReviewMap">
         SELECT
-               m.member_name
+            pr.board_no
+             , pr.member_no
+             , m.member_name
              , pr.review_title
              , pr.review_date
              , pr.review_content
              , pr.review_like
-          FROM photo_review pr
-          JOIN member m ON m.member_no = pr.member_no
+        FROM photo_review pr
+                 JOIN member m ON m.member_no = pr.member_no
+        ORDER BY pr.review_like DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countAllByLike" resultType="long">
+        SELECT COUNT(*) FROM photo_review
+    </select>
+
+    <!-- 키워드 검색(제목/내용) (페이징) -->
+    <select id="searchByKeywordPaged" resultMap="photoReviewMap">
+        SELECT
+        pr.board_no
+        , pr.member_no
+        , m.member_name
+        , pr.review_title
+        , pr.review_date
+        , pr.review_content
+        , pr.review_like
+        FROM photo_review pr
+        JOIN member m ON m.member_no = pr.member_no
         <where>
             <if test="keyword != null and keyword != ''">
                 (pr.review_title   LIKE CONCAT('%', #{keyword}, '%')
@@ -60,21 +80,68 @@
             </if>
         </where>
         ORDER BY pr.review_date DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!--    술 번호로 리뷰 조회-->
-    <select id="selectByAlcoholNo" resultMap="photoReviewMap">
+    <select id="countByKeyword" resultType="long">
+        SELECT COUNT(*)
+        FROM photo_review pr
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (pr.review_title   LIKE CONCAT('%', #{keyword}, '%')
+                OR pr.review_content LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="keyword == null or keyword == ''">
+                1 = 0
+            </if>
+        </where>
+    </select>
+
+    <!-- 술 번호로 리뷰 조회 (페이징) -->
+    <select id="selectByAlcoholNoPaged" resultMap="photoReviewMap">
         SELECT
-               m.member_name
+            pr.board_no
+             , pr.member_no
+             , m.member_name
              , pr.review_title
              , pr.review_date
              , pr.review_content
              , pr.review_like
-          FROM lounge lg
-          JOIN photo_review pr ON pr.review_no = lg.review_no
-          JOIN alcohol a       ON a.alcohol_no = lg.alcohol_no
-          JOIN member m        ON m.member_no = pr.member_no
-         WHERE a.alcohol_no = #{alcoholNo}
-         ORDER BY pr.review_no DESC
+        FROM lounge lg
+                 JOIN photo_review pr ON pr.review_no = lg.review_no
+                 JOIN alcohol a       ON a.alcohol_no = lg.alcohol_no
+                 JOIN member m        ON m.member_no = pr.member_no
+        WHERE a.alcohol_no = #{alcoholNo}
+        ORDER BY pr.review_no DESC
+            LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <select id="countByAlcoholNo" resultType="long">
+        SELECT COUNT(*)
+        FROM lounge lg
+                 JOIN photo_review pr ON pr.review_no = lg.review_no
+        WHERE lg.alcohol_no = #{alcoholNo}
+    </select>
+
+    <!-- 특정 회원(회원 번호) 리뷰 조회 (페이징) -->
+    <select id="selectByMemberNoPaged" resultMap="photoReviewMap">
+        SELECT
+            pr.board_no
+             , pr.member_no
+             , m.member_name
+             , pr.review_title
+             , pr.review_date
+             , pr.review_content
+             , pr.review_like
+        FROM photo_review pr
+                 JOIN member m ON m.member_no = pr.member_no
+        WHERE pr.member_no = #{memberNo}
+        ORDER BY pr.review_date DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByMemberNo" resultType="long">
+        SELECT COUNT(*) FROM photo_review WHERE member_no = #{memberNo}
+    </select>
+
 </mapper>
