@@ -3,7 +3,6 @@ package com.eat.today.member.query.controller;
 import com.eat.today.member.query.dto.FindMyLevelDTO;
 import com.eat.today.member.query.dto.FindProfileDTO;
 import com.eat.today.member.query.dto.MemberDTO;
-import com.eat.today.member.query.dto.ReportCheckDTO;
 import com.eat.today.member.query.service.MemberService;
 import com.eat.today.member.query.service.MemberServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +28,6 @@ public class MemberController {
         @GetMapping("/getprofile")
     public FindProfileDTO findMyProfile(@RequestParam Integer memberNo) {
         return memberService.findMyProfile(memberNo);  // ex> member_no가 4
-    }
-
-    @GetMapping("/getreport")
-    public List<ReportCheckDTO> checkReport() {
-        return memberService.checkReport();
     }
     
     @GetMapping("/findmylevel")

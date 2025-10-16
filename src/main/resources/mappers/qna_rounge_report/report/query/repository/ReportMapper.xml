@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eat.today.qna_rounge_report.report.query.repository.ReportMapper">
+
+    <resultMap id="reportMap" type="com.eat.today.qna_rounge_report.report.query.dto.ReportDTO">
+        <id     column="report_no"     property="reportNo"/>
+        <result column="member_no"     property="memberNo"/>
+        <result column="member_no2"    property="memberNo2"/>
+        <result column="report_title"  property="reportTitle"/>
+        <result column="report_content" property="reportContent"/>
+        <result column="report_yn"     property="reportYn"/>
+        <result column="report_date"   property="reportDate"/>
+        <result column="report_source" property="reportSource"/>
+        <association property="accused"  resultMap="accusedNameMap"/>
+        <association property="reporter" resultMap="reporterNameMap"/>
+    </resultMap>
+
+    <resultMap id="accusedNameMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="accused_name" property="memberName"/>
+    </resultMap>
+
+    <resultMap id="reporterNameMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="reporter_name" property="memberName"/>
+    </resultMap>
+
+    <select id="selectAllPaged" resultMap="reportMap">
+        SELECT
+            r.report_no,
+            r.member_no,
+            r.member_no2,
+            r.report_title,
+            r.report_content,
+            r.report_yn,
+            r.report_date,
+            r.report_source,
+            m1.member_id AS accused_name,
+            m2.member_id AS reporter_name
+        FROM report r
+                 JOIN member m1 ON m1.member_no = r.member_no
+                 JOIN member m2 ON m2.member_no = r.member_no2
+        ORDER BY r.report_date DESC, r.report_no DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM report
+    </select>
+
+</mapper>

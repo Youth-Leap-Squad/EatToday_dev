@@ -2,7 +2,6 @@ package com.eat.today.member.query.service;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
 import com.eat.today.member.query.dto.FindProfileDTO;
-import com.eat.today.member.query.dto.ReportCheckDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -21,9 +20,6 @@ public interface MemberService extends UserDetailsService {
 
     // 받은 포인트에 따른 등급을 확인할 수 있다.
     public FindMyLevelDTO findMyLevel(Integer memberNo);
-
-    // 신고 내용 확인
-    public List<ReportCheckDTO> checkReport();
 
     UserDetails loadMemberByMemberName(String memberEmail);
 
