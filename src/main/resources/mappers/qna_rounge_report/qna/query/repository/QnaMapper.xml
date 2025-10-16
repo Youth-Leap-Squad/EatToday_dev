@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eat.today.qna_rounge_report.qna.query.repository.QnaMapper">
+
+    <resultMap id="qnaPostMap" type="com.eat.today.qna_rounge_report.qna.query.dto.QnaPostDTO">
+        <id     column="qna_post_no"    property="qnaPostNo"/>
+        <result column="member_no"      property="memberNo"/>
+        <result column="inquiry_content" property="inquiryContent"/>
+        <result column="inquiry_at"     property="inquiryAt"/>
+        <association property="questioner" resultMap="requestNameMap"/>
+    </resultMap>
+
+    <resultMap id="qnaCommentMap" type="com.eat.today.qna_rounge_report.qna.query.dto.QnaCommentDTO">
+        <id     column="comment_no"        property="commentNo"/>
+        <result column="qna_post_no"       property="qnaPostNo"/>
+        <result column="comment_member_no" property="commentMemberNo"/>
+        <result column="comment_content"   property="commentContent"/>
+        <result column="comment_at"        property="commentAt"/>
+        <association property="answerer"   resultMap="answererMap"/>
+        <association property="questioner" resultMap="questionerMap"/>
+    </resultMap>
+
+    <resultMap id="requestNameMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="questioner_name" property="memberName"/>
+    </resultMap>
+
+    <resultMap id="answererMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="answerer_name" property="memberName"/>
+    </resultMap>
+
+    <resultMap id="questionerMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="questioner_name" property="memberName"/>
+    </resultMap>
+
+    <select id="selectPostsOrderByDateDescPaged" resultMap="qnaPostMap">
+        SELECT
+            qp.qna_post_no,
+            qp.member_no,
+            m.member_name AS questioner_name,
+            qp.inquiry_content,
+            qp.inquiry_at
+        FROM qna_post qp
+                 JOIN member m ON m.member_no = qp.member_no
+        ORDER BY qp.inquiry_at DESC, qp.qna_post_no DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAllPosts" resultType="long">
+        SELECT COUNT(*) FROM qna_post
+    </select>
+
+    <select id="searchPostsPaged" resultMap="qnaPostMap">
+        SELECT
+        qp.qna_post_no,
+        qp.member_no,
+        m.member_name AS questioner_name,
+        qp.inquiry_content,
+        qp.inquiry_at
+        FROM qna_post qp
+        JOIN member m ON m.member_no = qp.member_no
+        <where>
+            <if test="keyword != null and keyword != ''">
+                qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="keyword == null or keyword == ''">
+                1 = 0
+            </if>
+        </where>
+        ORDER BY qp.inquiry_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPostsByKeyword" resultType="long">
+        SELECT COUNT(*)
+        FROM qna_post qp
+        <where>
+            <if test="keyword != null and keyword != ''">
+                qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="keyword == null or keyword == ''">
+                1 = 0
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPostsByMemberNoPaged" resultMap="qnaPostMap">
+        SELECT
+            qp.qna_post_no,
+            qp.member_no,
+            m.member_name AS questioner_name,
+            qp.inquiry_content,
+            qp.inquiry_at
+        FROM qna_post qp
+                 JOIN member m ON m.member_no = qp.member_no
+        WHERE qp.member_no = #{memberNo}
+        ORDER BY qp.inquiry_at DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPostsByMemberNo" resultType="long">
+        SELECT COUNT(*) FROM qna_post WHERE member_no = #{memberNo}
+    </select>
+
+    <select id="selectPostById" resultMap="qnaPostMap">
+        SELECT
+            qp.qna_post_no,
+            qp.member_no,
+            m.member_name AS questioner_name,
+            qp.inquiry_content,
+            qp.inquiry_at
+        FROM qna_post qp
+                 JOIN member m ON m.member_no = qp.member_no
+        WHERE qp.qna_post_no = #{qnaPostNo}
+    </select>
+
+    <select id="selectCommentsByPostIdPaged" resultMap="qnaCommentMap">
+        SELECT
+            qc.comment_no,
+            qc.qna_post_no,
+            qc.comment_member_no,
+            qc.comment_content,
+            qc.comment_at,
+            am.member_name AS answerer_name,
+            qm.member_name AS questioner_name
+        FROM qna_comment qc
+                 JOIN member am ON am.member_no = qc.comment_member_no
+                 JOIN qna_post qp ON qp.qna_post_no = qc.qna_post_no
+                 JOIN member qm ON qm.member_no = qp.member_no
+        WHERE qc.qna_post_no = #{qnaPostNo}
+        ORDER BY qc.comment_at DESC, qc.comment_no DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countCommentsByPostId" resultType="long">
+        SELECT COUNT(*) FROM qna_comment WHERE qna_post_no = #{qnaPostNo}
+    </select>
+
+</mapper>
