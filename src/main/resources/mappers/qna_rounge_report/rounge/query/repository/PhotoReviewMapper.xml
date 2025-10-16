@@ -14,8 +14,8 @@
         <association property="member" resultMap="memberMap"/>
     </resultMap>
 
-    <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestLoungeDTO">
-        <result column="member_name" property="memberName"/>
+    <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="member_id" property="memberName"/>
     </resultMap>
 
     <!-- 날짜 내림차순 (페이징) -->
@@ -23,7 +23,7 @@
         SELECT
             pr.board_no
              , pr.member_no
-             , m.member_name
+             , m.member_id
              , pr.review_title
              , pr.review_date
              , pr.review_content
@@ -43,7 +43,7 @@
         SELECT
             pr.board_no
              , pr.member_no
-             , m.member_name
+             , m.member_id
              , pr.review_title
              , pr.review_date
              , pr.review_content
@@ -61,9 +61,9 @@
     <!-- 키워드 검색(제목/내용) (페이징) -->
     <select id="searchByKeywordPaged" resultMap="photoReviewMap">
         SELECT
-        pr.board_no
+          pr.board_no
         , pr.member_no
-        , m.member_name
+        , m.member_id
         , pr.review_title
         , pr.review_date
         , pr.review_content
@@ -102,7 +102,7 @@
         SELECT
             pr.board_no
              , pr.member_no
-             , m.member_name
+             , m.member_id
              , pr.review_title
              , pr.review_date
              , pr.review_content
@@ -128,7 +128,7 @@
         SELECT
             pr.board_no
              , pr.member_no
-             , m.member_name
+             , m.member_id
              , pr.review_title
              , pr.review_date
              , pr.review_content

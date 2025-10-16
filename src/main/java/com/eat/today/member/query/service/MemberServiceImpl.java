@@ -2,9 +2,7 @@ package com.eat.today.member.query.service;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
 import com.eat.today.member.query.dto.FindProfileDTO;
-import com.eat.today.member.query.dto.ReportCheckDTO;
 import com.eat.today.member.query.mapper.MemberMapper;
-import com.eat.today.member.query.mapper.ReportMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -56,13 +54,6 @@ public class MemberServiceImpl implements  MemberService{
     public FindMyLevelDTO findMyLevel(Integer memberNo) {
         return sqlSession.getMapper(MemberMapper.class)
                 .findMyLevel(memberNo);
-    }
-
-    // 신고 내용 확인
-    @Override
-    public List<ReportCheckDTO> checkReport() {
-        return sqlSession.getMapper(ReportMapper.class)
-                .checkReport();
     }
 
     @Override
