@@ -1,6 +1,6 @@
 package com.eat.today.qna_rounge_report.rounge.query.dto;
 
-import com.eat.today.member.query.dto.RequestLoungeDTO;
+import com.eat.today.member.query.dto.RequestNameDTO;
 import lombok.*;
 
 @NoArgsConstructor
@@ -14,5 +14,5 @@ public class PhotoReviewDTO {
     private String reviewContent;
     private Integer reviewLike;
 
-    private RequestLoungeDTO member;
+    private RequestNameDTO member;
 }

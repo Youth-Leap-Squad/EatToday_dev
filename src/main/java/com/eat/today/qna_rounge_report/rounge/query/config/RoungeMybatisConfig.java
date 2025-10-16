@@ -5,5 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @MapperScan("com.eat.today.qna_rounge_report.rounge.query.repository")
-public class MybatisConfig {
+public class RoungeMybatisConfig {
 }
