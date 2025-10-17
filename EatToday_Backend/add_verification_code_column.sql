@@ -1,4 +1,4 @@
-
+SET FOREIGN_KEY_CHECKS = 1;
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
 
 DROP TABLE IF EXISTS `albti_output`;
@@ -53,6 +53,34 @@ CREATE TABLE `member` (
                           CONSTRAINT PK_member PRIMARY KEY (member_no),
                           INDEX idx_member_email (member_email)
 ) ENGINE=INNODB COMMENT '회원 정보';
+
+CREATE TABLE `email_verification` (
+  `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+  `email`         VARCHAR(255) NOT NULL,
+  `token`         VARCHAR(255) NOT NULL,
+  `expires_at`    DATETIME     NOT NULL,
+  `used`          TINYINT(1)   NOT NULL DEFAULT 0,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_email_verification_token` (`token`),
+  KEY `idx_email_verification_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `profile_image` (
+  `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+  `member_email`      VARCHAR(255) NOT NULL,
+  `original_file_name` VARCHAR(255) NOT NULL,
+  `stored_file_name`  VARCHAR(255) NOT NULL,
+  `file_path`        VARCHAR(500) NOT NULL,
+  `file_size`        BIGINT       NOT NULL,
+  `content_type`     VARCHAR(100) NOT NULL,
+  `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
+  `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_profile_image_email` (`member_email`),
+  KEY `idx_profile_image_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='프로필 사진 정보';
 
 
 CREATE TABLE `secession` (
@@ -203,16 +231,16 @@ CREATE TABLE IF NOT EXISTS `report` (
                                         `member_no` INT NOT NULL,
                                         `member_no2` INT NOT NULL,
                                         `report_title` VARCHAR(255) NOT NULL,
-                                        `report_content` VARCHAR(255) NOT NULL,
-                                        `report_yn` BOOLEAN DEFAULT FALSE,
-                                        `report_date` VARCHAR(255) NOT NULL,
-                                        `report_source` VARCHAR(255) NOT NULL,
-                                        CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
-                                        CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
-                                            ON UPDATE CASCADE ON DELETE CASCADE,
-                                        CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
-                                            ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=INNODB COMMENT '신고';
+    `report_content` VARCHAR(255) NOT NULL,
+    `report_yn` BOOLEAN DEFAULT FALSE,
+    `report_date` VARCHAR(255) NOT NULL,
+    `report_source` VARCHAR(255) NOT NULL,
+    CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
+    CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
+    ON UPDATE CASCADE ON DELETE CASCADE
+    ) ENGINE=INNODB COMMENT '신고';
 
 CREATE TABLE bookmark (
                           member_no INT NOT NULL,
@@ -670,3 +698,120 @@ VALUES
     (2, '차분히 즐길 수 있는 와인 추천', 3,2),
     (3, '전통 한식과 어울리는 소주 추천', 2,3),
     (4, '새로운 조합에 도전하는 하이볼 추천', 4,4);
+
+-- =========================
+-- PATCH: schema alignment
+-- =========================
+USE mydb;
+
+-- 1) email_verification 정합화
+--    - verified 컬럼 없으면 추가
+--    - used -> verified 값 이관 후 used 삭제(있을 때만)
+--    - type 컬럼 없으면 추가
+--    - token 유니크/ email 인덱스 없으면 추가
+
+-- 1-1) verified 컬럼 추가 (없을 때만)
+SET @has_verified := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verified'
+);
+SET @sql := IF(@has_verified = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `expires_at`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-2) used -> verified 값 이관 (used 있을 때만)
+SET @has_used := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'used'
+);
+SET @sql := IF(@has_used = 1,
+  'UPDATE `email_verification` SET `verified` = `used` WHERE `verified` <> `used`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-3) used 컬럼 삭제 (있을 때만)
+SET @sql := IF(@has_used = 1,
+  'ALTER TABLE `email_verification` DROP COLUMN `used`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-4) type 컬럼 추가 (없을 때만)
+SET @has_type := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'type'
+);
+SET @sql := IF(@has_type = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `type` VARCHAR(31) NOT NULL DEFAULT ''EMAIL_VERIFICATION'' AFTER `verified`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-5) token 유니크 키 보강 (없을 때만)
+SET @has_token_uk := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'uk_email_verification_token'
+);
+SET @sql := IF(@has_token_uk = 0,
+  'ALTER TABLE `email_verification` ADD UNIQUE KEY `uk_email_verification_token` (`token`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-6) email 인덱스 보강 (없을 때만)
+SET @has_email_idx := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'idx_email_verification_email'
+);
+SET @sql := IF(@has_email_idx = 0,
+  'CREATE INDEX `idx_email_verification_email` ON `email_verification` (`email`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-7) verification_code 컬럼 추가 (없을 때만)
+SET @has_verification_code := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verification_code'
+);
+SET @sql := IF(@has_verification_code = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `verification_code` VARCHAR(6) NOT NULL DEFAULT ''000000'' AFTER `email`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
+-- 2) Individual_world_cup_food → eventFood FK 대소문자/테이블명 정합화
+--    (만약 잘못된 참조가 있으면 제거 후 올바르게 생성)
+SET @bad_fk := (
+  SELECT CONSTRAINT_NAME
+  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'Individual_world_cup_food'
+    AND REFERENCED_TABLE_NAME = 'eventfood'           -- 잘못된 소문자 참조
+  LIMIT 1
+);
+SET @sql := IF(@bad_fk IS NOT NULL,
+  CONCAT('ALTER TABLE `Individual_world_cup_food` DROP FOREIGN KEY `', @bad_fk, '`'),
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 올바른 FK가 없으면 생성
+SET @good_fk_exists := (
+  SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'Individual_world_cup_food'
+    AND REFERENCED_TABLE_NAME = 'eventFood'
+);
+SET @sql := IF(@good_fk_exists = 0,
+  'ALTER TABLE `Individual_world_cup_food` ADD CONSTRAINT `FK_INDIVIDUAL_FOOD_EVENTFOOD` FOREIGN KEY (`food_no`) REFERENCES `eventFood`(`food_no`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
+-- 3) report 더미데이터 오타 보정: qnd_post -> qna_post
+UPDATE `report`
+SET `report_source` = 'qna_post'
+WHERE `report_source` = 'qnd_post';
+
+
+UPDATE member
+SET member_role = 'ADMIN'
+WHERE member_email = 'admin3@eattoday.com';

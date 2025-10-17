@@ -49,4 +49,7 @@ public interface PostCommandService {
     FoodPostResponse updatePostWithImages(Integer boardNo, UpdateFoodPostRequest req,
                                           org.springframework.web.multipart.MultipartFile[] images);
 
+    // 본문에 이미지 삽입용 & 대표 이미지 저장용 헬퍼 (컨트롤러에서 호출)
+    String appendImagesToExplain(String currentExplain, org.springframework.web.multipart.MultipartFile[] images);
+    String storeCoverForFood(org.springframework.web.multipart.MultipartFile coverImage);
 }

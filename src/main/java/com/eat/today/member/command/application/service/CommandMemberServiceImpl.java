@@ -1,6 +1,5 @@
 package com.eat.today.member.command.application.service;
 
-import com.eat.today.configure.security.CustomUserDetails;
 import com.eat.today.member.command.application.dto.CommandMemberDTO;
 import com.eat.today.member.command.application.dto.CommandUpdateMemberDTO;
 import com.eat.today.member.command.domain.aggregate.MemberEntity;
@@ -33,20 +32,18 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
     private final ModelMapper modelMapper;
     MemberRepository memberRepository;
     BCryptPasswordEncoder bCryptPasswordEncoder;
-    EmailVerificationService emailVerificationService;
 
     public CommandMemberServiceImpl(MemberRepository memberRepository,
                                     ModelMapper modelMapper,
-                                    BCryptPasswordEncoder bCryptPasswordEncoder,
-                                    EmailVerificationService emailVerificationService) {
+                                    BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.memberRepository = memberRepository;
         this.modelMapper = modelMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.emailVerificationService = emailVerificationService;
     }
 
     @Override
     public void registMember(CommandMemberDTO commandMemberDTO) {
+
 
         // 아이디 생성
         commandMemberDTO.setMemberId(UUID.randomUUID().toString());   //랜덤 식별자 -> 나중에 사용자 입력값으로 변경
@@ -61,15 +58,6 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
         memberEntity.setMemberRole(MemberEntity.Role.USER);
 
         memberRepository.save(memberEntity);
-
-        // 이메일 인증 토큰 생성 및 발송
-        try {
-            emailVerificationService.createAndSendVerificationEmail(commandMemberDTO.getMemberEmail());
-            log.info("회원가입 완료 및 이메일 인증 메일 발송: {}", commandMemberDTO.getMemberEmail());
-        } catch (Exception e) {
-            log.error("이메일 인증 메일 발송 실패: {}", commandMemberDTO.getMemberEmail(), e);
-            // 이메일 발송 실패해도 회원가입은 성공으로 처리 (나중에 재발송 가능)
-        }
     }
 
 
@@ -91,16 +79,16 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
         }
 
         // DB에서 조회된 해당 이메일을 가진 회원이 가진 권한을 가져와 List<GrantedAuthority>로 전환
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (loginMember.getMemberRole() == MemberEntity.Role.ADMIN) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        } else {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
 
-        return new CustomUserDetails(
-                loginMember.getMemberEmail(), 
-                loginMember.getMemberPw(),
-                grantedAuthorities,
-                loginMember.getMemberNo(),
-                loginMember.getMemberRole()
+        return new User(
+                loginMember.getMemberEmail(), loginMember.getMemberPw(),
+                true, true, true, true, authorities
         );
     }
 
