@@ -1,14 +1,17 @@
 package com.eat.today.configure.security;
 
+import com.eat.today.member.command.application.service.CommandMemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -17,36 +20,41 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final AuthenticationManager authenticationManager;
+    private final JwtTokenService jwtTokenService;
+    private final CommandMemberService commandMemberService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain chain)
-            throws ServletException, IOException {
+                                    FilterChain chain) throws ServletException, IOException {
 
-        String authz = request.getHeader("Authorization");
-        if (authz != null && authz.startsWith("Bearer ")) {
-            String token = authz.substring(7).trim();
-            try {
-                // Provider가 토큰을 처리할 수 있도록 커스텀 Authentication으로 래핑
-                JwtPreAuthenticatedToken jwt = new JwtPreAuthenticatedToken(token);
-                Authentication authenticated = authenticationManager.authenticate(jwt);
-                SecurityContextHolder.getContext().setAuthentication(authenticated);
-            } catch (Exception e) {
-                // 토큰이 유효하지 않으면 인증 없이 진행 (결과는 401/403로 정리)
-                SecurityContextHolder.clearContext();
-                log.debug("JWT auth failed: {}", e.getMessage());
-            }
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header == null || !header.startsWith("Bearer ")) {
+            chain.doFilter(request, response);
+            return;
         }
 
-        Authentication a = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("[AUTHZ] path=" + request.getRequestURI()
-                + " headerAuth=" + request.getHeader("Authorization")
-                + " contextAuth=" + (a==null? "null" : a.getName() + " " + a.getAuthorities()));
+        String token = header.substring(7);
+        try {
+            JwtTokenService.JwtPayload payload = jwtTokenService.parseAndValidate(token);
+            String username = payload.username();
+            if (username == null || username.isBlank()) {
+                throw new BadCredentialsException("JWT subject missing");
+            }
+
+            // DB에서 최신 유저/권한 로드
+            UserDetails user = commandMemberService.loadUserByUsername(username);
+
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        } catch (Exception ex) {
+            log.warn("[AUTHZ] invalid token: {}", ex.getMessage());
+            SecurityContextHolder.clearContext();
+            // 계속 진행하면 엔트리포인트에서 401/403 처리
+        }
 
         chain.doFilter(request, response);
     }
-
-
 }

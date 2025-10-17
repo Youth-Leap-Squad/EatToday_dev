@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.util.HtmlUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -85,6 +86,27 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .alcoholExplain(a.getAlcoholExplain())
                 .alcoholPicture(a.getAlcoholPicture())
                 .build();
+    }
+
+    @Override
+    public String storeCoverForFood(MultipartFile coverImage) {
+        if (coverImage == null || coverImage.isEmpty()) return null;
+        return imageStorageService.store(coverImage, "foods");
+    }
+
+    @Override
+    public String appendImagesToExplain(String currentExplain, MultipartFile[] images) {
+        List<String> urls = imageStorageService.storeAll(images, "foods");
+        if (urls == null || urls.isEmpty()) return currentExplain;
+
+        // 기본: HTML 본문으로 가정하여 <p><img .../></p> 추가
+        StringBuilder sb = new StringBuilder(currentExplain == null ? "" : currentExplain);
+        for (String url : urls) {
+            // 간단 XSS 가드: URL만 그대로 사용
+            String safeUrl = HtmlUtils.htmlEscape(url);
+            sb.append("<p><img src=\"").append(safeUrl).append("\" alt=\"food image\"/></p>");
+        }
+        return sb.toString();
     }
 
     @Override

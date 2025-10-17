@@ -61,13 +61,21 @@ public class PostCommandController {
     @PostMapping(value = "/foods", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FoodPostResponse> createPost(
             @RequestPart("meta") String metaJson,
-            @RequestPart(value = "images", required = false) MultipartFile[] images,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestPart(value = "images", required = false) MultipartFile[] images,    // 본문용 여러 장
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage // 대표 이미지 1장
     ) {
         try {
             CreateFoodPostRequest req = objectMapper.readValue(metaJson, CreateFoodPostRequest.class);
-            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
-            FoodPostResponse body = svc.createPostWithImages(req, toUse);
+
+            // 1) 대표 이미지 저장 → foodPicture(대표) 세팅
+            String coverUrl = svc.storeCoverForFood(coverImage);
+            if (coverUrl != null) req.setFoodPicture(coverUrl);
+
+            // 2) 본문 이미지 저장 → foodExplain 안에 <img> 삽입
+            String withImages = svc.appendImagesToExplain(req.getFoodExplain(), images);
+            req.setFoodExplain(withImages);
+
+            FoodPostResponse body = svc.createPost(req);
             return ResponseEntity.status(HttpStatus.CREATED).body(body);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -79,12 +87,20 @@ public class PostCommandController {
             @PathVariable Integer boardNo,
             @RequestPart("meta") String metaJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage
     ) {
         try {
             UpdateFoodPostRequest req = objectMapper.readValue(metaJson, UpdateFoodPostRequest.class);
-            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
-            FoodPostResponse body = svc.updatePostWithImages(boardNo, req, toUse);
+
+            // 대표 이미지 교체가 온 경우에만 교체
+            String coverUrl = svc.storeCoverForFood(coverImage);
+            if (coverUrl != null) req.setFoodPicture(coverUrl);
+
+            // 본문 이미지 추가 삽입 (본문 유지 + 추가)
+            String mergedExplain = svc.appendImagesToExplain(req.getFoodExplain(), images);
+            req.setFoodExplain(mergedExplain);
+
+            FoodPostResponse body = svc.updatePost(boardNo, req);
             return ResponseEntity.ok(body);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -177,3 +193,5 @@ public class PostCommandController {
         return ResponseEntity.ok(body);
     }
 }
+
+
