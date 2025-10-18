@@ -1,5 +1,7 @@
 package com.eat.today.sns.command.domain.service;
 
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.eat.today.sns.command.application.dto.photoReviewDTO.CreateRequest;
 import com.eat.today.sns.command.application.dto.photoReviewDTO.UpdateRequest;
 import com.eat.today.sns.command.application.entity.photoReview.PhotoReviewEntity;
@@ -9,21 +11,23 @@ import com.eat.today.sns.command.domain.repository.prFileUpload.PrFileUploadRepo
 import com.eat.today.sns.command.domain.service.storage.PhotoReviewFileStorage;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PhotoReviewCommandService {
 
     private final PhotoReviewRepository repository;
     private final PrFileUploadRepository fileRepo;
     private final PhotoReviewFileStorage storage;
+    private final MemberPointService memberPointService;
 
     /* ---------- CREATE (본문만) : 기존 유지 ---------- */
     @Transactional
@@ -35,7 +39,16 @@ public class PhotoReviewCommandService {
         e.setReviewDate(req.getReviewDate());
         e.setReviewContent(req.getReviewContent());
         e.setReviewLike(0); // 생성 시 0 고정 권장
-        return repository.save(e).getReviewNo();
+        PhotoReviewEntity saved = repository.save(e);
+        
+        // 사진 리뷰 작성 시 포인트 지급
+        try {
+            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.PHOTO_REVIEW_CREATE);
+        } catch (Exception ex) {
+            log.error("사진 리뷰 작성 포인트 지급 실패 - 회원번호: {}, 리뷰번호: {}", req.getMemberNo(), saved.getReviewNo(), ex);
+        }
+        
+        return saved.getReviewNo();
     }
 
     /* ---------- CREATE (본문 + 파일) : 오버로드 ---------- */
@@ -64,6 +77,14 @@ public class PhotoReviewCommandService {
                 fileRepo.save(fe);
             }
         }
+        
+        // 사진 리뷰 작성 시 포인트 지급
+        try {
+            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.PHOTO_REVIEW_CREATE);
+        } catch (Exception ex) {
+            log.error("사진 리뷰 작성 포인트 지급 실패 - 회원번호: {}, 리뷰번호: {}", req.getMemberNo(), e.getReviewNo(), ex);
+        }
+        
         return e.getReviewNo();
     }
 

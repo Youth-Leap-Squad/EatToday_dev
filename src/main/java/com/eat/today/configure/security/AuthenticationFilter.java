@@ -1,6 +1,8 @@
 package com.eat.today.configure.security;
 
 import com.eat.today.member.command.application.dto.RequestLoginDTO;
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,11 +28,14 @@ import java.util.Map;
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtTokenService jwtTokenService;
+    private final MemberPointService memberPointService;
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
-                                JwtTokenService jwtTokenService) {
+                                JwtTokenService jwtTokenService,
+                                MemberPointService memberPointService) {
         super(authenticationManager);
         this.jwtTokenService = jwtTokenService;
+        this.memberPointService = memberPointService;
         setFilterProcessesUrl("/login"); // POST /login
     }
 
@@ -75,6 +80,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
             memberNo = userDetails.getMemberNo();
             memberRole = userDetails.getMemberRole().name();
+            
+            // 로그인 성공 시 포인트 지급
+            try {
+                memberPointService.grantPoints(memberNo, PointPolicy.LOGIN);
+            } catch (Exception e) {
+                log.error("로그인 포인트 지급 실패 - 회원번호: {}", memberNo, e);
+            }
         }
 
         // 헤더/바디로 전달

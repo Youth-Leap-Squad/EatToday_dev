@@ -11,7 +11,7 @@ public interface MemberMapper {
    // String selectIdByEmail(String memberEmail);
     String selectIdByEmail(@Param("memberEmail") String memberEmail);
 
-    FindProfileDTO findMyProfile(@Param("memberNo") Integer memberNo);
+    FindProfileDTO findMyProfileByEmail(@Param("email") String email);
     
     FindMyLevelDTO findMyLevel(@Param("memberNo") Integer memberNo);
 }

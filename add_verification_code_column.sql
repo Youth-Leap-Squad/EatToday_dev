@@ -54,32 +54,32 @@ CREATE TABLE `member` (
                           INDEX idx_member_email (member_email)
 ) ENGINE=INNODB COMMENT '회원 정보';
 
-CREATE TABLE `email_verification` (
-  `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-  `email`         VARCHAR(255) NOT NULL,
-  `token`         VARCHAR(255) NOT NULL,
-  `expires_at`    DATETIME     NOT NULL,
-  `used`          TINYINT(1)   NOT NULL DEFAULT 0,
-  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_email_verification_token` (`token`),
-  KEY `idx_email_verification_email` (`email`)
+CREATE TABLE IF NOT EXISTS `email_verification` (
+                                      `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+                                      `email`         VARCHAR(255) NOT NULL,
+                                      `token`         VARCHAR(255) NOT NULL,
+                                      `expires_at`    DATETIME     NOT NULL,
+                                      `used`          TINYINT(1)   NOT NULL DEFAULT 0,
+                                      `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                      PRIMARY KEY (`id`),
+                                      UNIQUE KEY `uk_email_verification_token` (`token`),
+                                      KEY `idx_email_verification_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `profile_image` (
-  `id`                BIGINT       NOT NULL AUTO_INCREMENT,
-  `member_email`      VARCHAR(255) NOT NULL,
-  `original_file_name` VARCHAR(255) NOT NULL,
-  `stored_file_name`  VARCHAR(255) NOT NULL,
-  `file_path`        VARCHAR(500) NOT NULL,
-  `file_size`        BIGINT       NOT NULL,
-  `content_type`     VARCHAR(100) NOT NULL,
-  `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
-  `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `idx_profile_image_email` (`member_email`),
-  KEY `idx_profile_image_active` (`is_active`)
+CREATE TABLE IF NOT EXISTS `profile_image` (
+                                 `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+                                 `member_email`      VARCHAR(255) NOT NULL,
+                                 `original_file_name` VARCHAR(255) NOT NULL,
+                                 `stored_file_name`  VARCHAR(255) NOT NULL,
+                                 `file_path`        VARCHAR(500) NOT NULL,
+                                 `file_size`        BIGINT       NOT NULL,
+                                 `content_type`     VARCHAR(100) NOT NULL,
+                                 `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                 `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
+                                 `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
+                                 PRIMARY KEY (`id`),
+                                 KEY `idx_profile_image_email` (`member_email`),
+                                 KEY `idx_profile_image_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='프로필 사진 정보';
 
 
@@ -391,38 +391,38 @@ CREATE TABLE `albti_output` (
 )ENGINE=INNODB COMMENT '회원별 술BTI 설문 결과';
 
 
--- 더미데이터 삽입 (memberEmail 포함)
+-- 더미데이터 삽입 (memberEmail 포함, 비밀번호 암호화)
 INSERT INTO `member`
 (member_role, member_id, member_pw, member_name, member_birth, member_phone, member_email, member_status, member_active, member_at, member_level, report_count)
 VALUES
-    ('ADMIN', 'admin01', 'adminpw!', '관리자', '1988-10-10', '010-1111-1111', 'admin@eattoday.com', 'normal', TRUE, '2025-01-05',NULL, 0),
-    ('USER', 'soju_love', 'drinkpw1!', '박철수', '1995-07-07', '010-2222-2222', 'soju.love@example.com', 'normal', TRUE, '2025-03-11', 200, 0),
-    ('USER', 'beer_queen', 'beerpw2!', '김민지', '1998-11-23', '010-3333-3333', 'beer.queen@example.com', 'suspended', FALSE, '2025-04-02', 300, 0),
-    ('USER', 'wine_master', 'winepw3!', '최영희', '1990-02-17', '010-4444-4444', 'wine.master@example.com', 'normal', TRUE, '2025-05-20', 220, 0),
-    ('USER', 'makgeolli', 'makpw4!', '정우성', '1993-12-30', '010-5555-5555', 'makgeolli@example.com', 'normal', TRUE, '2025-06-01', 60, 0),
-    ('USER', 'cocktail_girl', 'cockpw5!', '한지민', '2000-09-09', '010-6666-6666', 'cocktail.girl@example.com', 'normal', TRUE, '2025-07-18', 50, 0),
-    ('USER', 'sake_lover', 'sakpw6!', '오다유키', '1994-01-25', '010-7777-7777', 'sake.lover@example.com', 'normal', TRUE, '2025-08-03', 340, 0),
-    ('USER', 'champagne_boy', 'champpw7!', '박상혁', '1992-04-19', '010-8888-8888', 'champagne.boy@example.com', 'normal', TRUE, '2025-08-25', 200, 0),
-    ('USER', 'highballer', 'highpw8!', '이진우', '1999-07-15', '010-9999-9999', 'highballer@example.com', 'normal', TRUE, '2025-09-01', 50, 0),
-    ('USER', 'vodka_star', 'vodkapw9!', '안지수', '1997-12-12', '010-1010-1010', 'vodka.star@example.com', 'normal', TRUE, '2025-09-05', 50, 0),
-    ('USER', 'gin_tonic', 'ginpw10!', '서민호', '1996-06-30', '010-1111-2222', 'gin.tonic@example.com', 'normal', TRUE, '2025-09-07', 50, 0),
-    ('USER', 'whisky_time', 'whiskypw11!', '김성훈', '1989-08-21', '010-2222-3333', 'whisky.time@example.com', 'withdrawn', FALSE, '2025-09-10', 500, 0),
-    ('USER', 'rum_rider', 'rumpw12!', '홍길동', '1991-09-15', '010-3333-4444', 'rum.rider@example.com', 'normal', TRUE, '2025-09-11', 50, 0),
-    ('USER', 'tequila99', 'teqpw13!', '최다혜', '1998-05-22', '010-4444-5555', 'tequila99@example.com', 'normal', TRUE, '2025-09-12', 60, 0),
-    ('USER', 'soju_kim', 'sojupw14!', '김철민', '1995-11-30', '010-5555-6666', 'soju.kim@example.com', 'normal', TRUE, '2025-09-13',340, 0),
-    ('USER', 'beer_lee', 'beerpw15!', '이수진', '1993-03-18', '010-6666-7777', 'beer.lee@example.com', 'suspended', FALSE, '2025-09-14', 200, 0),
-    ('USER', 'wine_park', 'winepw16!', '박지영', '1990-01-07', '010-7777-8888', 'wine.park@example.com', 'normal', TRUE, '2025-09-15', 200, 0),
-    ('ADMIN', 'admin02', 'adminpw2!', '서관리', '1985-06-05', '010-8888-9999', 'admin2@eattoday.com', 'normal', TRUE, '2025-09-16', NULL, 0),
-    ('USER', 'bbq_master', 'pw1!', '이서준', '1994-02-14', '010-1212-1212', 'bbq.master@example.com', 'normal', TRUE, '2025-09-16', 150, 0),
-    ('USER', 'sool_scholar', 'pw2!', '김하늘', '1997-03-01', '010-1313-1313', 'sool.scholar@example.com', 'normal', TRUE, '2025-09-16', 140, 0),
-    ('USER', 'wine_beginner', 'pw3!', '최다연', '2001-09-09', '010-1414-1414', 'wine.beginner@example.com', 'normal', TRUE, '2025-09-17', 200, 0),
-    ('USER', 'beer_coder', 'pw4!', '박도윤', '1996-05-22', '010-1515-1515', 'beer.coder@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
-    ('USER', 'mak_fan', 'pw5!', '정윤아', '1999-08-30', '010-1616-1616', 'mak.fan@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
-    ('USER', 'high_holic', 'pw6!', '오세준', '1995-12-02', '010-1717-1717', 'high.holic@example.com', 'normal', TRUE, '2025-09-18', 200, 0),
-    ('USER', 'sake_trip', 'pw7!', '장유나', '1998-01-28', '010-1818-1818', 'sake.trip@example.com', 'normal', TRUE, '2025-09-18', 340, 0),
-    ('USER', 'wine_note', 'pw8!', '신태훈', '1992-06-06', '010-1919-1919', 'wine.note@example.com', 'normal', TRUE, '2025-09-18', 700, 0),
-    ('USER', 'beer_runner', 'pw9!', '한유진', '1997-11-11', '010-2020-2020', 'beer.runner@example.com', 'normal', TRUE, '2025-09-19', 200, 0),
-    ('USER', 'soju_writer', 'pw10!', '노수현', '1993-07-17', '010-2121-2121', 'soju.writer@example.com', 'normal', TRUE, '2025-09-19', 800, 0);
+    ('ADMIN', 'admin01', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '관리자', '1988-10-10', '010-1111-1111', 'admin@eattoday.com', 'normal', TRUE, '2025-01-05', 0, 0),
+    ('USER', 'soju_love', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박철수', '1995-07-07', '010-2222-2222', 'soju.love@example.com', 'normal', TRUE, '2025-03-11', 200, 0),
+    ('USER', 'beer_queen', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김민지', '1998-11-23', '010-3333-3333', 'beer.queen@example.com', 'suspended', FALSE, '2025-04-02', 300, 0),
+    ('USER', 'wine_master', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최영희', '1990-02-17', '010-4444-4444', 'wine.master@example.com', 'normal', TRUE, '2025-05-20', 220, 0),
+    ('USER', 'makgeolli', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '정우성', '1993-12-30', '010-5555-5555', 'makgeolli@example.com', 'normal', TRUE, '2025-06-01', 60, 0),
+    ('USER', 'cocktail_girl', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '한지민', '2000-09-09', '010-6666-6666', 'cocktail.girl@example.com', 'normal', TRUE, '2025-07-18', 50, 0),
+    ('USER', 'sake_lover', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '오다유키', '1994-01-25', '010-7777-7777', 'sake.lover@example.com', 'normal', TRUE, '2025-08-03', 340, 0),
+    ('USER', 'champagne_boy', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박상혁', '1992-04-19', '010-8888-8888', 'champagne.boy@example.com', 'normal', TRUE, '2025-08-25', 200, 0),
+    ('USER', 'highballer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이진우', '1999-07-15', '010-9999-9999', 'highballer@example.com', 'normal', TRUE, '2025-09-01', 50, 0),
+    ('USER', 'vodka_star', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '안지수', '1997-12-12', '010-1010-1010', 'vodka.star@example.com', 'normal', TRUE, '2025-09-05', 50, 0),
+    ('USER', 'gin_tonic', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '서민호', '1996-06-30', '010-1111-2222', 'gin.tonic@example.com', 'normal', TRUE, '2025-09-07', 50, 0),
+    ('USER', 'whisky_time', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김성훈', '1989-08-21', '010-2222-3333', 'whisky.time@example.com', 'withdrawn', FALSE, '2025-09-10', 500, 0),
+    ('USER', 'rum_rider', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '홍길동', '1991-09-15', '010-3333-4444', 'rum.rider@example.com', 'normal', TRUE, '2025-09-11', 50, 0),
+    ('USER', 'tequila99', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최다혜', '1998-05-22', '010-4444-5555', 'tequila99@example.com', 'normal', TRUE, '2025-09-12', 60, 0),
+    ('USER', 'soju_kim', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김철민', '1995-11-30', '010-5555-6666', 'soju.kim@example.com', 'normal', TRUE, '2025-09-13',340, 0),
+    ('USER', 'beer_lee', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이수진', '1993-03-18', '010-6666-7777', 'beer.lee@example.com', 'suspended', FALSE, '2025-09-14', 200, 0),
+    ('USER', 'wine_park', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박지영', '1990-01-07', '010-7777-8888', 'wine.park@example.com', 'normal', TRUE, '2025-09-15', 200, 0),
+    ('ADMIN', 'admin02', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '서관리', '1985-06-05', '010-8888-9999', 'admin2@eattoday.com', 'normal', TRUE, '2025-09-16', 0, 0),
+    ('USER', 'bbq_master', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이서준', '1994-02-14', '010-1212-1212', 'bbq.master@example.com', 'normal', TRUE, '2025-09-16', 150, 0),
+    ('USER', 'sool_scholar', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김하늘', '1997-03-01', '010-1313-1313', 'sool.scholar@example.com', 'normal', TRUE, '2025-09-16', 140, 0),
+    ('USER', 'wine_beginner', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최다연', '2001-09-09', '010-1414-1414', 'wine.beginner@example.com', 'normal', TRUE, '2025-09-17', 200, 0),
+    ('USER', 'beer_coder', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박도윤', '1996-05-22', '010-1515-1515', 'beer.coder@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
+    ('USER', 'mak_fan', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '정윤아', '1999-08-30', '010-1616-1616', 'mak.fan@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
+    ('USER', 'high_holic', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '오세준', '1995-12-02', '010-1717-1717', 'high.holic@example.com', 'normal', TRUE, '2025-09-18', 200, 0),
+    ('USER', 'sake_trip', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '장유나', '1998-01-28', '010-1818-1818', 'sake.trip@example.com', 'normal', TRUE, '2025-09-18', 340, 0),
+    ('USER', 'wine_note', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '신태훈', '1992-06-06', '010-1919-1919', 'wine.note@example.com', 'normal', TRUE, '2025-09-18', 700, 0),
+    ('USER', 'beer_runner', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '한유진', '1997-11-11', '010-2020-2020', 'beer.runner@example.com', 'normal', TRUE, '2025-09-19', 200, 0),
+    ('USER', 'soju_writer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '노수현', '1993-07-17', '010-2121-2121', 'soju.writer@example.com', 'normal', TRUE, '2025-09-19', 800, 0);
 
 -- 나머지 더미 데이터는 기존과 동일하게 유지
 INSERT INTO alcohol (alcohol_type, alcohol_explain, alcohol_picture)
@@ -810,3 +810,26 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 UPDATE `report`
 SET `report_source` = 'qna_post'
 WHERE `report_source` = 'qnd_post';
+
+-- 4) 비밀번호 암호화 및 member_level 초기화 (기존 데이터 업데이트용)
+-- 모든 비밀번호를 "password123!"로 통일하여 암호화
+UPDATE member
+SET member_pw = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
+    member_level = COALESCE(member_level, 0)
+WHERE member_pw NOT LIKE '$2a$%';
+
+-- member_level이 null인 경우 0으로 설정
+UPDATE member
+SET member_level = 0
+WHERE member_level IS NULL;
+
+-- 5) 확인용 쿼리 (실행 후 확인)
+-- SELECT member_no, member_email, member_pw, member_level 
+-- FROM member 
+-- WHERE member_email IN (
+--     'high.holic@example.com',
+--     'sake.trip@example.com', 
+--     'wine.note@example.com',
+--     'beer.runner@example.com',
+--     'soju.writer@example.com'
+-- );
