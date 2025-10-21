@@ -5,10 +5,15 @@ import com.eat.today.post.command.application.service.PostCommandService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+// ★ 토큰 사용자
+import com.eat.today.configure.security.CustomUserDetails;
 
 import java.util.List;
 
@@ -18,15 +23,17 @@ import java.util.List;
 public class PostCommandController {
 
     private final PostCommandService svc;
-    private final PostCommandService postCommandService;
-    private final ObjectMapper objectMapper; // meta 문자열 파싱
+    private final ObjectMapper objectMapper;
 
-    /* ===== 술 종류 ===== */
+    /* ===== 술 종류 (ADMIN 전용) ===== */
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/alcohols", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AlcoholResponse> createAlcohol(
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestPart("meta") String metaJson,
-            @RequestPart(value="image", required=false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
         try {
             CreateAlcoholRequest req = objectMapper.readValue(metaJson, CreateAlcoholRequest.class);
             AlcoholResponse body = svc.createAlcoholWithImage(req, image);
@@ -36,23 +43,28 @@ public class PostCommandController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping(value = "/alcohols/{alcoholNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AlcoholResponse> updateAlcohol(
+            @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Integer alcoholNo,
             @RequestPart("meta") String metaJson,
-            @RequestPart(value="image", required=false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
         try {
             UpdateAlcoholRequest req = objectMapper.readValue(metaJson, UpdateAlcoholRequest.class);
-            AlcoholResponse resp = postCommandService.updateAlcoholWithImage(alcoholNo, req, image);
+            AlcoholResponse resp = svc.updateAlcoholWithImage(alcoholNo, req, image);
             return ResponseEntity.ok(resp);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/alcohols/{alcoholNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAlcohol(@PathVariable Integer alcoholNo) {
+    public void deleteAlcohol(@AuthenticationPrincipal CustomUserDetails user,
+                              @PathVariable Integer alcoholNo) {
         svc.deleteAlcohol(alcoholNo);
     }
 
@@ -60,12 +72,17 @@ public class PostCommandController {
 
     @PostMapping(value = "/foods", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FoodPostResponse> createPost(
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestPart("meta") String metaJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         try {
             CreateFoodPostRequest req = objectMapper.readValue(metaJson, CreateFoodPostRequest.class);
+
+            // 작성자: 토큰에서
+            req.setMemberNo(user.getMemberNo());
+
             MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
             FoodPostResponse body = svc.createPostWithImages(req, toUse);
             return ResponseEntity.status(HttpStatus.CREATED).body(body);
@@ -90,7 +107,6 @@ public class PostCommandController {
             return ResponseEntity.badRequest().build();
         }
     }
-
     @DeleteMapping("/foods/{boardNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePost(@PathVariable Integer boardNo) {
@@ -99,14 +115,16 @@ public class PostCommandController {
 
     @DeleteMapping("/foods/{boardNo}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancelPost(@PathVariable Integer boardNo,
-                           @RequestParam Integer memberNo) {
-        svc.cancelPost(boardNo, memberNo);
+    public void cancelPost(@AuthenticationPrincipal CustomUserDetails user,
+                           @PathVariable Integer boardNo) {
+        svc.cancelPost(boardNo, user.getMemberNo());
     }
 
     /** (관리자) 승인 수정: approved=true|false */
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/foods/{boardNo}/approve")
-    public ResponseEntity<FoodPostResponse> approve(@PathVariable Integer boardNo,
+    public ResponseEntity<FoodPostResponse> approve(@AuthenticationPrincipal CustomUserDetails user,
+                                                    @PathVariable Integer boardNo,
                                                     @RequestParam boolean approved) {
         FoodPostResponse body = svc.approve(boardNo, approved);
         return ResponseEntity.ok(body);
@@ -115,11 +133,13 @@ public class PostCommandController {
     /* ===== 댓글 ===== */
 
     @PostMapping("/foods/{boardNo}/comments")
-    public ResponseEntity<CommentResponse> addCommentOnFood(@PathVariable Integer boardNo,
+    public ResponseEntity<CommentResponse> addCommentOnFood(@AuthenticationPrincipal CustomUserDetails user,
+                                                            @PathVariable Integer boardNo,
                                                             @RequestBody CreateCommentOnFoodRequest req) {
+        // 클라이언트가 보낸 memberNo는 무시하고 토큰 사용자로 대체
         AddCommentRequest delegate = new AddCommentRequest();
         delegate.setBoardNo(boardNo);
-        delegate.setMemberNo(req.getMemberNo());
+        delegate.setMemberNo(user.getMemberNo());
         delegate.setContent(req.getContent());
 
         CommentResponse resp = svc.addComment(delegate);
@@ -127,53 +147,62 @@ public class PostCommandController {
     }
 
     @PatchMapping("/comments/{commentId}")
-    public ResponseEntity<CommentResponse> updateCommentById(@PathVariable("commentId") Integer commentId,
+    public ResponseEntity<CommentResponse> updateCommentById(@AuthenticationPrincipal CustomUserDetails user,
+                                                             @PathVariable("commentId") Integer commentId,
                                                              @RequestBody UpdateCommentRequest req) {
-        CommentResponse resp = svc.updateCommentById(commentId, req.getMemberNo(), req.getContent());
+        CommentResponse resp = svc.updateCommentById(commentId, user.getMemberNo(), req.getContent());
         return ResponseEntity.ok(resp);
     }
 
     @DeleteMapping("/comments/{foodCommentNo}")
-    public void deleteCommentById(@PathVariable("foodCommentNo") Integer commentId,
-                                  @RequestParam Integer memberNo) {
-        postCommandService.deleteCommentById(commentId, memberNo);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCommentById(@AuthenticationPrincipal CustomUserDetails user,
+                                  @PathVariable("foodCommentNo") Integer commentId) {
+        svc.deleteCommentById(commentId, user.getMemberNo());
     }
 
     /* ===== 반응 ===== */
 
     @PostMapping("/foods/{boardNo}/reactions")
-    public ResponseEntity<ReactionResponse> addReaction(@PathVariable Integer boardNo,
+    public ResponseEntity<ReactionResponse> addReaction(@AuthenticationPrincipal CustomUserDetails user,
+                                                        @PathVariable Integer boardNo,
                                                         @RequestBody ReactRequest req) {
+        // 요청의 memberNo를 토큰 사용자로 강제 설정
+        req.setMemberNo(user.getMemberNo());
         ReactionResponse body = svc.addReaction(boardNo, req);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @PatchMapping("/foods/{boardNo}/reactions")
-    public ResponseEntity<ReactionResponse> changeReaction(@PathVariable Integer boardNo,
+    public ResponseEntity<ReactionResponse> changeReaction(@AuthenticationPrincipal CustomUserDetails user,
+                                                           @PathVariable Integer boardNo,
                                                            @RequestBody ReactRequest req) {
+        req.setMemberNo(user.getMemberNo());
         ReactionResponse body = svc.changeReaction(boardNo, req);
         return ResponseEntity.ok(body);
     }
 
     @DeleteMapping("/foods/{boardNo}/reactions")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteReaction(@PathVariable Integer boardNo,
-                               @RequestParam Integer memberNo) {
-        svc.deleteReaction(boardNo, memberNo);
+    public void deleteReaction(@AuthenticationPrincipal CustomUserDetails user,
+                               @PathVariable Integer boardNo) {
+        svc.deleteReaction(boardNo, user.getMemberNo());
     }
 
     /* ===== 즐겨찾기 ===== */
 
     @PostMapping("/bookmarks")
-    public ResponseEntity<List<BookmarkResponse>> addBookmark(@RequestBody AddBookmarkRequest req) {
+    public ResponseEntity<List<BookmarkResponse>> addBookmark(@AuthenticationPrincipal CustomUserDetails user,
+                                                              @RequestBody AddBookmarkRequest req) {
+        req.setMemberNo(user.getMemberNo()); // 토큰 사용자로 강제
         List<BookmarkResponse> body = svc.addBookmark(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @DeleteMapping("/bookmarks")
-    public ResponseEntity<List<BookmarkResponse>> removeBookmark(@RequestParam Integer memberNo,
+    public ResponseEntity<List<BookmarkResponse>> removeBookmark(@AuthenticationPrincipal CustomUserDetails user,
                                                                  @RequestParam Integer boardNo) {
-        List<BookmarkResponse> body = svc.removeBookmark(memberNo, boardNo);
+        List<BookmarkResponse> body = svc.removeBookmark(user.getMemberNo(), boardNo);
         return ResponseEntity.ok(body);
     }
 }
