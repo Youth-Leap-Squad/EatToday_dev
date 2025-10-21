@@ -1,4 +1,4 @@
-SET FOREIGN_KEY_CHECKS = 1;
+
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
 
 DROP TABLE IF EXISTS `albti_output`;
@@ -810,8 +810,3 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 UPDATE `report`
 SET `report_source` = 'qna_post'
 WHERE `report_source` = 'qnd_post';
-
-
-UPDATE member
-SET member_role = 'ADMIN'
-WHERE member_email = 'admin3@eattoday.com';

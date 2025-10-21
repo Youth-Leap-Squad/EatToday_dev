@@ -25,9 +25,9 @@ public class MemberController {
         return memberService.getIdByEmail(email);  // ex) "user@example.com"
     }
 
-        @GetMapping("/getprofile")
-    public FindProfileDTO findMyProfile(@RequestParam Integer memberNo) {
-        return memberService.findMyProfile(memberNo);  // ex> member_no가 4
+        @GetMapping("/getprofile-by-email")
+    public FindProfileDTO findMyProfileByEmail(@RequestParam String email) {
+        return memberService.findMyProfileByEmail(email);  // ex> "user@example.com"
     }
     
     @GetMapping("/findmylevel")

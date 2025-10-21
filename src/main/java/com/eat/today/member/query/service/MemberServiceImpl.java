@@ -41,13 +41,12 @@ public class MemberServiceImpl implements  MemberService{
     // 등록된 전화번호로 비밀번호 재설정 안내.
 
 
-    // 본인의 프로필, 활동 기록 등을 확인할 수 있다.
+    // 이메일로 프로필 조회
     @Override
-    public FindProfileDTO findMyProfile(Integer memberNo) {
+    public FindProfileDTO findMyProfileByEmail(String email) {
         return sqlSession.getMapper(MemberMapper.class)
-                .findMyProfile(memberNo);
+                .findMyProfileByEmail(email);
     }
-
 
     // 받은 포인트에 따른 등급을 확인할 수 있다.
     @Override

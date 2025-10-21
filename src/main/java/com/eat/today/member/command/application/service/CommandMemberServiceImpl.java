@@ -56,6 +56,9 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
         memberEntity.setMemberPw(bCryptPasswordEncoder.encode(commandMemberDTO.getMemberPw()));
 
         memberEntity.setMemberRole(MemberEntity.Role.USER);
+        
+        // 회원가입 시 포인트 0으로 초기화
+        memberEntity.setMemberLevel(0);
 
         memberRepository.save(memberEntity);
     }

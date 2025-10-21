@@ -8,16 +8,21 @@ import com.eat.today.event.albti.command.application.entity.AlbtiMember;
 import com.eat.today.event.albti.command.domain.repository.AlbtiJoinMemberRepository;
 import com.eat.today.event.albti.command.domain.repository.AlbtiSurveyAddRepository;
 import com.eat.today.event.albti.command.domain.repository.AlbtiMemberRepository;
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AlbtiJoinMemberServiceAdd {
 
     private final AlbtiJoinMemberRepository joinMemberRepository;
     private final AlbtiSurveyAddRepository  surveyAddRepository;
     private final AlbtiMemberRepository memberRepository;
+    private final MemberPointService memberPointService;
 
     public AlbtiJoinMemberAddResponseDTO addParticipant(AlbtiJoinMemberAddRequestDTO requestDTO) {
         // 1. 회원 존재 여부 확인
@@ -35,8 +40,15 @@ public class AlbtiJoinMemberServiceAdd {
 
         // 4. DB 저장
         AlbtiJoinMember saved = joinMemberRepository.save(participant);
+        
+        // 5. 술BTI 참여 시 포인트 지급
+        try {
+            memberPointService.grantPoints(requestDTO.getMemberNo(), PointPolicy.ALBTI_PARTICIPATE);
+        } catch (Exception e) {
+            log.error("술BTI 참여 포인트 지급 실패 - 회원번호: {}", requestDTO.getMemberNo(), e);
+        }
 
-        // 5. 응답 DTO 반환
+        // 6. 응답 DTO 반환
         return new AlbtiJoinMemberAddResponseDTO(
                 saved.getAlbtiMemberNo(),
                 saved.getMember().getMemberNo(),

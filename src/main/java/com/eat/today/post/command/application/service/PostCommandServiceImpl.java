@@ -1,10 +1,13 @@
 package com.eat.today.post.command.application.service;
 
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.eat.today.post.command.application.dto.*;
 import com.eat.today.post.command.domain.aggregate.*;
 import com.eat.today.post.command.domain.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ import org.springframework.web.util.HtmlUtils;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class PostCommandServiceImpl implements PostCommandService {
 
     private final AlcoholRepository alcoholRepo;
@@ -30,6 +34,7 @@ public class PostCommandServiceImpl implements PostCommandService {
     private final FoodCommentRepository commentRepo;
     private final BookmarkRepository bookmarkRepo;
     private final ImageStorageService imageStorageService;
+    private final MemberPointService memberPointService;
 
     private static String nowString() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -94,7 +99,7 @@ public class PostCommandServiceImpl implements PostCommandService {
         return imageStorageService.store(coverImage, "foods");
     }
 
-    @Override
+    @Overridealbti_survey
     public String appendImagesToExplain(String currentExplain, MultipartFile[] images) {
         List<String> urls = imageStorageService.storeAll(images, "foods");
         if (urls == null || urls.isEmpty()) return currentExplain;
@@ -177,6 +182,14 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .build();
 
         FoodPost saved = postRepo.save(post);
+        
+        // 게시물 등록 시 포인트 지급
+        try {
+            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.POST_CREATE);
+        } catch (Exception e) {
+            log.error("게시물 등록 포인트 지급 실패 - 회원번호: {}, 게시물번호: {}", req.getMemberNo(), saved.getBoardNo(), e);
+        }
+        
         return toResponse(saved);
     }
 
@@ -267,6 +280,13 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .build();
 
         FoodComment saved = commentRepo.save(c);
+        
+        // 댓글 작성 시 포인트 지급
+        try {
+            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.COMMENT_CREATE);
+        } catch (Exception e) {
+            log.error("댓글 작성 포인트 지급 실패 - 회원번호: {}, 댓글번호: {}", req.getMemberNo(), saved.getFoodCommentNo(), e);
+        }
 
         return CommentResponse.builder()
                 .foodCommentNo(saved.getFoodCommentNo())
