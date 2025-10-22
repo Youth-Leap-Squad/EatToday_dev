@@ -4,7 +4,6 @@ package com.eat.today.sns.command.application.controller.photoReview;
 import com.eat.today.sns.command.application.dto.photoReviewDTO.CreateRequest;
 import com.eat.today.sns.command.application.dto.photoReviewDTO.UpdateRequest;
 import com.eat.today.sns.command.domain.service.PhotoReviewCommandService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
