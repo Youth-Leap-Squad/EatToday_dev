@@ -2,9 +2,13 @@ package com.eat.today.qna_rounge_report.rounge.query.controller;
 
 import com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewPageResponse;
 import com.eat.today.qna_rounge_report.rounge.query.service.PhotoReviewService;
+import com.eat.today.configure.security.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class PhotoReviewController {
@@ -51,5 +55,17 @@ public class PhotoReviewController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size) {
         return service.getByMemberNoPaged(memberNo, page, size);
+    }
+
+    @GetMapping("/photoReview/member/me")
+    public PhotoReviewPageResponse getMyReviews(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        return service.getByMemberNoPaged(user.getMemberNo(), page, size);
     }
 }
