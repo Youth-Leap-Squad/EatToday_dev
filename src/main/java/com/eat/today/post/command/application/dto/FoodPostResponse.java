@@ -3,6 +3,8 @@ package com.eat.today.post.command.application.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class FoodPostResponse {
@@ -12,7 +14,10 @@ public class FoodPostResponse {
     private String boardTitle;
     private String boardContent;
     private String foodExplain;
-    private String foodPicture;
+
+    // 기존 String 대신 배열 형태로 내려줌
+    private List<String> foodPictures;
+
     private String boardDate;
     private Integer boardSeq;
     private Boolean confirmedYn;

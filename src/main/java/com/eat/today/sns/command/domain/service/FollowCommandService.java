@@ -20,7 +20,7 @@ public class FollowCommandService {
             throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
         }
         if (repo.existsByFollowerNoAndFollowingNo(followerNo, followingNo)) {
-            return; // 이미 팔로우 상태면 무시 (멱등)
+            return; // 이미 팔로우 상태면 무시
         }
         FollowEntity f = new FollowEntity();
         f.setFollowerNo(followerNo);
@@ -35,10 +35,10 @@ public class FollowCommandService {
         return (int) affected;
     }
 
+    /** 내가 팔로우한 사람 삭제: (follower -> me) */
     @Transactional
     public int removeFollowing(int me, int following) {
         long affected = repo.deleteByFollowerNoAndFollowingNo(me, following);
         return (int) affected;
     }
 }
-

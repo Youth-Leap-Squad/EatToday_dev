@@ -2,22 +2,37 @@ package com.eat.today.qna_rounge_report.rounge.query.repository;
 
 import com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
-
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
 public interface PhotoReviewMapper {
 
-    // 전체 리뷰 조회(날짜 별 내림차순)
-    List<PhotoReviewDTO> selectAllOrderByDateDesc();
+    List<PhotoReviewDTO> selectAllOrderByDateDescPaged(@Param("offset") int offset,
+                                                       @Param("limit") int limit);
+    long countAll();
 
-    // 전체 리뷰 조회(좋아요 수 내림차순)
-    List<PhotoReviewDTO> selectAllOrderByLikeDesc();
+    List<PhotoReviewDTO> selectAllOrderByLikeDescPaged(@Param("offset") int offset,
+                                                       @Param("limit") int limit);
+    long countAllByLike();
 
-    // 검색을 통한 리뷰 조회
-    List<PhotoReviewDTO> searchByKeyword(@Param("kw") String keyword);
+    List<PhotoReviewDTO> searchByKeywordPaged(@Param("keyword") String keyword,
+                                              @Param("offset") int offset,
+                                              @Param("limit") int limit);
+    long countByKeyword(@Param("keyword") String keyword);
 
-    // 술 번호에 따른 리뷰 조회
-    List<PhotoReviewDTO> selectByAlcoholNo(@Param("alcoholNo") int alcoholNo);
+    List<PhotoReviewDTO> selectByAlcoholNoPaged(@Param("alcoholNo") int alcoholNo,
+                                                @Param("offset") int offset,
+                                                @Param("limit") int limit);
+
+    List<PhotoReviewDTO> selectByAlcoholNoLikeDescPaged(@Param("alcoholNo") int alcoholNo,
+                                                        @Param("offset") int offset,
+                                                        @Param("limit") int size);
+    long countByAlcoholNo(@Param("alcoholNo") int alcoholNo);
+
+    List<PhotoReviewDTO> selectByMemberNoPaged(@Param("memberNo") int memberNo,
+                                               @Param("offset") int offset,
+                                               @Param("limit") int limit);
+    long countByMemberNo(@Param("memberNo") int memberNo);
+
 }

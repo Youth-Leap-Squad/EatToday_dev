@@ -50,6 +50,10 @@ public class MemberEntity {
     @Column(name = "report_count", nullable = false)
     private Integer reportCount = 0;
 
+    // 회원 레벨(포인트)
+    @Column(name = "member_level", nullable = false)
+    private Integer memberLevel = 0;
+
     /** 편의 메서드들 */
 
     public MemberEntity() {}
@@ -63,5 +67,11 @@ public class MemberEntity {
         else if (reportCount >= 3) this.memberStatus = "7일 정지";
         else if (reportCount >= 1) this.memberStatus = "1일 정지";
         else this.memberStatus = "normal";
+    }
+
+    public void addPoints(Integer points) {
+        if (points != null && points > 0) {
+            this.memberLevel += points;
+        }
     }
 }

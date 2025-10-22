@@ -1,6 +1,8 @@
 package com.eat.today.configure.security;
 
 import com.eat.today.member.command.application.dto.RequestLoginDTO;
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,32 +13,50 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Slf4j
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    // 우리가 만든 프로바이더를 알고 있는 매니져를 인지시킴
-    public AuthenticationFilter(AuthenticationManager authenticationManager) {
+    private final JwtTokenService jwtTokenService;
+    private final MemberPointService memberPointService;
+
+    public AuthenticationFilter(AuthenticationManager authenticationManager,
+                                JwtTokenService jwtTokenService,
+                                MemberPointService memberPointService) {
         super(authenticationManager);
-        setFilterProcessesUrl("/login");
+        this.jwtTokenService = jwtTokenService;
+        this.memberPointService = memberPointService;
+        setFilterProcessesUrl("/login"); // POST /login
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         try {
             RequestLoginDTO creds = new ObjectMapper().readValue(request.getInputStream(), RequestLoginDTO.class);
-                return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(creds.getMemberEmail(), creds.getMemberPw(),new ArrayList<>())
-            );
 
+            // 이메일/비밀번호로 통일 (DTO 필드명은 memberEmail, memberPw)
+            String email = creds.getMemberEmail() == null ? "" : creds.getMemberEmail().trim();
+            String pw    = creds.getMemberPw() == null ? "" : creds.getMemberPw();
 
-        }catch (IOException e) {
+            UsernamePasswordAuthenticationToken authRequest =
+                    new UsernamePasswordAuthenticationToken(email, pw, new ArrayList<>());
+
+            return this.getAuthenticationManager().authenticate(authRequest);
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -44,15 +64,60 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        log.info("로그인 성공 이후 spring security가 authentication 객체로 관리되며 넘어옴: {}",authResult);
+        log.info("로그인 성공: principal={}, authorities={}",
+                authResult.getName(), authResult.getAuthorities());
+
+        // JWT 발급
+        Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
+        String username = authResult.getName(); // 여기 값이 로그인 식별자(이메일)여야 함
+        String token = jwtTokenService.issueToken(username, authorities, Duration.ofHours(12));
+
+        // CustomUserDetails에서 memberNo와 memberRole 가져오기
+        Integer memberNo = null;
+        String memberRole = null;
         
-        // 로그인 성공 응답 추가
+        if (authResult.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
+            memberNo = userDetails.getMemberNo();
+            memberRole = userDetails.getMemberRole().name();
+            
+            // 로그인 성공 시 포인트 지급
+            try {
+                memberPointService.grantPoints(memberNo, PointPolicy.LOGIN);
+            } catch (Exception e) {
+                log.error("로그인 포인트 지급 실패 - 회원번호: {}", memberNo, e);
+            }
+        }
+
+        // 헤더/바디로 전달
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader("Authorization", "Bearer " + token);
+
+        // 응답 바디 (원하면 refreshToken 등 추가)
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("message", "로그인 성공");
+        responseBody.put("memberEmail", authResult.getName());
+        responseBody.put("memberNo", memberNo);
+        responseBody.put("memberRole", memberRole);
+        responseBody.put("tokenType", "Bearer");
+        responseBody.put("accessToken", token);
         
-        String jsonResponse = "{\"message\":\"로그인 성공\",\"memberEmail\":\"" + authResult.getName() + "\"}";
-        response.getWriter().write(jsonResponse);
+        new ObjectMapper().writeValue(response.getWriter(), responseBody);
+        response.getWriter().flush();
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+        log.warn("로그인 실패: {}", failed.getMessage());
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        new ObjectMapper().writeValue(response.getWriter(),
+                Map.of("error", "unauthorized", "message", failed.getMessage()));
         response.getWriter().flush();
     }
 }
