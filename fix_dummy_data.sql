@@ -23,3 +23,6 @@ WHERE member_email IN (
     'beer.runner@example.com',
     'soju.writer@example.com'
 );
+
+
+

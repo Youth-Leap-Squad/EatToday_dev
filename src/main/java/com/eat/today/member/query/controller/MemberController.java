@@ -2,16 +2,12 @@ package com.eat.today.member.query.controller;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
 import com.eat.today.member.query.dto.FindProfileDTO;
-import com.eat.today.member.query.dto.MemberDTO;
 import com.eat.today.member.query.service.MemberService;
-import com.eat.today.member.query.service.MemberServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/members")

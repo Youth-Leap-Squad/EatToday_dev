@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import java.util.List;
 //
 //-- 사용자가 이름, 비밀번호, 이메일, 닉네임 등을 입력하여 회원 가입
 //-- 로그인된 사용자가 세션 종료.

@@ -5,8 +5,6 @@ import com.eat.today.member.query.dto.FindProfileDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import java.util.List;
-
 public interface MemberService extends UserDetailsService {
 
 

@@ -68,9 +68,8 @@ public class ProfileImageController {
         }
     }
 
-    /**
-     * 프로필 사진 조회
-     */
+
+    // 프로필 사진 조회
     @GetMapping("/profile-image/{memberEmail}")
     public ResponseEntity<Map<String, Object>> getProfileImage(@PathVariable String memberEmail) {
         try {
