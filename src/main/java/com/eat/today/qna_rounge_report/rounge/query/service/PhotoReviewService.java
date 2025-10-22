@@ -22,4 +22,6 @@ public interface PhotoReviewService {
 
     /** 특정 사용자의 리뷰 조회 */
     PhotoReviewPageResponse getByMemberNoPaged(int memberNo, int page, int size);
+
+    PhotoReviewPageResponse getByAlcoholNoLikeDescPaged(int alcoholNo, int page, int size);
 }
