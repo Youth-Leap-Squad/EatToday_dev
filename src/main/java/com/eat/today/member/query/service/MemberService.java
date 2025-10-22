@@ -2,7 +2,6 @@ package com.eat.today.member.query.service;
 
 import com.eat.today.member.query.dto.FindMyLevelDTO;
 import com.eat.today.member.query.dto.FindProfileDTO;
-import com.eat.today.member.query.dto.ReportCheckDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -16,14 +15,11 @@ public interface MemberService extends UserDetailsService {
 
     // 등록된 전화번호로 비밀번호 재설정 안내.
 
-    // 본인의 프로필, 활동 기록 등을 확인할 수 있다.
-    public FindProfileDTO findMyProfile(Integer memberNo);
+    // 이메일로 프로필 조회
+    public FindProfileDTO findMyProfileByEmail(String email);
 
     // 받은 포인트에 따른 등급을 확인할 수 있다.
     public FindMyLevelDTO findMyLevel(Integer memberNo);
-
-    // 신고 내용 확인
-    public List<ReportCheckDTO> checkReport();
 
     UserDetails loadMemberByMemberName(String memberEmail);
 

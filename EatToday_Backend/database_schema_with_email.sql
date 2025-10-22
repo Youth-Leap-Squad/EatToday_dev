@@ -1,6 +1,6 @@
 -- EatToday 데이터베이스 전체 스키마 (memberEmail 필드 포함)
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
-
+SET FOREIGN_KEY_CHECKS = 1;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
 DROP TABLE IF EXISTS `albti_survey`;

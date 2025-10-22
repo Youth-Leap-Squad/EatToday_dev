@@ -1,6 +1,7 @@
 package com.eat.today.configure.security;
 
 
+import com.eat.today.member.command.application.service.MemberPointService;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +18,14 @@ public class WebSecurity {
 
     private JwtAuthenticationProvider jwtAuthenticationProvider;
     private final JwtTokenService jwtTokenService;
+    private final MemberPointService memberPointService;
 
     public WebSecurity(JwtAuthenticationProvider jwtAuthenticationProvider,
-                       JwtTokenService jwtTokenService) {
+                       JwtTokenService jwtTokenService,
+                       MemberPointService memberPointService) {
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.jwtTokenService = jwtTokenService;
+        this.memberPointService = memberPointService;
     }
 
     // 만든 provider bean으로 등록
@@ -79,6 +83,6 @@ public class WebSecurity {
 
     // Filter을 등록하기 위해 사용하는 메소드
     private Filter getAuthenticationFilter(AuthenticationManager authenticationManager) {
-        return new AuthenticationFilter(authenticationManager, jwtTokenService);
+        return new AuthenticationFilter(authenticationManager, jwtTokenService, memberPointService);
     }
 }

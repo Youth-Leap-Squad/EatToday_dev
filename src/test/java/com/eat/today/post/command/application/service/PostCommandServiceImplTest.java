@@ -1,10 +1,13 @@
 package com.eat.today.post.command.application.service;
 
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.eat.today.post.command.application.dto.CreateFoodPostRequest;
 import com.eat.today.post.command.application.dto.FoodPostResponse;
 import com.eat.today.post.command.application.dto.UpdateFoodPostRequest;
 import com.eat.today.post.command.domain.aggregate.*;
 import com.eat.today.post.command.domain.repository.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +33,24 @@ class PostCommandServiceImplTest {
 
     @Mock
     FoodPostRepository postRepo;
+
+    @Mock
+    FoodPostLikeRepository likeRepo;
+
+    @Mock
+    FoodCommentRepository commentRepo;
+
+    @Mock
+    BookmarkRepository bookmarkRepo;
+
+    @Mock
+    ImageStorageService imageStorageService;
+
+    @Mock
+    MemberPointService memberPointService;
+
+    @Mock
+    ObjectMapper objectMapper;
 
     @Test
     @DisplayName("createPost: 성공 시 FoodPostResponse를 반환한다")
@@ -115,5 +137,56 @@ class PostCommandServiceImplTest {
 
         verify(postRepo).findById(boardNo);
         verify(postRepo, never()).save(any()); // 저장 시도 없음
+    }
+
+    @Test
+    @DisplayName("createPost: 게시물 등록 시 회원에게 포인트가 지급된다")
+    void createPost_grantsPointsToMember() {
+        // given
+        Integer alcoholNo = 1;
+        Integer memberNo = 99;
+
+        Alcohol alcohol = mock(Alcohol.class);
+        when(alcohol.getAlcoholNo()).thenReturn(alcoholNo);
+        when(alcoholRepo.findById(alcoholNo)).thenReturn(Optional.of(alcohol));
+
+        FoodPost saved = mock(FoodPost.class);
+        when(saved.getBoardNo()).thenReturn(10);
+        when(saved.getAlcohol()).thenReturn(alcohol);
+        when(saved.getMember()).thenReturn(Member.onlyId(memberNo));
+        when(saved.getBoardTitle()).thenReturn("치킨과 맥주");
+        when(saved.getBoardContent()).thenReturn("치맥 최고");
+        when(saved.getFoodExplain()).thenReturn("바삭바삭");
+        when(saved.getFoodPicture()).thenReturn("/image.jpg");
+        when(saved.getBoardDate()).thenReturn("2025-10-17");
+        when(saved.getBoardSeq()).thenReturn(1);
+        when(saved.getConfirmedYn()).thenReturn(false);
+        when(saved.getLikeNo1()).thenReturn(0);
+        when(saved.getLikeNo2()).thenReturn(0);
+        when(saved.getLikeNo3()).thenReturn(0);
+        when(saved.getLikeNo4()).thenReturn(0);
+
+        when(postRepo.save(any(FoodPost.class))).thenReturn(saved);
+
+        CreateFoodPostRequest req = new CreateFoodPostRequest();
+        req.setAlcoholNo(alcoholNo);
+        req.setMemberNo(memberNo);
+        req.setBoardTitle("치킨과 맥주");
+        req.setBoardContent("치맥 최고");
+        req.setFoodExplain("바삭바삭");
+        req.setFoodPicture("/image.jpg");
+        req.setBoardSeq(1);
+
+        // when
+        FoodPostResponse resp = service.createPost(req);
+
+        // then
+        assertThat(resp.getBoardNo()).isEqualTo(10);
+        assertThat(resp.getMemberNo()).isEqualTo(memberNo);
+
+        // 포인트 지급이 POST_CREATE 정책으로 호출되었는지 검증
+        verify(memberPointService).grantPoints(eq(memberNo), eq(PointPolicy.POST_CREATE));
+        verify(alcoholRepo).findById(alcoholNo);
+        verify(postRepo).save(any(FoodPost.class));
     }
 }

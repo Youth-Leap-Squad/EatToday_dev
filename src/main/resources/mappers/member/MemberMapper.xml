@@ -12,8 +12,8 @@
         WHERE m.member_email = #{memberEmail}
     </select>
 
-    <!-- 내 프로필 조회 -->
-    <select id="findMyProfile" parameterType="java.lang.Integer"
+    <!-- 이메일로 프로필 조회 -->
+    <select id="findMyProfileByEmail" parameterType="java.lang.String"
             resultType="com.eat.today.member.query.dto.FindProfileDTO">
         SELECT
             m.member_name  AS memberName,
@@ -26,7 +26,7 @@
                 WHEN m.member_active = 0 THEN '비활성 회원'
                 END AS memberStatus
         FROM member m
-        WHERE m.member_no = #{memberNo}
+        WHERE m.member_email = #{email}
     </select>
 
     <!-- 받은 포인트에 따른 등급 -->

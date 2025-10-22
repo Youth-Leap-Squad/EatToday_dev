@@ -1,6 +1,8 @@
 package com.eat.today.configure.security;
 
 import com.eat.today.member.command.application.dto.RequestLoginDTO;
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,17 +21,21 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtTokenService jwtTokenService;
+    private final MemberPointService memberPointService;
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
-                                JwtTokenService jwtTokenService) {
+                                JwtTokenService jwtTokenService,
+                                MemberPointService memberPointService) {
         super(authenticationManager);
         this.jwtTokenService = jwtTokenService;
+        this.memberPointService = memberPointService;
         setFilterProcessesUrl("/login"); // POST /login
     }
 
@@ -66,6 +72,22 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         String username = authResult.getName(); // 여기 값이 로그인 식별자(이메일)여야 함
         String token = jwtTokenService.issueToken(username, authorities, Duration.ofHours(12));
 
+        // CustomUserDetails에서 memberNo와 memberRole 가져오기
+        Integer memberNo = null;
+        String memberRole = null;
+        
+        if (authResult.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
+            memberNo = userDetails.getMemberNo();
+            memberRole = userDetails.getMemberRole().name();
+            
+            // 로그인 성공 시 포인트 지급
+            try {
+                memberPointService.grantPoints(memberNo, PointPolicy.LOGIN);
+            } catch (Exception e) {
+                log.error("로그인 포인트 지급 실패 - 회원번호: {}", memberNo, e);
+            }
+        }
 
         // 헤더/바디로 전달
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -74,14 +96,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("Authorization", "Bearer " + token);
 
         // 응답 바디 (원하면 refreshToken 등 추가)
-        new ObjectMapper().writeValue(response.getWriter(),
-                Map.of(
-                        "message", "로그인 성공",
-                        "memberEmail", authResult.getName(),
-                        "tokenType", "Bearer",
-                        "accessToken", token
-                )
-        );
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("message", "로그인 성공");
+        responseBody.put("memberEmail", authResult.getName());
+        responseBody.put("memberNo", memberNo);
+        responseBody.put("memberRole", memberRole);
+        responseBody.put("tokenType", "Bearer");
+        responseBody.put("accessToken", token);
+        
+        new ObjectMapper().writeValue(response.getWriter(), responseBody);
         response.getWriter().flush();
     }
 

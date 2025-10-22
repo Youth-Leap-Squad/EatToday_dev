@@ -5,16 +5,21 @@ import com.eat.today.event.worldcup.command.application.entity.WorldcupJoinMembe
 import com.eat.today.event.worldcup.command.application.entity.WorldcupPicks;
 import com.eat.today.event.worldcup.command.domain.repository.WorldcupJoinMemberRepository;
 import com.eat.today.event.worldcup.command.domain.repository.WorldcupPicksRepository;
+import com.eat.today.member.command.application.service.MemberPointService;
+import com.eat.today.member.command.domain.aggregate.PointPolicy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WorldcupServiceAdd {
 
     private final WorldcupJoinMemberRepository joinMemberRepository;
     private final WorldcupPicksRepository picksRepository;
+    private final MemberPointService memberPointService;
 
 
     @Transactional
@@ -31,6 +36,13 @@ public class WorldcupServiceAdd {
         picks.setWorldcupAlcoholNo(alcoholId);
         picks.setIndividualFood(foodId);
         picksRepository.save(picks);
+        
+        // 3. 월드컵 게임 참여 시 포인트 지급
+        try {
+            memberPointService.grantPoints(memberNo, PointPolicy.WORLDCUP_PARTICIPATE);
+        } catch (Exception e) {
+            log.error("월드컵 게임 참여 포인트 지급 실패 - 회원번호: {}", memberNo, e);
+        }
 
         // PK 반환
         return savedJoinMember.getWorldcupJoinMemberNo();
