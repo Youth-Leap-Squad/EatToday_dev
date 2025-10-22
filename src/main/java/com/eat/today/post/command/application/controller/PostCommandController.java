@@ -11,8 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-// ★ 토큰 사용자
 import com.eat.today.configure.security.CustomUserDetails;
 
 import java.util.List;
@@ -79,8 +77,6 @@ public class PostCommandController {
     ) {
         try {
             CreateFoodPostRequest req = objectMapper.readValue(metaJson, CreateFoodPostRequest.class);
-
-            // 작성자: 토큰에서
             req.setMemberNo(user.getMemberNo());
 
             MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
@@ -93,6 +89,7 @@ public class PostCommandController {
 
     @PatchMapping(value = "/foods/{boardNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FoodPostResponse> updatePost(
+            @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Integer boardNo,
             @RequestPart("meta") String metaJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images,
@@ -101,12 +98,15 @@ public class PostCommandController {
         try {
             UpdateFoodPostRequest req = objectMapper.readValue(metaJson, UpdateFoodPostRequest.class);
             MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
-            FoodPostResponse body = svc.updatePostWithImages(boardNo, req, toUse);
+            FoodPostResponse body = svc.updatePostWithImages(boardNo, user.getMemberNo(), req, toUse); // <<< 변경
             return ResponseEntity.ok(body);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/foods/{boardNo}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePost(@PathVariable Integer boardNo) {
@@ -136,7 +136,6 @@ public class PostCommandController {
     public ResponseEntity<CommentResponse> addCommentOnFood(@AuthenticationPrincipal CustomUserDetails user,
                                                             @PathVariable Integer boardNo,
                                                             @RequestBody CreateCommentOnFoodRequest req) {
-        // 클라이언트가 보낸 memberNo는 무시하고 토큰 사용자로 대체
         AddCommentRequest delegate = new AddCommentRequest();
         delegate.setBoardNo(boardNo);
         delegate.setMemberNo(user.getMemberNo());
@@ -167,7 +166,6 @@ public class PostCommandController {
     public ResponseEntity<ReactionResponse> addReaction(@AuthenticationPrincipal CustomUserDetails user,
                                                         @PathVariable Integer boardNo,
                                                         @RequestBody ReactRequest req) {
-        // 요청의 memberNo를 토큰 사용자로 강제 설정
         req.setMemberNo(user.getMemberNo());
         ReactionResponse body = svc.addReaction(boardNo, req);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
@@ -194,7 +192,7 @@ public class PostCommandController {
     @PostMapping("/bookmarks")
     public ResponseEntity<List<BookmarkResponse>> addBookmark(@AuthenticationPrincipal CustomUserDetails user,
                                                               @RequestBody AddBookmarkRequest req) {
-        req.setMemberNo(user.getMemberNo()); // 토큰 사용자로 강제
+        req.setMemberNo(user.getMemberNo());
         List<BookmarkResponse> body = svc.addBookmark(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
