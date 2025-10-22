@@ -49,6 +49,14 @@ public class PhotoReviewController {
         return service.getByAlcoholNoPaged(alcoholNo, page, size);
     }
 
+    @GetMapping("/photoReview/alcohol/like")
+    public PhotoReviewPageResponse byAlcoholOrderLike(
+            @RequestParam int alcoholNo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return service.getByAlcoholNoLikeDescPaged(alcoholNo, page, size);
+    }
+
     @GetMapping("/photoReview/member")
     public PhotoReviewPageResponse getByMemberNo(
             @RequestParam int memberNo,

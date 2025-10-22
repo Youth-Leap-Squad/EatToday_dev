@@ -65,4 +65,14 @@ public class PhotoReviewServiceImpl implements PhotoReviewService {
         boolean hasNext = page + 1 < totalPages;
         return new PhotoReviewPageResponse(list, page, size, total, totalPages, hasNext);
     }
+
+    @Override
+    public PhotoReviewPageResponse getByAlcoholNoLikeDescPaged(int alcoholNo, int page, int size) {
+        int offset = page * size;
+        List<PhotoReviewDTO> list = mapper.selectByAlcoholNoLikeDescPaged(alcoholNo, offset, size);
+        long total = mapper.countByAlcoholNo(alcoholNo);
+        int totalPages = (int) Math.ceil((double) total / size);
+        boolean hasNext = page + 1 < totalPages;
+        return new PhotoReviewPageResponse(list, page, size, total, totalPages, hasNext);
+    }
 }

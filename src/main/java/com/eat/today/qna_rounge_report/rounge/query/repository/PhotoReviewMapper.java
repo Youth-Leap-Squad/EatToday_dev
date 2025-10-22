@@ -24,10 +24,15 @@ public interface PhotoReviewMapper {
     List<PhotoReviewDTO> selectByAlcoholNoPaged(@Param("alcoholNo") int alcoholNo,
                                                 @Param("offset") int offset,
                                                 @Param("limit") int limit);
+
+    List<PhotoReviewDTO> selectByAlcoholNoLikeDescPaged(@Param("alcoholNo") int alcoholNo,
+                                                        @Param("offset") int offset,
+                                                        @Param("limit") int size);
     long countByAlcoholNo(@Param("alcoholNo") int alcoholNo);
 
     List<PhotoReviewDTO> selectByMemberNoPaged(@Param("memberNo") int memberNo,
                                                @Param("offset") int offset,
                                                @Param("limit") int limit);
     long countByMemberNo(@Param("memberNo") int memberNo);
+
 }
