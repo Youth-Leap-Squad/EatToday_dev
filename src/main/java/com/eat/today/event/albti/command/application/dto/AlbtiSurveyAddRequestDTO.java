@@ -1,12 +1,12 @@
 package com.eat.today.event.albti.command.application.dto;
 
-
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 public class AlbtiSurveyAddRequestDTO {
-    private int albtiNo;                // 어떤 술BTI에 속하는 설문인지
-    private String albtiSurveyContent;  // 술BTI번호에 따른 설문 문항 내용
+    private String question; // 설문 내용
+    private int typeA;       // DB에서 int로 저장되는 A 유형 점수
+    private int typeB;       // DB에서 int로 저장되는 B 유형 점수
 }

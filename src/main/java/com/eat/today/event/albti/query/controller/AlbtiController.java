@@ -10,12 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController   // 반드시 필요
 @RequiredArgsConstructor   // final 필드 자동 주입
 public class AlbtiController {
-    private final AlbtiService albtiService;  // 서비스 객체 자동 주입됨
-
+    private final AlbtiService albtiService;
 
     @GetMapping("/albti/getalbtiresult")
-    public SelectAlbtiDTO selectAlbti(@RequestParam String member_no) {
-        return albtiService.selectAlbti(member_no);   // 서비스 메서드 호출
+    public SelectAlbtiDTO selectAlbti(@RequestParam int member_no) {
+        return albtiService.selectAlbti(member_no);
     }
 
 }

@@ -15,9 +15,12 @@ import java.util.List;
 public class WorldcupController {
     private final WorldcupService worldcupService;
 
+    // alcoholNo 먼저 선택하고 weekNo 선택
     @GetMapping("/worldcup/getworldcupresult")
-    public List<SelectWorldcupDTO> selectWorldcup(@RequestParam String weekNo) {
-        return worldcupService.selectWorldcup(weekNo);
+    public List<SelectWorldcupDTO> selectWorldcup(
+            @RequestParam String alcoholNo,
+            @RequestParam String weekNo) {
+        return worldcupService.selectWorldcup(alcoholNo,weekNo);
     }
 
 }

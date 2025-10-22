@@ -24,6 +24,6 @@ public class Albti {
     private String albtiDetail;
 
     @Column(name = "alcohol_no", nullable = false)
-    private int alcoholNo;
+    private int alcoholNo;      // 일단 술 테이블 안불러오고 여기서 바로 호출
 
 }

@@ -10,23 +10,19 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
+@Builder
 public class AlbtiSurvey {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "albti_survey_no", nullable = false)
+    @Column(name = "albti_survey_no")
     private int albtiSurveyNo;
 
-//    @Column(name = "alBTI_no", nullable = false)
-//    private int albtiNo;                    // 술bti 번호(FK)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "alBTI_no", nullable = false)
-    private Albti albti;
+    @Column(nullable = false)
+    private String question;
 
+    @Column(name = "type_a", nullable = false)
+    private int typeA;
 
-    @Column(name = "albti_survey_content", nullable = false)
-    private String albtiSurveyContent;      // 설문내용
-
-
-
-
+    @Column(name = "type_b", nullable = false)
+    private int typeB;
 }

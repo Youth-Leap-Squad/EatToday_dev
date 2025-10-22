@@ -18,31 +18,39 @@
         <result property="num_of_wins" column="worldcupeventfood_num_of_wins"/>
     </resultMap>
 
+    <!-- alcohol 테이블매핑 -->
+    <resultMap id="alcohol" type="com.eat.today.event.worldcup.query.dto.WorldcupAlcoholDTO">
+        <result property="alcohol_no" column="worldcupalcohol_alcohol_no"/>
+    </resultMap>
+
     <!-- 최종 결과 매핑 -->
     <resultMap id="WorldcupResultMap" type="com.eat.today.event.worldcup.query.dto.SelectWorldcupDTO">
         <association property="worldcuptable" resultMap="worldcup"/>
         <association property="worldcupeventfood" resultMap="eventfood"/>
+        <association property="worldcupalcohol" resultMap="alcohol"/>
     </resultMap>
 
     <!-- 주간 월드컵 게임 랭킹 조회 -->
     <select id="selectWorldcup" parameterType="java.lang.String" resultMap="WorldcupResultMap">
-        WITH week_cte AS (
+        WITH week_cte AS (            <!-- 월드컵 생성일자로 주차 번호를 붙이는 테이블-->
             SELECT
                 wc.worldcup_start_date,
                 wc.worldcup_finish_date,
-                ROW_NUMBER() OVER (ORDER BY wc.worldcup_start_date) AS week_no
+                ROW_NUMBER() OVER (ORDER BY wc.worldcup_start_date) AS week_no  <!-- 프론트에서 날짜 넣어줘야함(여기선 생성일자 기준으로 주차 생성하기 때문)-->
             FROM worldcup wc
-            GROUP BY wc.worldcup_start_date, wc.worldcup_finish_date
+            GROUP BY wc.worldcup_start_date, wc.worldcup_finish_date,wc.worldcup_no
         )
         SELECT
 <!--            wc.worldcup_no                 AS worldcuptable_worldcup_no,-->
             w.worldcup_start_date          AS worldcuptable_worldcup_start_date,
             w.worldcup_finish_date         AS worldcuptable_worldcup_finish_date,
+            wa.alcohol_no                  AS worldcupalcohol_alcohol_no,
             ef.worldcup_winning_food       AS worldcupeventfood_worldcup_winning_food,
             ef.num_of_wins                 AS worldcupeventfood_num_of_wins
         FROM week_cte w
         JOIN worldcup wc ON wc.worldcup_start_date = w.worldcup_start_date
                         AND wc.worldcup_finish_date = w.worldcup_finish_date
+        JOIN worldcup_alcohol wa ON wc.worldcup_no = wa.worldcup_no
         JOIN Individual_world_cup_food iwf ON wc.worldcup_no = iwf.worldcup_no
         JOIN eventfood ef ON iwf.food_no = ef.food_no
         WHERE ef.num_of_wins IN (
@@ -52,6 +60,7 @@
             WHERE iwf2.worldcup_no = wc.worldcup_no
         )
           AND w.week_no = #{weekNo}
+          AND wa.alcohol_no = #{alcoholNo}
         ORDER BY ef.num_of_wins DESC;
     </select>
 </mapper>

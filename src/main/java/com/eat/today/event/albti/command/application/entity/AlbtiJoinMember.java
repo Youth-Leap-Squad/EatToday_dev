@@ -17,16 +17,10 @@ public class AlbtiJoinMember {
     @Column(name = "alBTI_member_no", nullable = false)
     private int albtiMemberNo;
 
-//    @Column(name = "member_no", nullable = false)
-//    private int memberNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_no", nullable = false)
-    private AlbtiMember member;  // 참여한 회원
+    private AlbtiMember memberNo;  // 참여한 회원
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "albti_survey_no", nullable = false)
-    private AlbtiSurvey albtiSurvey;
 
 }
