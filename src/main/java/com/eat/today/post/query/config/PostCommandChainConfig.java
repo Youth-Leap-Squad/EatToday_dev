@@ -19,35 +19,33 @@ public class PostCommandChainConfig {
     private final AuthenticationManager authenticationManager;
 
     @Bean
-    @Order(4)
+    @Order(4) // 다른 체인보다 '먼저' 적용되도록 필요 시 숫자 조정
     public SecurityFilterChain postCommandChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/command/**")
+                .securityMatcher("/command/**") // /command/* 만 이 체인이 처리
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ===== 게시글(foods) – 로그인 필수 =====
+                        // ===== [가장 먼저] 술(alcohols) – ADMIN 전용 (모든 메서드) =====
+                        .requestMatchers("/command/alcohols/**").hasRole("ADMIN")
+
+                        // ===== 게시글/댓글/반응/즐겨찾기 – 로그인 필수 =====
                         .requestMatchers(HttpMethod.POST,   "/command/foods/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH,  "/command/foods/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/command/foods/**").authenticated()
 
-                        // (관리자 전용) 승인
-                        .requestMatchers(HttpMethod.PATCH, "/command/foods/*/approve").hasRole("ADMIN")
-
-                        // ===== 댓글 – 로그인 필수 =====
                         .requestMatchers(HttpMethod.POST,   "/command/foods/*/comments/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH,  "/command/comments/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/command/comments/**").authenticated()
 
-                        // ===== 반응(리액션) – 로그인 필수 =====
                         .requestMatchers(HttpMethod.POST,   "/command/foods/*/reactions/**").authenticated()
                         .requestMatchers(HttpMethod.PATCH,  "/command/foods/*/reactions/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/command/foods/*/reactions/**").authenticated()
 
-                        // ===== 즐겨찾기 – 로그인 필수 =====
                         .requestMatchers(HttpMethod.POST,   "/command/bookmarks/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/command/bookmarks/**").authenticated()
 
+                        // 그 외 /command/** 중 나머지(조회 등)는 허용
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(eh -> eh

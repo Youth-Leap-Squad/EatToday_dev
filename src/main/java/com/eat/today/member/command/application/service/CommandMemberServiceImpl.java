@@ -95,8 +95,11 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
 
         // DB에서 조회된 해당 이메일을 가진 회원이 가진 권한을 가져와 List<GrantedAuthority>로 전환
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if (loginMember.getMemberRole() == MemberEntity.Role.ADMIN) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        } else {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
 
         return new CustomUserDetails(
                 loginMember.getMemberEmail(), 
