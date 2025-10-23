@@ -39,7 +39,7 @@ public class AlbtiMemberAddService {
         // 4. 사용자의 선택값 저장 ('A' 또는 'B')
         answer.setChoice(request.getChoice());
 
-        // 5. 저장
+        // 5. 저장 (1개의 설문만 저장)
         AlbtiAnswer savedAnswer = albtiAnswerRepository.save(answer);
 
         // 6. 응답 DTO 반환

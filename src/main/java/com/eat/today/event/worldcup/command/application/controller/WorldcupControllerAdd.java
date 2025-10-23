@@ -18,23 +18,34 @@
 
         @PostMapping("/join")
         public WorldcupJoinResponseAddDTO joinWorldcup(@RequestBody WorldcupJoinRequestAddAgainDTO request) {
-            // 서비스 실행 후 joinMember PK 리턴받기
-            int joinMemberNo = worldcupServiceAdd.joinWorldcup(
-                    request.getMemberNo(),
-                    request.getWorldcupNo(),
-                    request.getAlcoholId(),
-                    request.getFoodId()
-            );
+            try {
+                // 서비스 실행 후 joinMember PK 리턴받기
+                int joinMemberNo = worldcupServiceAdd.joinWorldcup(
+                        request.getMemberNo(),
+                        request.getWorldcupNo(),
+                        request.getAlcoholId(),
+                        request.getFoodId()
+                );
 
-            // 응답 DTO 생성
-            return new WorldcupJoinResponseAddDTO(
-                    request.getMemberNo(),
-                    request.getWorldcupNo(),
-                    request.getAlcoholId(),
-                    request.getFoodId(),
-                    joinMemberNo,
-                    "월드컵 참여 및 선택이 완료되었습니다!"
-            );
+                // 응답 DTO 생성
+                return new WorldcupJoinResponseAddDTO(
+                        request.getMemberNo(),
+                        request.getWorldcupNo(),
+                        request.getAlcoholId(),
+                        request.getFoodId(),
+                        joinMemberNo,
+                        "월드컵 참여 및 선택이 완료되었습니다!"
+                );
+            } catch (IllegalStateException e) {
+                return new WorldcupJoinResponseAddDTO(
+                        request.getMemberNo(),
+                        request.getWorldcupNo(),
+                        request.getAlcoholId(),
+                        request.getFoodId(),
+                        0,
+                        e.getMessage() // "이미 이번 주차에 해당 술로 참여하셨습니다."
+                );
+            }
+
         }
-
     }
