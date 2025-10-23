@@ -33,7 +33,20 @@ public class PhotoReviewCommandController {
         return ResponseEntity.ok(Map.of("reviewNo", reviewNo));
     }
 
-    /* UPDATE: 부분수정 + 이미지 추가/삭제 */
+    // 사진 리뷰 - 글 수정
+    @PatchMapping(path = "/{reviewNo}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> editJson(
+            @PathVariable int reviewNo,
+            @RequestBody UpdateRequest reviewPatch
+    ) throws IOException {
+        int updated = service.editWithFiles(reviewNo, reviewPatch, List.of(), List.of());
+        return updated > 0 ? ResponseEntity.ok(Map.of("updated", updated))
+                : ResponseEntity.notFound().build();
+    }
+
+    // 글 + 이미지 수정
     @PatchMapping(path = "/{reviewNo}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)

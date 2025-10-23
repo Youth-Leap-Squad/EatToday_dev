@@ -8,29 +8,82 @@ import com.eat.today.sns.command.application.entity.photoReview.PhotoReviewEntit
 import com.eat.today.sns.command.application.entity.prFileUpload.PrFileUploadEntity;
 import com.eat.today.sns.command.domain.repository.photoReview.PhotoReviewRepository;
 import com.eat.today.sns.command.domain.repository.prFileUpload.PrFileUploadRepository;
-import com.eat.today.sns.command.domain.service.storage.PhotoReviewFileStorage;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class PhotoReviewCommandService {
 
     private final PhotoReviewRepository repository;
     private final PrFileUploadRepository fileRepo;
-    private final PhotoReviewFileStorage storage;
     private final MemberPointService memberPointService;
 
-    /* ---------- CREATE (본문만) : 기존 유지 ---------- */
-    @Transactional
+    @Value("${app.upload.base-dir}")
+    private String uploadBaseDir;
+    private Path baseDir;
+    private static final long MAX_SIZE = 10L * 1024 * 1024;   // 10MB
+
+    private static final Set<String> ALLOWED_CT = Set.of(
+            "image/jpeg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif"
+    );
+
+    private static final DateTimeFormatter ISO_Z =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
+
+    private String nowIso() { return ISO_Z.format(Instant.now()); }
+
+    @PostConstruct
+    void ensureBaseDir() {
+        try {
+            baseDir = Paths.get(uploadBaseDir).toAbsolutePath().normalize();
+            Files.createDirectories(baseDir);
+            if (!Files.isWritable(baseDir)) {
+                throw new IllegalStateException("Upload base-dir not writable: " + baseDir);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid app.upload.base-dir: " + uploadBaseDir, e);
+        }
+    }
+
+    // 경로 이름
+    private Path reviewDir(int reviewNo) {
+        return baseDir.resolve("reviews").resolve(String.valueOf(reviewNo));
+    }
+
+    private static String safeStoredName(String original) {
+        String cleaned = StringUtils.cleanPath(Objects.requireNonNullElse(original, "file"));
+        if (cleaned.contains("..")) {
+            throw new IllegalArgumentException("Invalid filename: " + cleaned);
+        }
+        String ext = "";
+        int dot = cleaned.lastIndexOf('.');
+        if (dot != -1) ext = cleaned.substring(dot);
+        return UUID.randomUUID().toString().replace("-", "") + ext;
+    }
+
+    // 사진 리뷰 삽입
     public int create(CreateRequest req) {
         PhotoReviewEntity e = new PhotoReviewEntity();
         e.setBoardNo(req.getBoardNo());
@@ -38,22 +91,15 @@ public class PhotoReviewCommandService {
         e.setReviewTitle(req.getReviewTitle());
         e.setReviewDate(req.getReviewDate());
         e.setReviewContent(req.getReviewContent());
-        e.setReviewLike(0); // 생성 시 0 고정 권장
+        e.setReviewLike(0);
         PhotoReviewEntity saved = repository.save(e);
-        
-        // 사진 리뷰 작성 시 포인트 지급
-        try {
-            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.PHOTO_REVIEW_CREATE);
-        } catch (Exception ex) {
-            log.error("사진 리뷰 작성 포인트 지급 실패 - 회원번호: {}, 리뷰번호: {}", req.getMemberNo(), saved.getReviewNo(), ex);
-        }
-        
+
+        grantPointSafe(req.getMemberNo(), saved.getReviewNo());
         return saved.getReviewNo();
     }
 
-    /* ---------- CREATE (본문 + 파일) : 오버로드 ---------- */
-    @Transactional
-    public int create(CreateRequest req, List<MultipartFile> files) throws IOException {
+    // 사진리뷰 삽입
+    public int create(CreateRequest req, List<MultipartFile> files) {
         PhotoReviewEntity e = new PhotoReviewEntity();
         e.setBoardNo(req.getBoardNo());
         e.setMemberNo(req.getMemberNo());
@@ -63,42 +109,22 @@ public class PhotoReviewCommandService {
         e.setReviewLike(0);
         e = repository.save(e);
 
-        if (files != null) {
-            for (MultipartFile f : files) {
-                if (f == null || f.isEmpty()) continue;
-                var stored = storage.store(e.getReviewNo(), f); // 물리 저장
-                PrFileUploadEntity fe = new PrFileUploadEntity();
-                fe.setReview(e);
-                fe.setPrFileName(stored.getOriginalName());
-                fe.setPrFileRename(stored.getRename());
-                fe.setPrFileType(stored.getContentType());
-                fe.setPrFilePath(stored.getPublicPath());
-                fe.setPrFileAt(stored.getSavedAt());
-                fileRepo.save(fe);
-            }
-        }
-        
-        // 사진 리뷰 작성 시 포인트 지급
-        try {
-            memberPointService.grantPoints(req.getMemberNo(), PointPolicy.PHOTO_REVIEW_CREATE);
-        } catch (Exception ex) {
-            log.error("사진 리뷰 작성 포인트 지급 실패 - 회원번호: {}, 리뷰번호: {}", req.getMemberNo(), e.getReviewNo(), ex);
-        }
-        
+        saveFiles(e.getReviewNo(), files);
+
+        grantPointSafe(req.getMemberNo(), e.getReviewNo());
         return e.getReviewNo();
     }
 
-    /* ---------- UPDATE (본문 일부 + 파일 추가/삭제) ---------- */
-    @Transactional
+    // 글 + 파일 수정 / 삭제
     public int editWithFiles(int reviewNo,
                              UpdateRequest reqPatch,
                              List<MultipartFile> addFiles,
-                             List<Integer> deleteFileNos) throws IOException {
+                             List<Integer> deleteFileNos) {
 
         PhotoReviewEntity e = repository.findById(reviewNo)
                 .orElseThrow(() -> new EntityNotFoundException("review_no=" + reviewNo));
 
-        // 1) 본문 부분 수정
+        // 본문 패치
         if (reqPatch != null) {
             if (reqPatch.getBoardNo() != null) e.setBoardNo(reqPatch.getBoardNo());
             if (reqPatch.getMemberNo() != null) e.setMemberNo(reqPatch.getMemberNo());
@@ -109,59 +135,96 @@ public class PhotoReviewCommandService {
             repository.save(e);
         }
 
-        // 2) 파일 삭제
+        // 파일 삭제
         if (deleteFileNos != null && !deleteFileNos.isEmpty()) {
             var files = fileRepo.findAllById(deleteFileNos);
             for (var fe : files) {
-                if (fe.getReview().getReviewNo() != reviewNo) continue;
-                storage.deletePhysical(fe.getPrFilePath()); // 물리 삭제(실패해도 DB는 삭제)
+                if (!Objects.equals(fe.getReview().getReviewNo(), reviewNo)) continue;
+                try { Files.deleteIfExists(Paths.get(fe.getPrFilePath())); } catch (Exception ignore) {}
                 fileRepo.delete(fe);
             }
         }
 
-        // 3) 파일 추가
-        if (addFiles != null) {
-            for (MultipartFile f : addFiles) {
-                if (f == null || f.isEmpty()) continue;
-                var stored = storage.store(reviewNo, f);
-                PrFileUploadEntity fe = new PrFileUploadEntity();
-                fe.setReview(e);
-                fe.setPrFileName(stored.getOriginalName());
-                fe.setPrFileRename(stored.getRename());
-                fe.setPrFileType(stored.getContentType());
-                fe.setPrFilePath(stored.getPublicPath());
-                fe.setPrFileAt(stored.getSavedAt());
-                fileRepo.save(fe);
-            }
-        }
+        // 파일 추가
+        saveFiles(reviewNo, addFiles);
 
         return 1;
     }
 
-    /* ---------- DELETE (리뷰 + 연관 파일 전체) ---------- */
-    @Transactional
+    // 글 + 파일 삭제
     public int delete(int reviewNo) {
         var eOpt = repository.findById(reviewNo);
         if (eOpt.isEmpty()) return 0;
 
-        // 연관 파일들 물리 삭제
         var files = fileRepo.findByReview_ReviewNo(reviewNo);
-        for (var fe : files) storage.deletePhysical(fe.getPrFilePath());
+        for (var fe : files) {
+            try { Files.deleteIfExists(Paths.get(fe.getPrFilePath())); } catch (Exception ignore) {}
+        }
 
-        repository.deleteById(reviewNo); // FK ON DELETE CASCADE면 파일 레코드도 함께 삭제
+        repository.deleteById(reviewNo); // FK CASCADE면 파일 레코드도 삭제됨
         return 1;
     }
 
-    /* ---------- DELETE (파일) ---------- */
-    @Transactional
+    // 파일만 삭제
     public int deleteFile(int reviewNo, int fileNo) {
         var feOpt = fileRepo.findById(fileNo);
         if (feOpt.isEmpty()) return 0;
-        var fe = feOpt.get();
-        if (fe.getReview().getReviewNo() != reviewNo) return 0;
 
-        storage.deletePhysical(fe.getPrFilePath());
+        var fe = feOpt.get();
+        if (!Objects.equals(fe.getReview().getReviewNo(), reviewNo)) return 0;
+
+        try { Files.deleteIfExists(Paths.get(fe.getPrFilePath())); } catch (Exception ignore) {}
         fileRepo.delete(fe);
         return 1;
+    }
+
+    // 파일 저장
+    private void saveFiles(int reviewNo, List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) return;
+
+        Path dir = reviewDir(reviewNo); // baseDir.resolve("reviews").resolve(reviewNo)
+        try { Files.createDirectories(dir); }
+        catch (IOException e) { throw new RuntimeException("Fail to create dir: " + dir, e); }
+
+        List<Path> created = new ArrayList<>();
+        try {
+            for (MultipartFile mf : files) {
+                if (mf == null || mf.isEmpty()) continue;
+
+                String originalName = Optional.ofNullable(mf.getOriginalFilename()).orElse("image");
+                String storedName = safeStoredName(originalName);
+                Path target = dir.resolve(storedName);
+
+                try (var in = mf.getInputStream()) { Files.copy(in, target); }
+                created.add(target);
+
+                String physicalPath = target.toString().replace('\\','/');
+
+                // 공개 URL: /files/{relative-to-basedir}
+                String relative = baseDir.relativize(target).toString().replace('\\','/');
+                String publicUrl = "/" + ("files/" + relative).replaceAll("/{2,}", "/");
+
+                PrFileUploadEntity fe = new PrFileUploadEntity();
+                fe.setReview(repository.getReferenceById(reviewNo));
+                fe.setPrFileName(originalName);
+                fe.setPrFileType(Optional.ofNullable(mf.getContentType()).orElse("application/octet-stream"));
+                fe.setPrFileRename(storedName);
+                fe.setPrFilePath(physicalPath);
+                fe.setPrFileUrl(publicUrl);
+                fe.setPrFileAt(nowIso());
+                fileRepo.save(fe);
+            }
+        } catch (RuntimeException | IOException ex) {
+            for (Path p : created) { try { Files.deleteIfExists(p); } catch (Exception ignore) {} }
+            throw (ex instanceof RuntimeException) ? (RuntimeException) ex : new RuntimeException(ex);
+        }
+    }
+
+    private void grantPointSafe(Integer memberNo, Integer reviewNo) {
+        try {
+            memberPointService.grantPoints(memberNo, PointPolicy.PHOTO_REVIEW_CREATE);
+        } catch (Exception ex) {
+            log.error("사진 리뷰 작성 포인트 지급 실패 - memberNo={}, reviewNo={}", memberNo, reviewNo, ex);
+        }
     }
 }

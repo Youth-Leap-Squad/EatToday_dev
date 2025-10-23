@@ -14,19 +14,19 @@ public class DmQueryController {
 
     private final DmMapper mapper;
 
-    /* 받은 쪽지함 */
+    // 받은 쪽지함
     @GetMapping("/received/{memberNo}")
     public List<MessageDTO> getReceivedList(@PathVariable int memberNo) {
         return mapper.selectReceivedList(memberNo);
     }
 
-    /* 보낸 쪽지함 */
+    // 보낸 쪽지함
     @GetMapping("/sent/{memberNo}")
     public List<MessageDTO> getSentList(@PathVariable int memberNo) {
         return mapper.selectSentList(memberNo);
     }
 
-    /* 쪽지 상세 */
+    // 쪽지 상세
     @GetMapping("/{noteId}")
     public MessageDTO getDetail(@PathVariable int noteId) {
         return mapper.selectDetail(noteId);

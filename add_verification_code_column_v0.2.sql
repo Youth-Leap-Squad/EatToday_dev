@@ -1,6 +1,5 @@
-
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
-
+DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
 DROP TABLE IF EXISTS `albti_survey`;
@@ -15,7 +14,6 @@ DROP TABLE IF EXISTS `food_post_likes`;
 DROP TABLE IF EXISTS `food_comment`;
 DROP TABLE IF EXISTS `individual_world_cup_food`;
 DROP TABLE IF EXISTS `qna_comment`;
-
 
 -- 중간 계층
 DROP TABLE IF EXISTS `dm_message_read`;
@@ -34,14 +32,12 @@ DROP TABLE IF EXISTS `follow`;
 DROP TABLE IF EXISTS `secession`;
 DROP TABLE IF EXISTS `login`;
 
-
 -- 부모 테이블
 DROP TABLE IF EXISTS `food_post`;
 DROP TABLE IF EXISTS `worldcup`;
 DROP TABLE IF EXISTS `alcohol`;
 DROP TABLE IF EXISTS `member`;
 DROP TABLE IF EXISTS `role`;
-
 
 CREATE TABLE `member` (
                           member_no INT NOT NULL AUTO_INCREMENT COMMENT '회원번호',
@@ -60,6 +56,35 @@ CREATE TABLE `member` (
                           CONSTRAINT PK_member PRIMARY KEY (member_no),
                           INDEX idx_member_email (member_email)
 ) ENGINE=INNODB COMMENT '회원 정보';
+
+CREATE TABLE IF NOT EXISTS `email_verification` (
+                                      `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+                                      `email`         VARCHAR(255) NOT NULL,
+                                      `token`         VARCHAR(255) NOT NULL,
+                                      `expires_at`    DATETIME     NOT NULL,
+                                      `used`          TINYINT(1)   NOT NULL DEFAULT 0,
+                                      `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                      PRIMARY KEY (`id`),
+                                      UNIQUE KEY `uk_email_verification_token` (`token`),
+                                      KEY `idx_email_verification_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `profile_image` (
+                                 `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+                                 `member_email`      VARCHAR(255) NOT NULL,
+                                 `original_file_name` VARCHAR(255) NOT NULL,
+                                 `stored_file_name`  VARCHAR(255) NOT NULL,
+                                 `file_path`        VARCHAR(500) NOT NULL,
+                                 `file_size`        BIGINT       NOT NULL,
+                                 `content_type`     VARCHAR(100) NOT NULL,
+                                 `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                 `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
+                                 `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
+                                 PRIMARY KEY (`id`),
+                                 KEY `idx_profile_image_email` (`member_email`),
+                                 KEY `idx_profile_image_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='프로필 사진 정보';
+
 
 CREATE TABLE `secession` (
                              member_no INT NOT NULL COMMENT '회원번호',
@@ -82,7 +107,7 @@ CREATE TABLE `food_post` (
                              `board_title` VARCHAR(255) NOT NULL,
                              `board_content` VARCHAR(255) NOT NULL,
                              `food_explain` VARCHAR(255) NOT NULL,
-                             `food_picture` VARCHAR(255) NULL,
+                             `food_picture` VARCHAR(255),
                              `board_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                              `board_seq` INT NOT NULL DEFAULT 0,
                              `confirmed_yn` CHAR(1) NOT NULL DEFAULT 'T',
@@ -94,6 +119,7 @@ CREATE TABLE `food_post` (
                              CONSTRAINT `FK_FOOD_POST_ALCOHOL` FOREIGN KEY (`alcohol_no`) REFERENCES `alcohol`(`alcohol_no`),
                              CONSTRAINT `FK_FOOD_POST_MEMBER` FOREIGN KEY (`member_no`) REFERENCES `member`(`member_no`)
 ) ENGINE=INNODB COMMENT='안주 게시글';
+
 
 CREATE TABLE `photo_review` (
                                 review_no     INT NOT NULL AUTO_INCREMENT,
@@ -199,9 +225,11 @@ CREATE TABLE `worldcup_join_member` (
                                         `worldcup_join_member_no` INT NOT NULL AUTO_INCREMENT,
                                         `worldcup_no` INT NOT NULL,
                                         `member_no` INT NOT NULL,
+                                        `alcohol_no` INT NOT NULL,
                                         CONSTRAINT PK_WORLDCUP_JOIN_MEMBER_NO PRIMARY KEY(worldcup_join_member_no),
                                         CONSTRAINT FK_MESSAGE_NO_MEMBER_NO FOREIGN KEY(worldcup_no) REFERENCES worldcup(worldcup_no),
-                                        CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_2 FOREIGN KEY(member_no) REFERENCES member(member_no)
+                                        CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_2 FOREIGN KEY(member_no) REFERENCES member(member_no),
+                                        CONSTRAINT FK_WORLDCUP_JOINMEMBER_ALCOHOL FOREIGN KEY (alcohol_no) REFERENCES alcohol(alcohol_no)
 )ENGINE=INNODB COMMENT '주간 월드컵 게임 참여회원';
 
 
@@ -210,16 +238,16 @@ CREATE TABLE IF NOT EXISTS `report` (
                                         `member_no` INT NOT NULL,
                                         `member_no2` INT NOT NULL,
                                         `report_title` VARCHAR(255) NOT NULL,
-                                        `report_content` VARCHAR(255) NOT NULL,
-                                        `report_yn` BOOLEAN DEFAULT FALSE,
-                                        `report_date` VARCHAR(255) NOT NULL,
-                                        `report_source` VARCHAR(255) NOT NULL,
-                                        CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
-                                        CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
-                                            ON UPDATE CASCADE ON DELETE CASCADE,
-                                        CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
-                                            ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=INNODB COMMENT '신고';
+    `report_content` VARCHAR(255) NOT NULL,
+    `report_yn` BOOLEAN DEFAULT FALSE,
+    `report_date` VARCHAR(255) NOT NULL,
+    `report_source` VARCHAR(255) NOT NULL,
+    CONSTRAINT PK_REPORT PRIMARY KEY (report_no),
+    CONSTRAINT FK_REPORT_MEMBER2 FOREIGN KEY (member_no2) REFERENCES member(member_no)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_REPORT_MEMBER FOREIGN KEY (member_no) REFERENCES member(member_no)
+    ON UPDATE CASCADE ON DELETE CASCADE
+    ) ENGINE=INNODB COMMENT '신고';
 
 CREATE TABLE bookmark (
                           member_no INT NOT NULL,
@@ -243,21 +271,20 @@ CREATE TABLE `albti` (
 
 
 CREATE TABLE `albti_survey` (
-                                albti_survey_no INT NOT NULL AUTO_INCREMENT,
-                                alBTI_no INT NOT NULL,
-                                albti_survey_content VARCHAR(255) NOT NULL,
-                                CONSTRAINT PK_albti_survey_no PRIMARY KEY (albti_survey_no),
-                                CONSTRAINT FK_albti_no FOREIGN KEY (alBTI_no)  REFERENCES albti(alBTI_no)
+                                albti_survey_no INT AUTO_INCREMENT PRIMARY KEY,
+                                question VARCHAR(255) NOT NULL,
+                                type_a INT NOT NULL,  -- A 선택 시 점수 올라가는 alBTI_no
+                                type_b INT NOT NULL,  -- B 선택 시 점수 올라가는 alBTI_no
+                                CONSTRAINT FK_albti_type_a FOREIGN KEY (type_a) REFERENCES albti(alBTI_no),
+                                CONSTRAINT FK_albti_type_b FOREIGN KEY (type_b) REFERENCES albti(alBTI_no)
 )ENGINE=INNODB COMMENT '술BTI 설문지';
 
 
 CREATE TABLE `albti_join_member` (
                                      alBTI_member_no        INT NOT NULL AUTO_INCREMENT,
                                      member_no              INT NOT NULL,
-                                     albti_survey_no        INT NOT NULL,
                                      CONSTRAINT PK_albti_join_member PRIMARY KEY (alBTI_member_no),
-                                     CONSTRAINT FK_ajm_member FOREIGN KEY (member_no) REFERENCES member(member_no),
-                                     CONSTRAINT FK_ajm_albti_survey_no  FOREIGN KEY (albti_survey_no)  REFERENCES albti_survey(albti_survey_no)
+                                     CONSTRAINT FK_ajm_member FOREIGN KEY (member_no) REFERENCES member(member_no)
 )ENGINE=INNODB COMMENT '술BTI게임 참여회원';
 
 
@@ -275,9 +302,6 @@ CREATE TABLE `photo_review_comment` (
                                         CONSTRAINT FK_prc_review FOREIGN KEY (review_no) REFERENCES photo_review(review_no)
 )ENGINE=INNODB COMMENT '사진리뷰댓글';
 
-
-
-
 CREATE TABLE `worldcup_alcohol` (
                                     `worldcup_alcohol_no` INT NOT NULL AUTO_INCREMENT,
                                     `alcohol_no` INT NOT NULL,
@@ -286,7 +310,6 @@ CREATE TABLE `worldcup_alcohol` (
                                     CONSTRAINT FK_WORLDCUP_ALCOHOL_ALCOHOL FOREIGN KEY (alcohol_no) REFERENCES alcohol(alcohol_no),
                                     CONSTRAINT FK_WORLDCUP_ALCOHOL_WORLDCUP FOREIGN KEY (worldcup_no) REFERENCES worldcup(worldcup_no)
 ) ENGINE=INNODB COMMENT '월드컵술';
-
 
 -- 1) 방
 CREATE TABLE dm_room (
@@ -371,8 +394,6 @@ CREATE TABLE dm_file_upload (
                                         ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='DM 파일 업로드';
 
-
-
 CREATE TABLE `food_post_likes` (
                                    `member_no` INT NOT NULL,
                                    `board_no`  INT NOT NULL,
@@ -427,39 +448,50 @@ CREATE TABLE `albti_output` (
 )ENGINE=INNODB COMMENT '회원별 술BTI 설문 결과';
 
 
--- 더미데이터 삽입 (memberEmail 포함)
--- 더미데이터 삽입 (memberEmail 포함)
+-- (추가 테이블) 설문 응답 테이블
+CREATE TABLE albti_answer (
+                              albti_answer_no INT AUTO_INCREMENT PRIMARY KEY,
+                              member_no INT NOT NULL,
+                              albti_survey_no INT NOT NULL,
+                              choice CHAR(1) NOT NULL CHECK (choice IN ('A','B')),
+                              CONSTRAINT FK_aa_member FOREIGN KEY (member_no) REFERENCES member(member_no),
+                              CONSTRAINT FK_aa_survey FOREIGN KEY (albti_survey_no) REFERENCES albti_survey(albti_survey_no)
+)ENGINE=INNODB COMMENT '술BTI 회원별 설문 응답 테이블';
+
+
+
+-- 더미데이터 삽입 (memberEmail 포함, 비밀번호 암호화)
 INSERT INTO `member`
 (member_role, member_id, member_pw, member_name, member_birth, member_phone, member_email, member_status, member_active, member_at, member_level, report_count)
 VALUES
-    ('ADMIN', 'admin01', 'adminpw!', '관리자', '1988-10-10', '010-1111-1111', 'admin@eattoday.com', 'normal', TRUE, '2025-01-05',NULL, 0),
-    ('USER', 'soju_love', 'drinkpw1!', '박철수', '1995-07-07', '010-2222-2222', 'soju.love@example.com', 'normal', TRUE, '2025-03-11', 200, 0),
-    ('USER', 'beer_queen', 'beerpw2!', '김민지', '1998-11-23', '010-3333-3333', 'beer.queen@example.com', 'suspended', FALSE, '2025-04-02', 300, 0),
-    ('USER', 'wine_master', 'winepw3!', '최영희', '1990-02-17', '010-4444-4444', 'wine.master@example.com', 'normal', TRUE, '2025-05-20', 220, 0),
-    ('USER', 'makgeolli', 'makpw4!', '정우성', '1993-12-30', '010-5555-5555', 'makgeolli@example.com', 'normal', TRUE, '2025-06-01', 60, 0),
-    ('USER', 'cocktail_girl', 'cockpw5!', '한지민', '2000-09-09', '010-6666-6666', 'cocktail.girl@example.com', 'normal', TRUE, '2025-07-18', 50, 0),
-    ('USER', 'sake_lover', 'sakpw6!', '오다유키', '1994-01-25', '010-7777-7777', 'sake.lover@example.com', 'normal', TRUE, '2025-08-03', 340, 0),
-    ('USER', 'champagne_boy', 'champpw7!', '박상혁', '1992-04-19', '010-8888-8888', 'champagne.boy@example.com', 'normal', TRUE, '2025-08-25', 200, 0),
-    ('USER', 'highballer', 'highpw8!', '이진우', '1999-07-15', '010-9999-9999', 'highballer@example.com', 'normal', TRUE, '2025-09-01', 50, 0),
-    ('USER', 'vodka_star', 'vodkapw9!', '안지수', '1997-12-12', '010-1010-1010', 'vodka.star@example.com', 'normal', TRUE, '2025-09-05', 50, 0),
-    ('USER', 'gin_tonic', 'ginpw10!', '서민호', '1996-06-30', '010-1111-2222', 'gin.tonic@example.com', 'normal', TRUE, '2025-09-07', 50, 0),
-    ('USER', 'whisky_time', 'whiskypw11!', '김성훈', '1989-08-21', '010-2222-3333', 'whisky.time@example.com', 'withdrawn', FALSE, '2025-09-10', 500, 0),
-    ('USER', 'rum_rider', 'rumpw12!', '홍길동', '1991-09-15', '010-3333-4444', 'rum.rider@example.com', 'normal', TRUE, '2025-09-11', 50, 0),
-    ('USER', 'tequila99', 'teqpw13!', '최다혜', '1998-05-22', '010-4444-5555', 'tequila99@example.com', 'normal', TRUE, '2025-09-12', 60, 0),
-    ('USER', 'soju_kim', 'sojupw14!', '김철민', '1995-11-30', '010-5555-6666', 'soju.kim@example.com', 'normal', TRUE, '2025-09-13',340, 0),
-    ('USER', 'beer_lee', 'beerpw15!', '이수진', '1993-03-18', '010-6666-7777', 'beer.lee@example.com', 'suspended', FALSE, '2025-09-14', 200, 0),
-    ('USER', 'wine_park', 'winepw16!', '박지영', '1990-01-07', '010-7777-8888', 'wine.park@example.com', 'normal', TRUE, '2025-09-15', 200, 0),
-    ('ADMIN', 'admin02', 'adminpw2!', '서관리', '1985-06-05', '010-8888-9999', 'admin2@eattoday.com', 'normal', TRUE, '2025-09-16', NULL, 0),
-    ('USER', 'bbq_master', 'pw1!', '이서준', '1994-02-14', '010-1212-1212', 'bbq.master@example.com', 'normal', TRUE, '2025-09-16', 150, 0),
-    ('USER', 'sool_scholar', 'pw2!', '김하늘', '1997-03-01', '010-1313-1313', 'sool.scholar@example.com', 'normal', TRUE, '2025-09-16', 140, 0),
-    ('USER', 'wine_beginner', 'pw3!', '최다연', '2001-09-09', '010-1414-1414', 'wine.beginner@example.com', 'normal', TRUE, '2025-09-17', 200, 0),
-    ('USER', 'beer_coder', 'pw4!', '박도윤', '1996-05-22', '010-1515-1515', 'beer.coder@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
-    ('USER', 'mak_fan', 'pw5!', '정윤아', '1999-08-30', '010-1616-1616', 'mak.fan@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
-    ('USER', 'high_holic', 'pw6!', '오세준', '1995-12-02', '010-1717-1717', 'high.holic@example.com', 'normal', TRUE, '2025-09-18', 200, 0),
-    ('USER', 'sake_trip', 'pw7!', '장유나', '1998-01-28', '010-1818-1818', 'sake.trip@example.com', 'normal', TRUE, '2025-09-18', 340, 0),
-    ('USER', 'wine_note', 'pw8!', '신태훈', '1992-06-06', '010-1919-1919', 'wine.note@example.com', 'normal', TRUE, '2025-09-18', 700, 0),
-    ('USER', 'beer_runner', 'pw9!', '한유진', '1997-11-11', '010-2020-2020', 'beer.runner@example.com', 'normal', TRUE, '2025-09-19', 200, 0),
-    ('USER', 'soju_writer', 'pw10!', '노수현', '1993-07-17', '010-2121-2121', 'soju.writer@example.com', 'normal', TRUE, '2025-09-19', 800, 0);
+    ('ADMIN', 'admin01', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '관리자', '1988-10-10', '010-1111-1111', 'admin@eattoday.com', 'normal', TRUE, '2025-01-05', 0, 0),
+    ('USER', 'soju_love', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박철수', '1995-07-07', '010-2222-2222', 'soju.love@example.com', 'normal', TRUE, '2025-03-11', 200, 0),
+    ('USER', 'beer_queen', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김민지', '1998-11-23', '010-3333-3333', 'beer.queen@example.com', 'suspended', FALSE, '2025-04-02', 300, 0),
+    ('USER', 'wine_master', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최영희', '1990-02-17', '010-4444-4444', 'wine.master@example.com', 'normal', TRUE, '2025-05-20', 220, 0),
+    ('USER', 'makgeolli', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '정우성', '1993-12-30', '010-5555-5555', 'makgeolli@example.com', 'normal', TRUE, '2025-06-01', 60, 0),
+    ('USER', 'cocktail_girl', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '한지민', '2000-09-09', '010-6666-6666', 'cocktail.girl@example.com', 'normal', TRUE, '2025-07-18', 50, 0),
+    ('USER', 'sake_lover', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '오다유키', '1994-01-25', '010-7777-7777', 'sake.lover@example.com', 'normal', TRUE, '2025-08-03', 340, 0),
+    ('USER', 'champagne_boy', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박상혁', '1992-04-19', '010-8888-8888', 'champagne.boy@example.com', 'normal', TRUE, '2025-08-25', 200, 0),
+    ('USER', 'highballer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이진우', '1999-07-15', '010-9999-9999', 'highballer@example.com', 'normal', TRUE, '2025-09-01', 50, 0),
+    ('USER', 'vodka_star', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '안지수', '1997-12-12', '010-1010-1010', 'vodka.star@example.com', 'normal', TRUE, '2025-09-05', 50, 0),
+    ('USER', 'gin_tonic', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '서민호', '1996-06-30', '010-1111-2222', 'gin.tonic@example.com', 'normal', TRUE, '2025-09-07', 50, 0),
+    ('USER', 'whisky_time', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김성훈', '1989-08-21', '010-2222-3333', 'whisky.time@example.com', 'withdrawn', FALSE, '2025-09-10', 500, 0),
+    ('USER', 'rum_rider', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '홍길동', '1991-09-15', '010-3333-4444', 'rum.rider@example.com', 'normal', TRUE, '2025-09-11', 50, 0),
+    ('USER', 'tequila99', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최다혜', '1998-05-22', '010-4444-5555', 'tequila99@example.com', 'normal', TRUE, '2025-09-12', 60, 0),
+    ('USER', 'soju_kim', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김철민', '1995-11-30', '010-5555-6666', 'soju.kim@example.com', 'normal', TRUE, '2025-09-13',340, 0),
+    ('USER', 'beer_lee', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이수진', '1993-03-18', '010-6666-7777', 'beer.lee@example.com', 'suspended', FALSE, '2025-09-14', 200, 0),
+    ('USER', 'wine_park', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박지영', '1990-01-07', '010-7777-8888', 'wine.park@example.com', 'normal', TRUE, '2025-09-15', 200, 0),
+    ('ADMIN', 'admin02', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '서관리', '1985-06-05', '010-8888-9999', 'admin2@eattoday.com', 'normal', TRUE, '2025-09-16', 0, 0),
+    ('USER', 'bbq_master', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '이서준', '1994-02-14', '010-1212-1212', 'bbq.master@example.com', 'normal', TRUE, '2025-09-16', 150, 0),
+    ('USER', 'sool_scholar', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '김하늘', '1997-03-01', '010-1313-1313', 'sool.scholar@example.com', 'normal', TRUE, '2025-09-16', 140, 0),
+    ('USER', 'wine_beginner', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '최다연', '2001-09-09', '010-1414-1414', 'wine.beginner@example.com', 'normal', TRUE, '2025-09-17', 200, 0),
+    ('USER', 'beer_coder', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '박도윤', '1996-05-22', '010-1515-1515', 'beer.coder@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
+    ('USER', 'mak_fan', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '정윤아', '1999-08-30', '010-1616-1616', 'mak.fan@example.com', 'normal', TRUE, '2025-09-17', 340, 0),
+    ('USER', 'high_holic', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '오세준', '1995-12-02', '010-1717-1717', 'high.holic@example.com', 'normal', TRUE, '2025-09-18', 200, 0),
+    ('USER', 'sake_trip', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '장유나', '1998-01-28', '010-1818-1818', 'sake.trip@example.com', 'normal', TRUE, '2025-09-18', 340, 0),
+    ('USER', 'wine_note', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '신태훈', '1992-06-06', '010-1919-1919', 'wine.note@example.com', 'normal', TRUE, '2025-09-18', 700, 0),
+    ('USER', 'beer_runner', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '한유진', '1997-11-11', '010-2020-2020', 'beer.runner@example.com', 'normal', TRUE, '2025-09-19', 200, 0),
+    ('USER', 'soju_writer', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', '노수현', '1993-07-17', '010-2121-2121', 'soju.writer@example.com', 'normal', TRUE, '2025-09-19', 800, 0);
 
 -- 나머지 더미 데이터는 기존과 동일하게 유지
 INSERT INTO alcohol (alcohol_type, alcohol_explain, alcohol_picture)
@@ -584,6 +616,8 @@ VALUES
 -- 3번 리뷰에 6번 회원이 댓글 작성 후 삭제됨
 (6, '음식이 별로였어요..', '2025-09-12 19:00:00', 3, TRUE);
 
+
+
 -- 3) 라운지(리뷰-술 매핑)
 --   리뷰1=맥주(1), 리뷰2=소주(2), 리뷰3=와인(8)
 INSERT INTO lounge (review_no, alcohol_no)
@@ -591,6 +625,7 @@ VALUES
     (1, 1),
     (2, 2),
     (3, 8);
+
 
 -- 5) 안주 게시글 반응(좋아요/싫어요 등 타입 가정)
 INSERT INTO food_post_likes (member_no, board_no, likes_type)
@@ -632,10 +667,6 @@ VALUES
     (2, '사진 리뷰가 안 올라가요', '2025-09-12'),
     (3, '월드컵 일정이 궁금합니다', '2025-09-13');
 
--- 10) 월드컵-술 매핑 (worldcup_alcohol)
---     worldcup 1: 맥주(1), 와인(8)
---     worldcup 2: 소주(2), 하이볼(7)
---     일관 참조를 위해 worldcup_alcohol_no를 명시적으로 고정
 
 -- 문의 게시글 답변
 INSERT INTO qna_comment (qna_post_no, comment_member_no, comment_content, comment_at)
@@ -644,22 +675,32 @@ VALUES
     (2, 1, '월드컵 일정은 매주 월요일에 공지됩니다.', '2025-09-13 09:15:00'),
     (1, 1, '추가 문의 있으시면 언제든 연락주세요.', '2025-09-14 15:00:00');
 
+
+-- 10) 월드컵-술 매핑 (worldcup_alcohol)
+--     worldcup 1: 맥주(1), 와인(8)
+--     worldcup 2: 소주(2), 하이볼(7)
+--     일관 참조를 위해 worldcup_alcohol_no를 명시적으로 고정
 INSERT INTO worldcup_alcohol (worldcup_alcohol_no, alcohol_no, worldcup_no)
 VALUES
     (1, 1, 1),
-    (2, 8, 1),
-    (3, 2, 2),
-    (4, 7, 2);
+    (2, 2, 1),
+    (3, 3, 1),
+    (4, 1, 2),
+    (5, 2, 2),
+    (6, 3, 2),
+    (7, 1, 3),
+    (8, 2, 3),
+    (9, 3, 3);
 
 -- 11) 월드컵 참여 회원 (worldcup_join_member)
 --     ID를 고정적으로 지정해 아래 picks에서 참조
-INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no)
+INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no,alcohol_no)
 VALUES
-    (1, 1, 2),
-    (2, 1, 3),
-    (3, 1, 4),
-    (4, 2, 5),
-    (5, 2, 2);
+    (1, 1, 2,1),
+    (2, 1, 3,2),
+    (3, 1, 4,1),
+    (4, 2, 5,2),
+    (5, 2, 2,3);
 
 -- 12) 개인별 월드컵 후보 안주 (Individual_world_cup_food)
 --     worldcup 1: eventFood(1=치킨, 3=스테이크)
@@ -682,26 +723,26 @@ VALUES
     (5, 5, 4, 4);  -- (wc2, member 2) 하이볼 + 파전
 
 -- 14) 추가한 더미데이터 ##### 술BTI 설문지(albti_survey)
-INSERT INTO albti_survey (alBTI_no, albti_survey_content)
+INSERT INTO albti_survey (question, type_a, type_b)
 VALUES
-    (1, '술자리는 시끄럽고 활발한 분위기가 좋다.'),
-    (1, '새로운 술을 마셔보는 것을 즐긴다.'),
-    (2, '혼자 조용히 술을 즐기는 편이다.'),
-    (2, '익숙한 술만 마시는 것이 편하다.'),
-    (3, '친구들과 오래도록 천천히 마시는 것을 선호한다.'),
-    (3, '술보다는 안주가 더 중요하다.'),
-    (4, '짧고 강렬하게 마시는 것을 좋아한다.'),
-    (4, '술자리는 새로운 사람을 만나는 기회라고 생각한다.'),
-    (5, '술자리에서는 주로 분위기를 주도하는 편이다.'),
-    (5, '술 마실 때 게임이나 활동이 있어야 즐겁다.');
+    ('술자리는 시끄러운 게 좋다', 1, 2),   -- 1=활발함, 2=차분함 (지금은 yes or no인데 프론트에서 문자열로 바꿀수있는지)
+    ('익숙한 술이 좋다', 3, 4),        -- 전통파 vs 도전적
+    ('음악과 함께 마신다', 5, 6),      -- 감성파 vs 정열파
+    ('분위기와 조화를 중요하게 생각한다', 8, 7), -- 로맨틱 vs 테이스팅러버
+    ('편안하게 한잔하는 걸 좋아한다', 9, 2),     -- 힐링러 vs 차분함
+    ('전통 조합을 선호한다', 10, 4),   -- 클래식 vs 도전적
+    ('술 마실 때 게임을 즐긴다', 1, 9),        -- 활발함 vs 힐링러
+    ('새로운 안주 조합을 시도해본다', 4, 3),    -- 도전적 vs 전통파
+    ('불꽃 튀는 토론 분위기를 좋아한다', 6, 5),  -- 정열파 vs 감성파
+    ('잔잔한 분위기에서 깊은 대화를 나누는 걸 선호한다', 2, 8); -- 차분함 vs 로맨틱
 
 -- 15) 술BTI 참여 (albti_join_member)
-INSERT INTO albti_join_member (member_no, albti_survey_no)
+INSERT INTO albti_join_member (member_no)
 VALUES
-    ( 1, 1),
-    ( 3, 2),
-    ( 2, 3),
-    ( 4, 4);
+    ( 1),
+    ( 3),
+    ( 2),
+    ( 4);
 
 -- 16) 회원별 술BTI 설문 결과 (albti_output)
 INSERT INTO albti_output (alBTI_no, alBTI_alcohol_explain, board_no, alBTI_member_no)
@@ -710,3 +751,198 @@ VALUES
     (2, '차분히 즐길 수 있는 와인 추천', 3,2),
     (3, '전통 한식과 어울리는 소주 추천', 2,3),
     (4, '새로운 조합에 도전하는 하이볼 추천', 4,4);
+
+-- 17) 술BTI 응답 테이블(albti_answer)
+INSERT INTO albti_answer (member_no, albti_survey_no, choice)
+VALUES
+-- 회원 1
+(1, 1, 'A'), -- 활발함
+(1, 2, 'B'), -- 도전적
+(1, 3, 'A'), -- 감성파
+(1, 4, 'B'), -- 테이스팅러버
+(1, 5, 'A'), -- 힐링러
+(1, 6, 'A'), -- 클래식
+(1, 7, 'A'), -- 활발함
+(1, 8, 'B'), -- 전통파
+(1, 9, 'A'), -- 정열파
+(1, 10, 'B'), -- 로맨틱
+-- 회원 2
+(2, 1, 'B'), -- 차분함
+(2, 2, 'A'), -- 전통파
+(2, 3, 'B'), -- 정열파
+(2, 4, 'A'), -- 로맨틱
+(2, 5, 'B'), -- 차분함
+(2, 6, 'B'), -- 도전적
+(2, 7, 'B'), -- 힐링러
+(2, 8, 'A'), -- 도전적
+(2, 9, 'B'), -- 감성파
+(2, 10, 'A'); -- 차분함
+
+-- =========================
+-- PATCH: schema alignment
+-- =========================
+# USE mydb;
+
+-- 1) email_verification 정합화
+--    - verified 컬럼 없으면 추가
+--    - used -> verified 값 이관 후 used 삭제(있을 때만)
+--    - type 컬럼 없으면 추가
+--    - token 유니크/ email 인덱스 없으면 추가
+
+-- 1-1) verified 컬럼 추가 (없을 때만)
+SET @has_verified := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verified'
+);
+SET @sql := IF(@has_verified = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `expires_at`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-2) used -> verified 값 이관 (used 있을 때만)
+SET @has_used := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'used'
+);
+SET @sql := IF(@has_used = 1,
+  'UPDATE `email_verification` SET `verified` = `used` WHERE `verified` <> `used`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-3) used 컬럼 삭제 (있을 때만)
+SET @sql := IF(@has_used = 1,
+  'ALTER TABLE `email_verification` DROP COLUMN `used`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-4) type 컬럼 추가 (없을 때만)
+SET @has_type := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'type'
+);
+SET @sql := IF(@has_type = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `type` VARCHAR(31) NOT NULL DEFAULT ''EMAIL_VERIFICATION'' AFTER `verified`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-5) token 유니크 키 보강 (없을 때만)
+SET @has_token_uk := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'uk_email_verification_token'
+);
+SET @sql := IF(@has_token_uk = 0,
+  'ALTER TABLE `email_verification` ADD UNIQUE KEY `uk_email_verification_token` (`token`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-6) email 인덱스 보강 (없을 때만)
+SET @has_email_idx := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'idx_email_verification_email'
+);
+SET @sql := IF(@has_email_idx = 0,
+  'CREATE INDEX `idx_email_verification_email` ON `email_verification` (`email`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 1-7) verification_code 컬럼 추가 (없을 때만)
+SET @has_verification_code := (
+  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verification_code'
+);
+SET @sql := IF(@has_verification_code = 0,
+  'ALTER TABLE `email_verification` ADD COLUMN `verification_code` VARCHAR(6) NOT NULL DEFAULT ''000000'' AFTER `email`',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
+-- 2) Individual_world_cup_food → eventFood FK 대소문자/테이블명 정합화
+--    (만약 잘못된 참조가 있으면 제거 후 올바르게 생성)
+SET @bad_fk := (
+  SELECT CONSTRAINT_NAME
+  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'Individual_world_cup_food'
+    AND REFERENCED_TABLE_NAME = 'eventfood'           -- 잘못된 소문자 참조
+  LIMIT 1
+);
+SET @sql := IF(@bad_fk IS NOT NULL,
+  CONCAT('ALTER TABLE `Individual_world_cup_food` DROP FOREIGN KEY `', @bad_fk, '`'),
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 올바른 FK가 없으면 생성
+SET @good_fk_exists := (
+  SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+  WHERE CONSTRAINT_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'Individual_world_cup_food'
+    AND REFERENCED_TABLE_NAME = 'eventFood'
+);
+SET @sql := IF(@good_fk_exists = 0,
+  'ALTER TABLE `Individual_world_cup_food` ADD CONSTRAINT `FK_INDIVIDUAL_FOOD_EVENTFOOD` FOREIGN KEY (`food_no`) REFERENCES `eventFood`(`food_no`)',
+  'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
+-- 3) report 더미데이터 오타 보정: qnd_post -> qna_post
+UPDATE `report`
+SET `report_source` = 'qna_post'
+WHERE `report_source` = 'qnd_post';
+
+-- 4) 비밀번호 암호화 및 member_level 초기화 (기존 데이터 업데이트용)
+-- 모든 비밀번호를 "password123!"로 통일하여 암호화
+UPDATE member
+SET member_pw = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi',
+    member_level = COALESCE(member_level, 0)
+WHERE member_pw NOT LIKE '$2a$%';
+
+-- member_level이 null인 경우 0으로 설정
+UPDATE member
+SET member_level = 0
+WHERE member_level IS NULL;
+
+-- 5) 확인용 쿼리 (실행 후 확인)
+-- SELECT member_no, member_email, member_pw, member_level 
+-- FROM member 
+-- WHERE member_email IN (
+--     'high.holic@example.com',
+--     'sake.trip@example.com', 
+--     'wine.note@example.com',
+--     'beer.runner@example.com',
+--     'soju.writer@example.com'
+-- );
+
+-- 술BTI 뷰테이블 생성(자동계산)
+CREATE OR REPLACE VIEW albti_final_result AS
+WITH score_union AS (
+    SELECT a.member_no, s.type_a AS alBTI_no, COUNT(*) AS score
+    FROM albti_answer a
+             JOIN albti_survey s ON a.albti_survey_no = s.albti_survey_no
+    WHERE a.choice = 'A'
+    GROUP BY a.member_no, s.type_a
+    UNION ALL
+    SELECT a.member_no, s.type_b AS alBTI_no, COUNT(*) AS score
+    FROM albti_answer a
+             JOIN albti_survey s ON a.albti_survey_no = s.albti_survey_no
+    WHERE a.choice = 'B'
+    GROUP BY a.member_no, s.type_b
+),
+     score_sum AS (
+         SELECT member_no, alBTI_no, SUM(score) AS total_score
+         FROM score_union
+         GROUP BY member_no, alBTI_no
+     ),
+     max_score AS (
+         SELECT member_no, MAX(total_score) AS top_score
+         FROM score_sum
+         GROUP BY member_no
+     )
+SELECT s.member_no,
+       GROUP_CONCAT(a.alBTI_category ORDER BY s.total_score DESC SEPARATOR '/') AS final_type,
+       GROUP_CONCAT(a.alBTI_detail ORDER BY s.total_score DESC SEPARATOR '/') AS final_detail,
+       s.total_score
+FROM score_sum s
+         JOIN albti a ON s.alBTI_no = a.alBTI_no
+         JOIN max_score m ON s.member_no = m.member_no AND s.total_score = m.top_score
+GROUP BY s.member_no;
