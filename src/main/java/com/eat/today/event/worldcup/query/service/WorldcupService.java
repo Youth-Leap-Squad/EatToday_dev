@@ -17,22 +17,9 @@ public class WorldcupService {
         this.sqlSession = sqlSession;
 
     }
-//    private WorldcupMapper worldcupMapper;
 
-//    private final SqlSession sqlSession;
-//
-//    @Autowired
-//    public WorldcupService(SqlSession sqlSession) {
-//        this.sqlSession = sqlSession;
-//    }
-//    public List<SelectWorldcupDTO> getWorldcupRanking() {
-//        return worldcupMapper.selectWorldcup();
-//    }
-    public List<SelectWorldcupDTO> selectWorldcup(String weekNo) {
+    public List<SelectWorldcupDTO> selectWorldcup(String alcoholNo, String weekNo) {
         return sqlSession.getMapper(WorldcupMapper.class)
-                .selectWorldcup(weekNo);
+                .selectWorldcup(alcoholNo,weekNo);
     }
-//    public List<SelectWorldcupDTO> getWorldcupRanking(String weekNo) {
-//        return worldcupMapper.selectWorldcup(weekNo);
-//    }
 }

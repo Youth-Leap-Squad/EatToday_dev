@@ -3,6 +3,7 @@ package com.eat.today.event.worldcup.command.application.service;
 
 import com.eat.today.event.worldcup.command.application.entity.WorldcupJoinMember;
 import com.eat.today.event.worldcup.command.application.entity.WorldcupPicks;
+import com.eat.today.event.worldcup.command.domain.repository.WorldcupJoinMemberAlcoholRepository;
 import com.eat.today.event.worldcup.command.domain.repository.WorldcupJoinMemberRepository;
 import com.eat.today.event.worldcup.command.domain.repository.WorldcupPicksRepository;
 import com.eat.today.member.command.application.service.MemberPointService;
@@ -17,18 +18,31 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class WorldcupServiceAdd {
 
-    private final WorldcupJoinMemberRepository joinMemberRepository;
+//    private final WorldcupJoinMemberRepository joinMemberRepository;
+    private final WorldcupJoinMemberAlcoholRepository worldcupJoinMemberAlcoholRepository;
     private final WorldcupPicksRepository picksRepository;
     private final MemberPointService memberPointService;
 
 
+
     @Transactional
     public int joinWorldcup(int memberNo, int worldcupNo, int alcoholId, int foodId) {
+
+        // ✅(재참여 제한 기능) 한 주차에서 같은 술 기준으로 참여 여부 체크
+        boolean alreadyJoined = worldcupJoinMemberAlcoholRepository.existsByMemberNoAndWorldcupNoAndAlcoholId(
+                memberNo, worldcupNo, alcoholId
+        );
+        if (alreadyJoined) {
+            throw new IllegalStateException("이미 해당 주차에서 해당 술로 참여하셨습니다.");
+        }
+
+
         // 1. 회원이 월드컵에 참여 (worldcup_join_member insert)
         WorldcupJoinMember joinMember = new WorldcupJoinMember();
         joinMember.setMemberNo(memberNo);
         joinMember.setWorldcupNo(worldcupNo);
-        WorldcupJoinMember savedJoinMember = joinMemberRepository.save(joinMember);     // DB insert
+        joinMember.setAlcoholId(alcoholId);
+        WorldcupJoinMember savedJoinMember = worldcupJoinMemberAlcoholRepository.save(joinMember);     // DB insert
 
         // 2. 회원 pick 저장 (world_cup_picks insert)
         WorldcupPicks picks = new WorldcupPicks();

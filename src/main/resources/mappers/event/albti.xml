@@ -3,55 +3,58 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-
 <mapper namespace="com.eat.today.event.albti.query.mapper.AlbtiMapper">
 
-
+    <!-- 결과 매핑 -->
     <resultMap id="AlbtiResultMap" type="com.eat.today.event.albti.query.dto.SelectAlbtiDTO">
+        <!-- 회원 정보 -->
+            <association property="albti_join_member" javaType="com.eat.today.event.albti.query.dto.AlbtiJoinMemberDTO">
+            <result property="member_no" column="member_no"/>
+        </association>
 
-        <association property="albti_join_member" javaType="com.eat.today.event.albti.query.dto.AlbtiJoinMemberDTO">
-            <id property="member_no" column="member_no"/>
-        </association>
+        <!-- 술BTI 카테고리/디테일 -->
         <association property="albti_dto" javaType="com.eat.today.event.albti.query.dto.AlbtiDTO">
-            <result property="alBTI_category" column="alBTI_category"/>
-            <result property="alBTI_detail" column="alBTI_detail"/>
+            <result property="alBTI_category" column="final_type"/>
+            <result property="alBTI_detail" column="final_detail"/>
         </association>
+
+        <!-- 술BTI 설명 -->
         <association property="albti_output" javaType="com.eat.today.event.albti.query.dto.AlbtiOutputDTO">
             <result property="alBTI_alcohol_explain" column="alBTI_alcohol_explain"/>
         </association>
-        <association property="foodpost_dto" javaType="com.eat.today.event.albti.query.dto.FoodPostDTO">
-            <result property="food_picture" column="food_picture"/>
-            <result property="food_explain" column="food_explain"/>
-        </association>
 
+        <!-- 음식 정보 -->
+        <association property="foodpost_dto" javaType="com.eat.today.event.albti.query.dto.FoodPostDTO">
+            <result property="food_explain" column="food_explain"/>
+            <result property="food_picture" column="food_picture"/>
+        </association>
     </resultMap>
 
-    <!-- 술bti 검사 결과 조회 -->
-    <select id="selectAlbti" parameterType="java.lang.String" resultMap="AlbtiResultMap">
-<!--        SELECT-->
-        <!--               b.member_no-->
-        <!--             , a.alBTI_category-->
-        <!--             , a.alBTI_detail-->
-        <!--             , c.alBTI_alcohol_explain-->
-        <!--             , d.food_picture-->
-        <!--             , d.food_explain-->
-        <!--          FROM albti AS a-->
-        <!--          JOIN albti_join_member AS b ON a.alBTI_no = b.alBTI_no-->
-        <!--          JOIN albti_output AS c on a.alBTI_no = c.alBTI_no-->
-        <!--          JOIN food_post AS d ON d.board_no = c.board_no-->
-
+    <!-- 조회 쿼리 -->
+    <select id="selectAlbti" parameterType="int" resultMap="AlbtiResultMap">
         SELECT
-               b.member_no
-             , c.alBTI_category
-             , c.alBTI_detail
-             , a.alBTI_alcohol_explain
-             , d.food_picture
-             , d.food_explain
-         FROM albti_output AS a
-         JOIN albti_join_member AS b ON a.alBTI_member_no = b.alBTI_member_no
-         JOIN albti AS c on a.alBTI_no = c.alBTI_no
-         JOIN food_post AS d ON d.board_no = a.board_no
-        WHERE b.member_no = #{member_no};              <!-- 자신의 회원번호를 통해 자신의 술BTI검사 결과 조회 -->
-
+        r.member_no,
+        r.final_type,
+        r.final_detail,
+        o.alBTI_alcohol_explain,
+        f.food_explain,
+        f.food_picture
+        FROM albti_final_result r      <!-- 점수계산로직이 있는 뷰로 조회 -->
+        LEFT JOIN albti_output o ON r.member_no = o.alBTI_member_no
+        LEFT JOIN food_post f ON o.board_no = f.board_no
+        WHERE r.member_no = #{member_no}
+<!--        SELECT-->
+<!--        r.member_no,-->
+<!--        r.final_type,-->
+<!--        r.final_detail,-->
+<!--        GROUP_CONCAT(DISTINCT o.alBTI_alcohol_explain SEPARATOR '/') AS alBTI_alcohol_explain,-->
+<!--        GROUP_CONCAT(DISTINCT f.food_explain SEPARATOR '/') AS food_explain,-->
+<!--        GROUP_CONCAT(DISTINCT f.food_picture SEPARATOR '/') AS food_picture-->
+<!--        FROM albti_final_result r-->
+<!--        LEFT JOIN albti_output o ON r.member_no = o.alBTI_member_no-->
+<!--        LEFT JOIN food_post f ON o.board_no = f.board_no-->
+<!--        WHERE r.member_no = #{member_no}-->
+<!--        GROUP BY r.member_no, r.final_type, r.final_detail-->
     </select>
+
 </mapper>

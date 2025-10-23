@@ -23,4 +23,6 @@ public class WorldcupJoinMember {
     @Column(name = "member_no", nullable = false)
     private int memberNo;
 
+    @Column(name = "alcohol_no", nullable = false)
+    private int alcoholId;
 }

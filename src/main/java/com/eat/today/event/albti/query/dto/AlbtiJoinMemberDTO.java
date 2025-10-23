@@ -1,12 +1,17 @@
 package com.eat.today.event.albti.query.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
 @Data
 public class AlbtiJoinMemberDTO {
 
-//    private int alBIT_member_no;
-    private int member_no;
-//    private int alBTI_no;
 
+    private int member_no;
+//    private int memberNo;
 }

@@ -35,6 +35,9 @@ public class AlbtiMember {
     @Column(name = "member_phone", nullable = false, length = 255)
     private String memberPhone; // 핸드폰 번호
 
+    @Column(name = "member_email", nullable = false, length = 255)
+    private String memberEmail; // 이메일
+
     @Column(name = "member_status", nullable = false, length = 255)
     private String memberStatus = "normal"; // 회원 상태
 
@@ -46,4 +49,7 @@ public class AlbtiMember {
 
     @Column(name = "member_level")
     private Integer memberLevel; // 회원 등급
+
+    @Column(name = "report_count")
+    private Integer reportcount; // 신고 누적 횟수
 }
