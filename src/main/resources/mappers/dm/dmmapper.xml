@@ -1,29 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.eat.today.sns.query.repository.dm.DmMapper">
-    <resultMap id="dmMap" type="com.eat.today.sns.query.dto.dm.DmDTO">
-        <id property="messageNo" column="message_no"/>
-        <result property="sendMemberId" column="send_member_id"/>
-        <result property="receiveMemberId" column="receive_member_id"/>
-        <result property="dmContent" column="dm_content"/>
-        <result property="dmDate" column="dm_date"/>
-        <result property="dmRead" column="dm_read"/>
+
+    <!-- 쪽지 공통 resultMap -->
+    <resultMap id="dmMessageMap" type="com.eat.today.sns.query.dto.dm.MessageDTO">
+        <id property="noteId" column="note_id"/>
+        <result property="senderNo" column="sender_no"/>
+        <result property="receiverNo" column="receiver_no"/>
+        <result property="subject" column="subject"/>
+        <result property="content" column="content"/>
+        <result property="sentAtTxt" column="sent_at_txt"/>
+        <result property="read" column="read_flag"/>
+        <result property="readAtTxt" column="read_at_txt"/>
+        <!-- 첨부 파일 매핑 -->
+        <collection property="files" ofType="com.eat.today.sns.query.dto.dm.DmFileDTO"
+                    column="note_id" select="selectFilesByNoteId"/>
     </resultMap>
 
-    <!-- 사용자와 사용자가 디엠한 내용 조회 -->
-    <select id="selectByMessageNo" parameterType="int" resultMap="dmMap">
-        SELECT
-               dm.receive_member_id
-             , dm.send_member_id
-             , dm.dm_content
-             , dm.dm_read
-             , dm.dm_date
-          FROM direct_message AS dm
-         WHERE (send_member_id = 2 AND receive_member_id = 3)
-            OR (send_member_id = 3 AND receive_member_id = 2);
+    <!-- 받은 쪽지 목록 -->
+    <select id="selectReceivedList" parameterType="int"
+            resultMap="dmMessageMap">
+        SELECT n.note_id,
+               n.sender_no,
+               n.receiver_no,
+               n.subject,
+               n.content,
+               n.sent_at_txt,
+               n.is_read AS read_flag,
+               n.read_at_txt
+        FROM note_message n
+        WHERE n.receiver_no = #{memberNo}
+          AND n.receiver_deleted = 0
+        ORDER BY n.sent_at_txt DESC
     </select>
-</mapper>
 
+    <!-- 보낸 쪽지 목록 -->
+    <select id="selectSentList" parameterType="int"
+            resultMap="dmMessageMap">
+        SELECT n.note_id,
+               n.sender_no,
+               n.receiver_no,
+               n.subject,
+               n.content,
+               n.sent_at_txt,
+               n.is_read AS read_flag,
+               n.read_at_txt
+        FROM note_message n
+        WHERE n.sender_no = #{memberNo}
+          AND n.sender_deleted = 0
+        ORDER BY n.sent_at_txt DESC
+    </select>
+
+    <!-- 상세 조회 (1건) -->
+    <select id="selectDetail" parameterType="int"
+            resultMap="dmMessageMap">
+        SELECT n.note_id,
+               n.sender_no,
+               n.receiver_no,
+               n.subject,
+               n.content,
+               n.sent_at_txt,
+               n.is_read AS read_flag,
+               n.read_at_txt
+        FROM note_message n
+        WHERE n.note_id = #{noteId}
+    </select>
+
+    <!-- 첨부파일 조회 (쪽지별) -->
+    <select id="selectFilesByNoteId" parameterType="int"
+            resultType="com.eat.today.sns.query.dto.dm.DmFileDTO">
+        SELECT f.dm_file_no,
+               f.note_id,
+               f.dm_file_name,
+               f.dm_file_type,
+               f.dm_file_rename,
+               f.dm_file_path,
+               f.dm_file_size,
+               f.dm_file_at,
+               CONCAT('/files/notes/', f.note_id, '/', f.dm_file_rename) AS dm_file_url
+        FROM dm_file_upload f
+        WHERE f.note_id = #{noteId}
+        ORDER BY f.dm_file_at ASC
+    </select>
+
+</mapper>

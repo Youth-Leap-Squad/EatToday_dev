@@ -14,13 +14,13 @@ public class PRQueryController {
 
     private final PRQueryService service;
 
-    /* 리뷰 상세 + 첨부파일 목록 */
+    // 리뷰 상세 + 첨부파일 목록
     @GetMapping("/{reviewNo}")
     public PRDTO getDetail(@PathVariable int reviewNo) {
         return service.getDetail(reviewNo);
     }
 
-    /* 게시판별 목록 조회 */
+    // 게시판별 목록 조회
     @GetMapping
     public List<PRDTO> getListByBoard(@RequestParam int boardNo,
                                       @RequestParam(defaultValue = "0") int page,
@@ -28,7 +28,7 @@ public class PRQueryController {
         return service.getListByBoard(boardNo);
     }
 
-    /* 멤버별 목록 조회 */
+    // 멤버별 목록 조회
     @GetMapping("/member/{memberNo}")
     public List<PRDTO> getListByMember(@PathVariable int memberNo,
                                        @RequestParam(defaultValue = "0") int page,

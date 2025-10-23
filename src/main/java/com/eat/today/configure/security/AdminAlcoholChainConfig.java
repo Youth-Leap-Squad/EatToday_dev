@@ -21,7 +21,7 @@ public class AdminAlcoholChainConfig {
     @Order(1)
     public SecurityFilterChain adminAlcoholChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/command/alcohols", "/command/alcohols/**") // 루트+하위
+                .securityMatcher("/./alcohols", "/./alcohols/**") // 루트+하위
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm
                         -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

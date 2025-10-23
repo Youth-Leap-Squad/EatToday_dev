@@ -29,6 +29,9 @@ public class PrFileUploadEntity {
     @Column(name = "pr_file_path", nullable = false, length = 255)
     private String prFilePath;
 
+    @Column(name = "pr_file_url", nullable = false, length = 255)
+    private String prFileUrl;
+
     @Column(name = "pr_file_at", nullable = false, length = 255)
     private String prFileAt;
 }

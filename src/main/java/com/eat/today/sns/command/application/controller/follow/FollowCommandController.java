@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/command/follow")
+@RequestMapping("/./follow")
 public class FollowCommandController {
 
     private final FollowRepository followRepository;
