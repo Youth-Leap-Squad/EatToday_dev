@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface AlbtiMapper {
 
-    SelectAlbtiDTO selectAlbti(@Param("member_no") String member_no);
+    SelectAlbtiDTO selectAlbti(@Param("member_no") int member_no);
 
 
 }

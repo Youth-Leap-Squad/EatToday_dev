@@ -1,12 +1,17 @@
 package com.eat.today.event.albti.query.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
 @Data
 public class AlbtiOutputDTO {
 
-//    private int alBTI_no;
-    private String alBTI_alcohol_explain;
-//    private int board_no;
 
+    private String alBTI_alcohol_explain;
+//private String alBTIAlcoholExplain;
 }

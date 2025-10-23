@@ -8,5 +8,6 @@ import java.util.List;
 @Mapper
 public interface WorldcupMapper {
     // 월드컵 랭킹 조회
-    List<SelectWorldcupDTO> selectWorldcup(@Param("weekNo") String weekNo);
+    List<SelectWorldcupDTO> selectWorldcup(@Param("alcoholNo") String alcoholNo,
+                                            @Param("weekNo") String weekNo);
 }

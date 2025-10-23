@@ -1,7 +1,14 @@
 package com.eat.today.event.albti.command.domain.repository;
+
 import com.eat.today.event.albti.command.application.entity.AlbtiJoinMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AlbtiJoinMemberRepository extends JpaRepository<AlbtiJoinMember,Integer> {
-    // 필요시 회원별 참여 조회 추가 가능
+import java.util.Optional;
+
+
+public interface AlbtiJoinMemberRepository extends JpaRepository<AlbtiJoinMember, Integer> {
+
+    // 회원번호로 AlbtiJoinMember 찾기
+//    Optional<AlbtiJoinMember> findByMemberMemberNo(int memberNo);
+
 }

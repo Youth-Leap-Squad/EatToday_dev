@@ -1,6 +1,6 @@
 
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
-
+DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
 DROP TABLE IF EXISTS `albti_survey`;
@@ -220,9 +220,11 @@ CREATE TABLE `worldcup_join_member` (
                                         `worldcup_join_member_no` INT NOT NULL AUTO_INCREMENT,
                                         `worldcup_no` INT NOT NULL,
                                         `member_no` INT NOT NULL,
+                                        `alcohol_no` INT NOT NULL,
                                         CONSTRAINT PK_WORLDCUP_JOIN_MEMBER_NO PRIMARY KEY(worldcup_join_member_no),
                                         CONSTRAINT FK_MESSAGE_NO_MEMBER_NO FOREIGN KEY(worldcup_no) REFERENCES worldcup(worldcup_no),
-                                        CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_2 FOREIGN KEY(member_no) REFERENCES member(member_no)
+                                        CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_2 FOREIGN KEY(member_no) REFERENCES member(member_no),
+                                        CONSTRAINT FK_WORLDCUP_JOINMEMBER_ALCOHOL FOREIGN KEY (alcohol_no) REFERENCES alcohol(alcohol_no)
 )ENGINE=INNODB COMMENT '주간 월드컵 게임 참여회원';
 
 
@@ -264,21 +266,20 @@ CREATE TABLE `albti` (
 
 
 CREATE TABLE `albti_survey` (
-                                albti_survey_no INT NOT NULL AUTO_INCREMENT,
-                                alBTI_no INT NOT NULL,
-                                albti_survey_content VARCHAR(255) NOT NULL,
-                                CONSTRAINT PK_albti_survey_no PRIMARY KEY (albti_survey_no),
-                                CONSTRAINT FK_albti_no FOREIGN KEY (alBTI_no)  REFERENCES albti(alBTI_no)
+                                albti_survey_no INT AUTO_INCREMENT PRIMARY KEY,
+                                question VARCHAR(255) NOT NULL,
+                                type_a INT NOT NULL,  -- A 선택 시 점수 올라가는 alBTI_no
+                                type_b INT NOT NULL,  -- B 선택 시 점수 올라가는 alBTI_no
+                                CONSTRAINT FK_albti_type_a FOREIGN KEY (type_a) REFERENCES albti(alBTI_no),
+                                CONSTRAINT FK_albti_type_b FOREIGN KEY (type_b) REFERENCES albti(alBTI_no)
 )ENGINE=INNODB COMMENT '술BTI 설문지';
 
 
 CREATE TABLE `albti_join_member` (
                                      alBTI_member_no        INT NOT NULL AUTO_INCREMENT,
                                      member_no              INT NOT NULL,
-                                     albti_survey_no        INT NOT NULL,
                                      CONSTRAINT PK_albti_join_member PRIMARY KEY (alBTI_member_no),
-                                     CONSTRAINT FK_ajm_member FOREIGN KEY (member_no) REFERENCES member(member_no),
-                                     CONSTRAINT FK_ajm_albti_survey_no  FOREIGN KEY (albti_survey_no)  REFERENCES albti_survey(albti_survey_no)
+                                     CONSTRAINT FK_ajm_member FOREIGN KEY (member_no) REFERENCES member(member_no)
 )ENGINE=INNODB COMMENT '술BTI게임 참여회원';
 
 
@@ -389,6 +390,18 @@ CREATE TABLE `albti_output` (
                                 CONSTRAINT FK_albtiout_board FOREIGN KEY (board_no) REFERENCES food_post(board_no),
                                 CONSTRAINT FK_albtiout_member FOREIGN KEY (alBTI_member_no) REFERENCES albti_join_member(alBTI_member_no)
 )ENGINE=INNODB COMMENT '회원별 술BTI 설문 결과';
+
+
+-- (추가 테이블) 설문 응답 테이블
+CREATE TABLE albti_answer (
+                              albti_answer_no INT AUTO_INCREMENT PRIMARY KEY,
+                              member_no INT NOT NULL,
+                              albti_survey_no INT NOT NULL,
+                              choice CHAR(1) NOT NULL CHECK (choice IN ('A','B')),
+                              CONSTRAINT FK_aa_member FOREIGN KEY (member_no) REFERENCES member(member_no),
+                              CONSTRAINT FK_aa_survey FOREIGN KEY (albti_survey_no) REFERENCES albti_survey(albti_survey_no)
+)ENGINE=INNODB COMMENT '술BTI 회원별 설문 응답 테이블';
+
 
 
 -- 더미데이터 삽입 (memberEmail 포함, 비밀번호 암호화)
@@ -620,10 +633,6 @@ VALUES
     (2, '사진 리뷰가 안 올라가요', '2025-09-12'),
     (3, '월드컵 일정이 궁금합니다', '2025-09-13');
 
--- 10) 월드컵-술 매핑 (worldcup_alcohol)
---     worldcup 1: 맥주(1), 와인(8)
---     worldcup 2: 소주(2), 하이볼(7)
---     일관 참조를 위해 worldcup_alcohol_no를 명시적으로 고정
 
 -- 문의 게시글 답변
 INSERT INTO qna_comment (qna_post_no, comment_member_no, comment_content, comment_at)
@@ -632,22 +641,32 @@ VALUES
     (2, 1, '월드컵 일정은 매주 월요일에 공지됩니다.', '2025-09-13 09:15:00'),
     (1, 1, '추가 문의 있으시면 언제든 연락주세요.', '2025-09-14 15:00:00');
 
+
+-- 10) 월드컵-술 매핑 (worldcup_alcohol)
+--     worldcup 1: 맥주(1), 와인(8)
+--     worldcup 2: 소주(2), 하이볼(7)
+--     일관 참조를 위해 worldcup_alcohol_no를 명시적으로 고정
 INSERT INTO worldcup_alcohol (worldcup_alcohol_no, alcohol_no, worldcup_no)
 VALUES
     (1, 1, 1),
-    (2, 8, 1),
-    (3, 2, 2),
-    (4, 7, 2);
+    (2, 2, 1),
+    (3, 3, 1),
+    (4, 1, 2),
+    (5, 2, 2),
+    (6, 3, 2),
+    (7, 1, 3),
+    (8, 2, 3),
+    (9, 3, 3);
 
 -- 11) 월드컵 참여 회원 (worldcup_join_member)
 --     ID를 고정적으로 지정해 아래 picks에서 참조
-INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no)
+INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no,alcohol_no)
 VALUES
-    (1, 1, 2),
-    (2, 1, 3),
-    (3, 1, 4),
-    (4, 2, 5),
-    (5, 2, 2);
+    (1, 1, 2,1),
+    (2, 1, 3,2),
+    (3, 1, 4,1),
+    (4, 2, 5,2),
+    (5, 2, 2,3);
 
 -- 12) 개인별 월드컵 후보 안주 (Individual_world_cup_food)
 --     worldcup 1: eventFood(1=치킨, 3=스테이크)
@@ -670,26 +689,26 @@ VALUES
     (5, 5, 4, 4);  -- (wc2, member 2) 하이볼 + 파전
 
 -- 14) 추가한 더미데이터 ##### 술BTI 설문지(albti_survey)
-INSERT INTO albti_survey (alBTI_no, albti_survey_content)
+INSERT INTO albti_survey (question, type_a, type_b)
 VALUES
-    (1, '술자리는 시끄럽고 활발한 분위기가 좋다.'),
-    (1, '새로운 술을 마셔보는 것을 즐긴다.'),
-    (2, '혼자 조용히 술을 즐기는 편이다.'),
-    (2, '익숙한 술만 마시는 것이 편하다.'),
-    (3, '친구들과 오래도록 천천히 마시는 것을 선호한다.'),
-    (3, '술보다는 안주가 더 중요하다.'),
-    (4, '짧고 강렬하게 마시는 것을 좋아한다.'),
-    (4, '술자리는 새로운 사람을 만나는 기회라고 생각한다.'),
-    (5, '술자리에서는 주로 분위기를 주도하는 편이다.'),
-    (5, '술 마실 때 게임이나 활동이 있어야 즐겁다.');
+    ('술자리는 시끄러운 게 좋다', 1, 2),   -- 1=활발함, 2=차분함 (지금은 yes or no인데 프론트에서 문자열로 바꿀수있는지)
+    ('익숙한 술이 좋다', 3, 4),        -- 전통파 vs 도전적
+    ('음악과 함께 마신다', 5, 6),      -- 감성파 vs 정열파
+    ('분위기와 조화를 중요하게 생각한다', 8, 7), -- 로맨틱 vs 테이스팅러버
+    ('편안하게 한잔하는 걸 좋아한다', 9, 2),     -- 힐링러 vs 차분함
+    ('전통 조합을 선호한다', 10, 4),   -- 클래식 vs 도전적
+    ('술 마실 때 게임을 즐긴다', 1, 9),        -- 활발함 vs 힐링러
+    ('새로운 안주 조합을 시도해본다', 4, 3),    -- 도전적 vs 전통파
+    ('불꽃 튀는 토론 분위기를 좋아한다', 6, 5),  -- 정열파 vs 감성파
+    ('잔잔한 분위기에서 깊은 대화를 나누는 걸 선호한다', 2, 8); -- 차분함 vs 로맨틱
 
 -- 15) 술BTI 참여 (albti_join_member)
-INSERT INTO albti_join_member (member_no, albti_survey_no)
+INSERT INTO albti_join_member (member_no)
 VALUES
-    ( 1, 1),
-    ( 3, 2),
-    ( 2, 3),
-    ( 4, 4);
+    ( 1),
+    ( 3),
+    ( 2),
+    ( 4);
 
 -- 16) 회원별 술BTI 설문 결과 (albti_output)
 INSERT INTO albti_output (alBTI_no, alBTI_alcohol_explain, board_no, alBTI_member_no)
@@ -698,6 +717,32 @@ VALUES
     (2, '차분히 즐길 수 있는 와인 추천', 3,2),
     (3, '전통 한식과 어울리는 소주 추천', 2,3),
     (4, '새로운 조합에 도전하는 하이볼 추천', 4,4);
+
+-- 17) 술BTI 응답 테이블(albti_answer)
+INSERT INTO albti_answer (member_no, albti_survey_no, choice)
+VALUES
+-- 회원 1
+(1, 1, 'A'), -- 활발함
+(1, 2, 'B'), -- 도전적
+(1, 3, 'A'), -- 감성파
+(1, 4, 'B'), -- 테이스팅러버
+(1, 5, 'A'), -- 힐링러
+(1, 6, 'A'), -- 클래식
+(1, 7, 'A'), -- 활발함
+(1, 8, 'B'), -- 전통파
+(1, 9, 'A'), -- 정열파
+(1, 10, 'B'), -- 로맨틱
+-- 회원 2
+(2, 1, 'B'), -- 차분함
+(2, 2, 'A'), -- 전통파
+(2, 3, 'B'), -- 정열파
+(2, 4, 'A'), -- 로맨틱
+(2, 5, 'B'), -- 차분함
+(2, 6, 'B'), -- 도전적
+(2, 7, 'B'), -- 힐링러
+(2, 8, 'A'), -- 도전적
+(2, 9, 'B'), -- 감성파
+(2, 10, 'A'); -- 차분함
 
 -- =========================
 -- PATCH: schema alignment
@@ -833,3 +878,37 @@ WHERE member_level IS NULL;
 --     'beer.runner@example.com',
 --     'soju.writer@example.com'
 -- );
+
+-- 술BTI 뷰테이블 생성(자동계산)
+CREATE OR REPLACE VIEW albti_final_result AS
+WITH score_union AS (
+    SELECT a.member_no, s.type_a AS alBTI_no, COUNT(*) AS score
+    FROM albti_answer a
+             JOIN albti_survey s ON a.albti_survey_no = s.albti_survey_no
+    WHERE a.choice = 'A'
+    GROUP BY a.member_no, s.type_a
+    UNION ALL
+    SELECT a.member_no, s.type_b AS alBTI_no, COUNT(*) AS score
+    FROM albti_answer a
+             JOIN albti_survey s ON a.albti_survey_no = s.albti_survey_no
+    WHERE a.choice = 'B'
+    GROUP BY a.member_no, s.type_b
+),
+     score_sum AS (
+         SELECT member_no, alBTI_no, SUM(score) AS total_score
+         FROM score_union
+         GROUP BY member_no, alBTI_no
+     ),
+     max_score AS (
+         SELECT member_no, MAX(total_score) AS top_score
+         FROM score_sum
+         GROUP BY member_no
+     )
+SELECT s.member_no,
+       GROUP_CONCAT(a.alBTI_category ORDER BY s.total_score DESC SEPARATOR '/') AS final_type,
+       GROUP_CONCAT(a.alBTI_detail ORDER BY s.total_score DESC SEPARATOR '/') AS final_detail,
+       s.total_score
+FROM score_sum s
+         JOIN albti a ON s.alBTI_no = a.alBTI_no
+         JOIN max_score m ON s.member_no = m.member_no AND s.total_score = m.top_score
+GROUP BY s.member_no;
