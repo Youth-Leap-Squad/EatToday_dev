@@ -34,13 +34,33 @@ public class PostController {
 
     // ========= foods 조회 =========
 
-    /** 승인된 안주만 조회 */
+    /** 승인된 안주 조회 */
     @GetMapping("/foods/approved")
     public List<FoodDTO> getApprovedFoods(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "10") int size) {
         return postService.getApprovedFoods(page, size);
     }
 
+    /** 조회수(board_seq) 순 */
+    @GetMapping("/foods/sorted/views")
+    public List<FoodDTO> byViews(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "10") int size) {
+        return postService.getFoodsSortedByViews(page, size);
+    }
+
+    /** 댓글순 */
+    @GetMapping("/foods/sorted/comments")
+    public List<FoodDTO> byComments(@RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "10") int size) {
+        return postService.getFoodsSortedByComments(page, size);
+    }
+
+    /** 반응(좋아요 합계) 순 */
+    @GetMapping("/foods/sorted/likes")
+    public List<FoodDTO> byLikes(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "10") int size) {
+        return postService.getFoodsSortedByTotalLikes(page, size);
+    }
     /** 승인 안된(미승인) 안주만 조회 */
     @GetMapping("/foods/unapproved")
     public List<FoodDTO> getUnapprovedFoods(@RequestParam(defaultValue = "0") int page,

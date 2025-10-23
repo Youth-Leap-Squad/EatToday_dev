@@ -1,4 +1,4 @@
-
+SET FOREIGN_KEY_CHECKS = 1;
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
 DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
@@ -104,7 +104,7 @@ CREATE TABLE `food_post` (
                              `board_title` VARCHAR(255) NOT NULL,
                              `board_content` VARCHAR(255) NOT NULL,
                              `food_explain` VARCHAR(255) NOT NULL,
-                             `food_picture` VARCHAR(255) NULL,
+                             `food_picture` VARCHAR(255),
                              `board_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                              `board_seq` INT NOT NULL DEFAULT 0,
                              `confirmed_yn` CHAR(1) NOT NULL DEFAULT 'T',
@@ -450,18 +450,34 @@ VALUES
     ('와인', '포도로 만든 서양 와인', '/images/alcohol/wine.jpg'),
     ('기타', '기타 주류 (전통주, 리큐르 등)', '/images/alcohol/etc.jpg');
 
-INSERT INTO food_post (alcohol_no, board_title, board_content, food_explain, member_no, food_picture, board_date, board_seq, confirmed_yn, likes_no_1, likes_no_2, likes_no_3, likes_no_4)
+INSERT INTO food_post
+(alcohol_no, member_no, board_title, board_content, food_explain, food_picture,
+ board_date, board_seq, confirmed_yn, likes_no_1, likes_no_2, likes_no_3, likes_no_4)
 VALUES
-    (1, '치킨과 함께하는 시원한 맥주', '더위를 날려주는 치맥 조합', '바삭한 치킨과 시원한 맥주의 환상 궁합', 2, '/images/food/chicken_beer.jpg', '2025-09-01', 1, TRUE, 12, 4, 20, 2),
-    (2, '삼겹살과 소주의 조합', '한국인의 영원한 소울푸드', '기름진 삼겹살과 깔끔한 소주', 3, '/images/food/samgyeopsal_soju.jpg', '2025-09-02', 2, TRUE, 18, 6, 22, 5),
-    (8, '스테이크와 레드 와인', '분위기 있는 저녁 한 끼', '육즙 가득한 스테이크와 와인의 향연', 4, '/images/food/steak_wine.jpg', '2025-09-03', 3, TRUE, 5, 23, 4, 2),
-    (3, '파전과 막걸리', '비 오는 날의 낭만', '고소한 파전과 구수한 막걸리', 5, '/images/food/pajeon_makgeolli.jpg', '2025-09-04', 4, TRUE, 4, 33, 1, 10 ),
-    (1,'피자와 라거','탄산 톡톡 라거와 고소한 피자','치즈 풍미UP', 2, '/images/food/pizza_lager.jpg','2025-09-05',5, TRUE, 1, 13, 8, 4),
-    (8,'치즈 플래터와 화이트 와인','가벼운 산도와 고소함','브리/고다/크래커', 4, '/images/food/cheese_white.jpg','2025-09-06',6, TRUE, 10, 3, 4, 9),
-    (2,'골뱅이소면과 소주','매콤새콤에 소주 한 잔','국물까지 완벽', 5, '/images/food/gol_soju.jpg','2025-09-07',7, TRUE, 4, 6, 19, 2),
-    (7,'감자튀김과 하이볼','짭짤바삭+탄산감','맥주대신 하이볼', 9, '/images/food/fries_highball.jpg','2025-09-08',8, TRUE, 18, 2, 5, 8),
-    (9,'훈제치즈와 싱글몰트','스모키 매칭','은은한 피트향과 조화', 11, '/images/food/smoked_malt.jpg','2025-09-09',9, TRUE, 7, 9, 1, 8),
-    (3,'해물파전과 막걸리','역시 비오는 날 정답','파/오징어 듬뿍', 5, '/images/food/haemul_mak.jpg','2025-09-10',10, TRUE, 1, 3, 5, 16);
+-- 1. 치즈닭발 (조회수 많음)
+(1, 1, '치즈닭발과 소주', '매운 닭발에 치즈가 듬뿍 올라간 조합!', '매운맛을 잡아주는 부드러운 치즈', '/images/food/chicken.jpg',
+ '2025-10-20 20:00:00', 245, 'T', 12, 5, 3, 1),
+-- 2. 감바스 (댓글 많은 인기 안주)
+(2, 2, '감바스 알 아히요', '올리브오일 향과 새우의 조합이 완벽한 스페인 안주', '맥주보단 와인에 잘 어울림', '/images/food/gambas.jpg',
+ '2025-10-18 18:10:00', 180, 'T', 8, 9, 2, 1),
+-- 3. 오돌뼈 (소주 안주)
+(3, 3, '매운 오돌뼈볶음', '불향이 나는 매운맛이 일품인 소주 안주', '식감이 살아있는 오돌뼈의 매력', '/images/food/odol.jpg',
+ '2025-10-21 19:35:00', 205, 'T', 7, 4, 2, 0),
+-- 4. 육회비빔밥 (조회수 중간)
+(1, 2, '육회비빔밥', '고소한 참기름 향과 신선한 육회', '라거맥주와 의외의 조합', '/images/food/yukhoe.jpg',
+ '2025-10-15 12:00:00', 110, 'T', 9, 6, 1, 2),
+-- 5. 골뱅이무침 (반응 많음)
+(4, 1, '골뱅이무침과 소면', '새콤달콤한 양념과 골뱅이의 조합', '청량한 라거와 환상 궁합', '/images/food/golbaeng.jpg',
+ '2025-10-16 19:00:00', 190, 'T', 15, 12, 3, 2),
+-- 6. 불족발 (승인 대기 중)
+(2, 3, '불족발', '매운 족발에 소주 한 잔!', '단짠 매운맛의 삼박자', '/images/food/jokbal.jpg',
+ '2025-10-19 21:20:00', 50, 'F', 3, 2, 1, 0),
+-- 7. 피자와 라거 (조회수 높음)
+(5, 2, '피자와 라거', '치즈피자에 시원한 라거맥주 한잔', '기름진 음식과 라거의 궁합', '/images/food/pizza.jpg',
+ '2025-10-17 22:30:00', 310, 'T', 20, 18, 4, 2),
+-- 8. 회오리감자 (테스트용 낮은 조회수)
+(1, 1, '회오리감자', '간단한 길거리 간식', '맥주와 간단히 즐길 수 있는 안주', '/images/food/potato.jpg',
+ '2025-10-14 15:40:00', 42, 'T', 2, 1, 0, 0);
 
 INSERT INTO photo_review (board_no, member_no, review_title, review_date, review_content, review_like)
 VALUES
