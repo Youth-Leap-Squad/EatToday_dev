@@ -23,6 +23,10 @@ public class PostServiceImpl implements PostService {
         return Math.max(0, page) * safeLimit(size);
     }
 
+    private int offset(int page, int size) {
+        return Math.max(page, 0) * Math.max(size, 1);
+    }
+
     // ---------- 전체 조회 ----------
 
     @Override
@@ -34,11 +38,25 @@ public class PostServiceImpl implements PostService {
 
     // ---------- 승인된 게시글 목록(반응 포함) ----------
 
+
     @Override
     public List<FoodDTO> getApprovedFoods(int page, int size) {
-        int limit  = safeLimit(size);
-        int offset = safeOffset(page, size);
-        return postMapper.selectApprovedFoodList(offset, limit);
+        return postMapper.selectApprovedFoodList(offset(page, size), size);
+    }
+
+    @Override
+    public List<FoodDTO> getFoodsSortedByViews(int page, int size) {
+        return postMapper.selectFoodsOrderByViews(offset(page, size), size);
+    }
+
+    @Override
+    public List<FoodDTO> getFoodsSortedByComments(int page, int size) {
+        return postMapper.selectFoodsOrderByComments(offset(page, size), size);
+    }
+
+    @Override
+    public List<FoodDTO> getFoodsSortedByTotalLikes(int page, int size) {
+        return postMapper.selectFoodsOrderByTotalLikes(offset(page, size), size);
     }
 
     @Override

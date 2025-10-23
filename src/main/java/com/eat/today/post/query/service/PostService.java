@@ -14,6 +14,10 @@ public interface PostService {
     List<FoodDTO> getUnapprovedFoods(int page, int size);
     List<FoodDTO> getAllFoods(int page, int size);
 
+    List<FoodDTO> getFoodsSortedByViews(int page, int size);
+    List<FoodDTO> getFoodsSortedByComments(int page, int size);
+    List<FoodDTO> getFoodsSortedByTotalLikes(int page, int size);
+
     // 내가 쓴 게시글(회원별, 최신순)
     List<MyFoodDTO> getMyFoods(int memberNo, int page, int size);
 
