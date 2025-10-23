@@ -21,6 +21,16 @@ public interface PostMapper {
     List<FoodDTO> selectUnapprovedFoodList(@Param("offset") int offset, @Param("limit") int limit);
     List<FoodDTO> selectAllFoodList(@Param("offset") int offset, @Param("limit") int limit);
 
+    // ===== 조회순 (board_seq DESC)
+    List<FoodDTO> selectFoodsOrderByViews(@Param("offset") int offset, @Param("limit") int size);
+
+    // ===== 댓글순
+    List<FoodDTO> selectFoodsOrderByComments(@Param("offset") int offset, @Param("limit") int size);
+
+    // ===== 반응(좋아요 총합)순
+    List<FoodDTO> selectFoodsOrderByTotalLikes(@Param("offset") int offset, @Param("limit") int size);
+
+    // ===== 승인된 전체 안주 (참고)
     // 특정 술에 대한 승인된 안주
     List<FoodDTO> selectApprovedFoodsByAlcohol(@Param("alcoholNo") int alcoholNo,
                                                @Param("offset") int offset,
@@ -45,4 +55,6 @@ public interface PostMapper {
 
     // 인기 게시글 TOP N
     List<PopularFoodDTO> selectPopularFoods(@Param("limit") int limit);
+
+
 }
