@@ -203,6 +203,21 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <!-- 인기 게시글 TOP N -->
+    <select id="selectPopularFoods" resultType="com.eat.today.post.query.dto.PopularFoodDTO">
+        SELECT
+        fp.board_no     AS board_no,
+        fp.board_title  AS board_title,
+        fp.food_picture AS food_picture,
+        m.member_id     AS member_id,
+        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS total_likes
+        FROM food_post AS fp
+        INNER JOIN member AS m ON fp.member_no = m.member_no
+        WHERE fp.confirmed_yn = TRUE
+        ORDER BY total_likes DESC, fp.board_no DESC
+        LIMIT #{limit}
+    </select>
+
     <!-- 특정 술에 대한 승인된 안주 조회 -->
     <select id="selectApprovedFoodsByAlcohol" resultType="com.eat.today.post.query.dto.FoodDTO">
         SELECT
@@ -267,31 +282,30 @@
         ORDER BY fc.food_comment_no DESC
     </select>
 
-    <!-- bookmark: 특정 회원 즐겨찾기 목록 -->
-    <select id="selectBookmarksByMember" resultType="com.eat.today.post.query.dto.BookmarkDTO">
-        SELECT
-        p.board_no AS board_no,
-        m.member_id    AS member_id,
-        p.board_title  AS board_title,
-        p.food_picture AS food_picture
-        FROM bookmark AS b
-        INNER JOIN food_post AS p ON b.board_no = p.board_no
-        INNER JOIN member  AS m ON b.member_no = m.member_no
-        WHERE b.member_no = #{memberNo}
+    <!-- 북마크 폴더 목록 + 개수 -->
+    <select id="selectBookmarkFolders" resultType="com.eat.today.post.query.dto.BookmarkFolderDTO">
+        SELECT f.folder_id   AS folderId,
+        f.folder_name AS folderName,
+        COUNT(b.board_no) AS itemCount,
+        f.created_at  AS createdAt
+        FROM bookmark_folder f
+        LEFT JOIN bookmark b ON b.folder_id = f.folder_id
+        WHERE f.member_no = #{memberNo}
+        GROUP BY f.folder_id
+        ORDER BY f.created_at DESC
     </select>
 
-    <!-- 인기 게시글 TOP N -->
-    <select id="selectPopularFoods" resultType="com.eat.today.post.query.dto.PopularFoodDTO">
+    <!-- 폴더 내 항목 -->
+    <select id="selectBookmarksInFolder" resultType="com.eat.today.post.query.dto.BookmarkItemDTO">
         SELECT
-        fp.board_no     AS board_no,
-        fp.board_title  AS board_title,
-        fp.food_picture AS food_picture,
-        m.member_id     AS member_id,
-        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS total_likes
-        FROM food_post AS fp
-        INNER JOIN member AS m ON fp.member_no = m.member_no
-        WHERE fp.confirmed_yn = TRUE
-        ORDER BY total_likes DESC, fp.board_no DESC
-        LIMIT #{limit}
+        p.board_no     AS boardNo,
+        p.board_title  AS title,      -- ▶ 여기! p.title → p.board_title
+        p.board_date   AS boardDate
+        FROM bookmark b
+        JOIN food_post p ON p.board_no = b.board_no
+        WHERE b.folder_id = #{folderId}
+        ORDER BY p.board_date DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
 </mapper>

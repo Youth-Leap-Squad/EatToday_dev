@@ -125,6 +125,18 @@ public class PostServiceImpl implements PostService {
         return postMapper.selectBookmarksByMember(memberNo);
     }
 
+    @Override
+    public List<BookmarkFolderDTO> getBookmarkFolders(int memberNo) {
+        return postMapper.selectBookmarkFolders(memberNo);
+    }
+
+    @Override
+    public List<BookmarkItemDTO> getBookmarksInFolder(int folderId, int page, int size) {
+        int limit  = Math.max(1, size);
+        int offset = Math.max(0, page) * limit;
+        return postMapper.selectBookmarksInFolder(folderId, limit, offset);
+    }
+
     // ---------- 인기 게시글 TOP N ----------
 
     @Override

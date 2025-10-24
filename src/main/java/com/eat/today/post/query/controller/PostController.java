@@ -118,6 +118,20 @@ public class PostController {
         return postService.getBookmarksByMember(memberNo);
     }
 
+    /** 내 북마크 폴더 목록 */
+    @GetMapping("/members/{memberNo}/bookmark-folders")
+    public List<BookmarkFolderDTO> getBookmarkFolders(@PathVariable int memberNo) {
+        return postService.getBookmarkFolders(memberNo);
+    }
+
+    /** 특정 폴더의 즐겨찾기 목록 */
+    @GetMapping("/bookmark-folders/{folderId}/items")
+    public List<BookmarkItemDTO> getBookmarksInFolder(@PathVariable int folderId,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "20") int size) {
+        return postService.getBookmarksInFolder(folderId, page, size);
+    }
+
     // ========= 승인/인기 목록 =========
 
     /** 인기 게시글 TOP N */

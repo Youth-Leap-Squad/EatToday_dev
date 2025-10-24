@@ -34,10 +34,11 @@ public class PostCommandServiceImpl implements PostCommandService {
     private final FoodPostRepository postRepo;
     private final FoodPostLikeRepository likeRepo;
     private final FoodCommentRepository commentRepo;
-    private final BookmarkRepository bookmarkRepo;
     private final ImageStorageService imageStorageService;
     private final MemberPointService memberPointService;
     private final MemberRepository memberRepository;
+    private final BookmarkFolderRepository bookmarkFolderRepo;
+    private final BookmarkRepository bookmarkRepo;
 
     private static String nowString() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -82,6 +83,7 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .likeNo4(p.getLikeNo4())
                 .build();
     }
+
 
     /* ================= 공통 가드 ================= */
 
@@ -407,55 +409,68 @@ public class PostCommandServiceImpl implements PostCommandService {
         likeRepo.delete(like);
     }
 
-    private List<BookmarkResponse> buildBookmarkList(Integer memberNo) {
-        return bookmarkRepo.findAllByMember_MemberNo(memberNo).stream()
-                .map(b -> {
-                    FoodPost post = b.getPost();
-                    String author = (post.getMember() != null && safeGetMemberId(post.getMember()) != null)
-                            ? safeGetMemberId(post.getMember())
-                            : String.valueOf(post.getMember().getMemberNo());
-
-                    return BookmarkResponse.builder()
-                            .boardNo(post.getBoardNo())
-                            .memberId(author)
-                            .boardTitle(post.getBoardTitle())
-                            .foodPicture(post.getFoodPicture())
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    private String safeGetMemberId(Member m) {
-        try { return (String) Member.class.getMethod("getMemberId").invoke(m); }
-        catch (Exception ignore) { return null; }
-    }
-
-    @Override
-    public List<BookmarkResponse> addBookmark(AddBookmarkRequest req) {
-        assertMemberExists(req.getMemberNo());
-
-        FoodPost post = postRepo.findById(req.getBoardNo())
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        BookmarkId id = new BookmarkId(req.getMemberNo(), req.getBoardNo());
-        if (!bookmarkRepo.existsById(id)) {
-            Bookmark b = Bookmark.builder()
-                    .id(id)
-                    .member(Member.onlyId(req.getMemberNo()))
-                    .post(post)
-                    .build();
-            bookmarkRepo.save(b);
+    private void assertFolderOwner(Integer memberNo, Integer folderId) {
+        BookmarkFolder f = bookmarkFolderRepo.findById(folderId)
+                .orElseThrow(() -> new EntityNotFoundException("폴더가 존재하지 않습니다."));
+        if (!f.getMember().getMemberNo().equals(memberNo)) {
+            throw new org.springframework.security.access.AccessDeniedException("폴더 소유자가 아닙니다.");
         }
-        return buildBookmarkList(req.getMemberNo());
     }
 
     @Override
-    public List<BookmarkResponse> removeBookmark(Integer memberNo, Integer boardNo) {
+    public void createFolder(Integer memberNo, String folderName) {
         assertMemberExists(memberNo);
-
-        BookmarkId id = new BookmarkId(memberNo, boardNo);
-        if (bookmarkRepo.existsById(id)) {
-            bookmarkRepo.deleteById(id);
-        }
-        return buildBookmarkList(memberNo);
+        bookmarkFolderRepo.findByMember_MemberNoAndFolderName(memberNo, folderName)
+                .ifPresent(x -> { throw new IllegalArgumentException("동일한 폴더명이 있습니다."); });
+        BookmarkFolder f = BookmarkFolder.builder()
+                .member(Member.onlyId(memberNo))
+                .folderName(folderName)
+                .build();
+        bookmarkFolderRepo.save(f);
     }
+
+    @Override
+    public void renameFolder(Integer memberNo, Integer folderId, String folderName) {
+        assertFolderOwner(memberNo, folderId);
+        BookmarkFolder f = bookmarkFolderRepo.findById(folderId)
+                .orElseThrow(() -> new EntityNotFoundException("폴더가 존재하지 않습니다."));
+        f.setFolderName(folderName);
+    }
+
+    @Override
+    public void deleteFolder(Integer memberNo, Integer folderId) {
+        assertFolderOwner(memberNo, folderId);
+        bookmarkFolderRepo.deleteById(folderId);
+    }
+
+    @Override
+    public void addBookmarkToFolder(Integer memberNo, Integer folderId, Integer boardNo) {
+        assertMemberExists(memberNo);
+        assertFolderOwner(memberNo, folderId);
+        FoodPost post = postRepo.findById(boardNo)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+        BookmarkFolder folder = bookmarkFolderRepo.getReferenceById(folderId);
+
+        BookmarkKey key = new BookmarkKey(folderId, boardNo);
+        if (!bookmarkRepo.existsById(key)) {
+            bookmarkRepo.save(Bookmark.builder()
+                    .id(key).folder(folder).post(post).build());
+        }
+    }
+
+    @Override
+    public void removeBookmarkFromFolder(Integer memberNo, Integer folderId, Integer boardNo) {
+        assertFolderOwner(memberNo, folderId);
+        BookmarkKey key = new BookmarkKey(folderId, boardNo);
+        if (bookmarkRepo.existsById(key)) bookmarkRepo.deleteById(key);
+    }
+
+    @Override
+    public void moveBookmark(Integer memberNo, Integer fromFolderId, Integer toFolderId, Integer boardNo) {
+        assertFolderOwner(memberNo, fromFolderId);
+        assertFolderOwner(memberNo, toFolderId);
+        removeBookmarkFromFolder(memberNo, fromFolderId, boardNo);
+        addBookmarkToFolder(memberNo, toFolderId, boardNo);
+    }
+
 }

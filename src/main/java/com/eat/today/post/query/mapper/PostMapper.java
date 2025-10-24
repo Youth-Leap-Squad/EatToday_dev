@@ -52,6 +52,10 @@ public interface PostMapper {
 
     // bookmark: 특정 회원 즐겨찾기 목록
     List<BookmarkDTO> selectBookmarksByMember(@Param("memberNo") int memberNo);
+    List<BookmarkFolderDTO> selectBookmarkFolders(@Param("memberNo") int memberNo);
+    List<BookmarkItemDTO> selectBookmarksInFolder(@Param("folderId") int folderId,
+                                                  @Param("limit") int limit,
+                                                  @Param("offset") int offset);
 
     // 인기 게시글 TOP N
     List<PopularFoodDTO> selectPopularFoods(@Param("limit") int limit);
