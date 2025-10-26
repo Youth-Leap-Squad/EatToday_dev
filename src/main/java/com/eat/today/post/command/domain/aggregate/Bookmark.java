@@ -4,24 +4,22 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "bookmark")
+@Table(name="bookmark")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Bookmark {
+    @EmbeddedId private BookmarkKey id;
 
-    @EmbeddedId
-    private BookmarkId id;
-
-    @MapsId("memberNo")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_no", nullable = false)
-    private Member member;
+    @MapsId("folderId")
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="folder_id", nullable=false)
+    private BookmarkFolder folder;
 
     @MapsId("boardNo")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_no", nullable = false)
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="board_no", nullable=false)
     private FoodPost post;
 }

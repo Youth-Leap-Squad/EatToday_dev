@@ -29,6 +29,8 @@ public interface PostService {
 
     // bookmark: 특정 회원 즐겨찾기
     List<BookmarkDTO> getBookmarksByMember(int memberNo);
+    List<BookmarkFolderDTO> getBookmarkFolders(int memberNo);
+    List<BookmarkItemDTO> getBookmarksInFolder(int folderId, int page, int size);
 
     // food_post_likes: 특정 게시글 반응 통계
     List<FoodPostLikesDTO> getFoodPostLikesFromPost(int boardNo);

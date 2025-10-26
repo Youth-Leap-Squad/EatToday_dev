@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS `pr_file_upload`;
 DROP TABLE IF EXISTS `lounge`;
 DROP TABLE IF EXISTS `report_history`;
 DROP TABLE IF EXISTS `world_cup_picks`;
+DROP TABLE IF EXISTS `bookmark_folder`;
 DROP TABLE IF EXISTS `bookmark`;
 DROP TABLE IF EXISTS `food_post_likes`;
 DROP TABLE IF EXISTS `food_comment`;
@@ -244,16 +245,30 @@ CREATE TABLE IF NOT EXISTS `report` (
     ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=INNODB COMMENT '신고';
 
+CREATE TABLE bookmark_folder (
+                                 folder_id   INT AUTO_INCREMENT PRIMARY KEY,
+                                 member_no   INT NOT NULL,
+                                 folder_name VARCHAR(100) NOT NULL,
+                                 created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                 CONSTRAINT FK_FOLDER_MEMBER FOREIGN KEY (member_no)
+                                     REFERENCES member(member_no) ON DELETE CASCADE,
+                                 UNIQUE KEY ux_member_foldername (member_no, folder_name), -- 같은 회원 내 중복명 방지
+                                 KEY idx_folder_member (member_no)
+) ENGINE=InnoDB COMMENT='즐겨찾기 폴더';
+
+-- 즐겨찾기(폴더 내 중복 방지만 보장: PK로 해결)
 CREATE TABLE bookmark (
-                          member_no INT NOT NULL,
-                          board_no  INT NOT NULL,
-                          PRIMARY KEY (member_no, board_no),
-                          CONSTRAINT FK_BOOKMARK_MEMBER     FOREIGN KEY (member_no) REFERENCES member(member_no),
-                          CONSTRAINT FK_BOOKMARK_FOOD_POST  FOREIGN KEY (board_no)  REFERENCES food_post(board_no)
-) ENGINE=INNODB COMMENT='즐겨찾기';
-
-
-
+                          folder_id  INT NOT NULL,
+                          board_no   INT NOT NULL,
+                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                          PRIMARY KEY (folder_id, board_no),
+                          CONSTRAINT FK_BOOKMARK_FOLDER FOREIGN KEY (folder_id)
+                              REFERENCES bookmark_folder(folder_id) ON DELETE CASCADE,
+                          CONSTRAINT FK_BOOKMARK_FOOD_POST FOREIGN KEY (board_no)
+                              REFERENCES food_post(board_no) ON DELETE CASCADE,
+                          KEY idx_bm_folder (folder_id),
+                          KEY idx_bm_board (board_no) -- 역조회/정합성 체크에 유용
+) ENGINE=InnoDB COMMENT='즐겨찾기 항목';
 
 CREATE TABLE `albti` (
                          alBTI_no      INT NOT NULL AUTO_INCREMENT,
@@ -512,12 +527,24 @@ INSERT INTO follow (follower_no, following_no) VALUES
                                                    (10, 2),  -- vodka_star  -> soju_love
                                                    (10, 4),  -- vodka_star  -> wine_master
                                                    (10, 8);  -- vodka_star  -> champagne_boy
-INSERT INTO bookmark (member_no, board_no)
+
+INSERT INTO bookmark_folder (member_no, folder_name)
 VALUES
-    (2, 1),
-    (3, 2),
-    (4, 3),
-    (5, 4);
+    (1, '맛집 모음'),
+    (1, '퇴근 후 안주'),
+    (2, '술안주 베스트'),
+    (3, '집밥 느낌');
+
+INSERT INTO bookmark (folder_id, board_no)
+VALUES
+    (1, 10),
+    (1, 11),
+    (2, 12),
+    (2, 14),
+    (3, 8),
+    (3, 15),
+    (4, 9),
+    (4, 13);
 
 INSERT INTO direct_message (send_member_id, receive_member_id, dm_content, dm_date, dm_read)
 VALUES

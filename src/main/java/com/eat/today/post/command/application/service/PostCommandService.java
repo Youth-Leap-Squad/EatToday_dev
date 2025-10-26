@@ -37,10 +37,14 @@ public interface PostCommandService {
 
     void deleteReaction(Integer boardNo, Integer memberNo);
 
-    // --- 즐겨찾기 ---
-    List<BookmarkResponse> addBookmark(AddBookmarkRequest req);
+    // --- 즐겨찾기(폴더형) ---
+    void createFolder(Integer memberNo, String folderName);
+    void renameFolder(Integer memberNo, Integer folderId, String folderName);
+    void deleteFolder(Integer memberNo, Integer folderId);
 
-    List<BookmarkResponse> removeBookmark(Integer memberNo, Integer boardNo);
+    void addBookmarkToFolder(Integer memberNo, Integer folderId, Integer boardNo);
+    void removeBookmarkFromFolder(Integer memberNo, Integer folderId, Integer boardNo);
+    void moveBookmark(Integer memberNo, Integer fromFolderId, Integer toFolderId, Integer boardNo);
 
     // --- 이미지 업로드(단일) ---
     AlcoholResponse createAlcoholWithImage(CreateAlcoholRequest req,
