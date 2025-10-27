@@ -38,6 +38,11 @@ public class PostServiceImpl implements PostService {
 
     // ---------- 승인된 게시글 목록(반응 포함) ----------
 
+    
+    @Override
+    public FoodDTO getFoodById(int boardNo) {
+        return postMapper.findFoodById(boardNo);
+    }
 
     @Override
     public List<FoodDTO> getApprovedFoods(int page, int size) {

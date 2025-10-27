@@ -33,6 +33,10 @@ public class PostController {
     }
 
     // ========= foods 조회 =========
+    @GetMapping("/foods/{boardNo}")
+    public FoodDTO getFoodById(@PathVariable int boardNo) {
+        return postService.getFoodById(boardNo);
+    }
 
     /** 승인된 안주 조회 */
     @GetMapping("/foods/approved")
