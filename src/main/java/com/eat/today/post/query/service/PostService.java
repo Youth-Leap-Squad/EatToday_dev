@@ -10,6 +10,7 @@ public interface PostService {
     List<AlcoholDTO> getAlcohols(int page, int size);
 
     // 승인된/미승인/전체 안주 조회
+    
     List<FoodDTO> getApprovedFoods(int page, int size);
     List<FoodDTO> getUnapprovedFoods(int page, int size);
     List<FoodDTO> getAllFoods(int page, int size);
@@ -29,6 +30,8 @@ public interface PostService {
 
     // bookmark: 특정 회원 즐겨찾기
     List<BookmarkDTO> getBookmarksByMember(int memberNo);
+    List<BookmarkFolderDTO> getBookmarkFolders(int memberNo);
+    List<BookmarkItemDTO> getBookmarksInFolder(int folderId, int page, int size);
 
     // food_post_likes: 특정 게시글 반응 통계
     List<FoodPostLikesDTO> getFoodPostLikesFromPost(int boardNo);
@@ -41,4 +44,9 @@ public interface PostService {
 
     // 인기 게시글 TOP N
     List<PopularFoodDTO> getPopularFoods(int limit);
+
+
+    FoodDTO getFoodById(int boardNo);
+
+
 }

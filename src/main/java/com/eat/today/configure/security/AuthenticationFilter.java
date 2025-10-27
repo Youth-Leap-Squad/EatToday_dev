@@ -67,21 +67,17 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         log.info("로그인 성공: principal={}, authorities={}",
                 authResult.getName(), authResult.getAuthorities());
 
-        // JWT 발급
         Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
-        String username = authResult.getName(); // 여기 값이 로그인 식별자(이메일)여야 함
-        String token = jwtTokenService.issueToken(username, authorities, Duration.ofHours(12));
+        String username = authResult.getName();
 
-        // CustomUserDetails에서 memberNo와 memberRole 가져오기
         Integer memberNo = null;
         String memberRole = null;
-        
+
         if (authResult.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
             memberNo = userDetails.getMemberNo();
             memberRole = userDetails.getMemberRole().name();
-            
-            // 로그인 성공 시 포인트 지급
+
             try {
                 memberPointService.grantPoints(memberNo, PointPolicy.LOGIN);
             } catch (Exception e) {
@@ -89,21 +85,27 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             }
         }
 
-        // 헤더/바디로 전달
+        // JWT 발급: ★ memberNo 포함된 메서드 호출
+        String token = jwtTokenService.issueToken(
+                username,
+                memberNo == null ? null : memberNo.longValue(),
+                authorities,
+                Duration.ofHours(12)
+        );
+
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader("Authorization", "Bearer " + token);
 
-        // 응답 바디 (원하면 refreshToken 등 추가)
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("message", "로그인 성공");
-        responseBody.put("memberEmail", authResult.getName());
+        responseBody.put("memberEmail", username);
         responseBody.put("memberNo", memberNo);
         responseBody.put("memberRole", memberRole);
         responseBody.put("tokenType", "Bearer");
         responseBody.put("accessToken", token);
-        
+
         new ObjectMapper().writeValue(response.getWriter(), responseBody);
         response.getWriter().flush();
     }

@@ -38,6 +38,11 @@ public class PostServiceImpl implements PostService {
 
     // ---------- 승인된 게시글 목록(반응 포함) ----------
 
+    
+    @Override
+    public FoodDTO getFoodById(int boardNo) {
+        return postMapper.findFoodById(boardNo);
+    }
 
     @Override
     public List<FoodDTO> getApprovedFoods(int page, int size) {
@@ -123,6 +128,18 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<BookmarkDTO> getBookmarksByMember(int memberNo) {
         return postMapper.selectBookmarksByMember(memberNo);
+    }
+
+    @Override
+    public List<BookmarkFolderDTO> getBookmarkFolders(int memberNo) {
+        return postMapper.selectBookmarkFolders(memberNo);
+    }
+
+    @Override
+    public List<BookmarkItemDTO> getBookmarksInFolder(int folderId, int page, int size) {
+        int limit  = Math.max(1, size);
+        int offset = Math.max(0, page) * limit;
+        return postMapper.selectBookmarksInFolder(folderId, limit, offset);
     }
 
     // ---------- 인기 게시글 TOP N ----------

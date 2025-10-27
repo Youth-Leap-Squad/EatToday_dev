@@ -17,6 +17,7 @@ public interface PostMapper {
     List<AlcoholSimpleDTO> selectAlcoholExplainAndPicture();
 
     // 승인된/미승인/전체 안주
+    FoodDTO findFoodById(@Param("boardNo") int boardNo);
     List<FoodDTO> selectApprovedFoodList(@Param("offset") int offset, @Param("limit") int limit);
     List<FoodDTO> selectUnapprovedFoodList(@Param("offset") int offset, @Param("limit") int limit);
     List<FoodDTO> selectAllFoodList(@Param("offset") int offset, @Param("limit") int limit);
@@ -52,6 +53,10 @@ public interface PostMapper {
 
     // bookmark: 특정 회원 즐겨찾기 목록
     List<BookmarkDTO> selectBookmarksByMember(@Param("memberNo") int memberNo);
+    List<BookmarkFolderDTO> selectBookmarkFolders(@Param("memberNo") int memberNo);
+    List<BookmarkItemDTO> selectBookmarksInFolder(@Param("folderId") int folderId,
+                                                  @Param("limit") int limit,
+                                                  @Param("offset") int offset);
 
     // 인기 게시글 TOP N
     List<PopularFoodDTO> selectPopularFoods(@Param("limit") int limit);

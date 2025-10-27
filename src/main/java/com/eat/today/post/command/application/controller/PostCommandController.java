@@ -189,18 +189,53 @@ public class PostCommandController {
 
     /* ===== 즐겨찾기 ===== */
 
-    @PostMapping("/bookmarks")
-    public ResponseEntity<List<BookmarkResponse>> addBookmark(@AuthenticationPrincipal CustomUserDetails user,
-                                                              @RequestBody AddBookmarkRequest req) {
-        req.setMemberNo(user.getMemberNo());
-        List<BookmarkResponse> body = svc.addBookmark(req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    // 폴더 생성
+    @PostMapping("/bookmarks/folders")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createFolder(@AuthenticationPrincipal CustomUserDetails user,
+                             @RequestBody CreateFolderRequest req) {
+        svc.createFolder(user.getMemberNo(), req.getFolderName());
     }
 
+    // 폴더명 변경
+    @PatchMapping("/bookmarks/folders/{folderId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void renameFolder(@AuthenticationPrincipal CustomUserDetails user,
+                             @PathVariable Integer folderId,
+                             @RequestBody RenameFolderRequest req) {
+        svc.renameFolder(user.getMemberNo(), folderId, req.getFolderName());
+    }
+
+    // 폴더 삭제
+    @DeleteMapping("/bookmarks/folders/{folderId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFolder(@AuthenticationPrincipal CustomUserDetails user,
+                             @PathVariable Integer folderId) {
+        svc.deleteFolder(user.getMemberNo(), folderId);
+    }
+
+    // 폴더에 즐겨찾기 추가
+    @PostMapping("/bookmarks")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addBookmark(@AuthenticationPrincipal CustomUserDetails user,
+                            @RequestBody AddBookmarkToFolderRequest req) {
+        svc.addBookmarkToFolder(user.getMemberNo(), req.getFolderId(), req.getBoardNo());
+    }
+
+    // 폴더에서 즐겨찾기 제거
     @DeleteMapping("/bookmarks")
-    public ResponseEntity<List<BookmarkResponse>> removeBookmark(@AuthenticationPrincipal CustomUserDetails user,
-                                                                 @RequestParam Integer boardNo) {
-        List<BookmarkResponse> body = svc.removeBookmark(user.getMemberNo(), boardNo);
-        return ResponseEntity.ok(body);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeBookmark(@AuthenticationPrincipal CustomUserDetails user,
+                               @RequestParam Integer folderId,
+                               @RequestParam Integer boardNo) {
+        svc.removeBookmarkFromFolder(user.getMemberNo(), folderId, boardNo);
+    }
+
+    // 즐겨찾기 이동
+    @PostMapping("/bookmarks/move")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void moveBookmark(@AuthenticationPrincipal CustomUserDetails user,
+                             @RequestBody MoveBookmarkRequest req) {
+        svc.moveBookmark(user.getMemberNo(), req.getFromFolderId(), req.getToFolderId(), req.getBoardNo());
     }
 }

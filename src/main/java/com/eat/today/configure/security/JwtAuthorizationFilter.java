@@ -25,18 +25,27 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String authz = request.getHeader("Authorization");
-        if (authz != null && authz.startsWith("Bearer ")) {
-            String token = authz.substring(7).trim();
-            try {
-                // Provider가 토큰을 처리할 수 있도록 커스텀 Authentication으로 래핑
-                JwtPreAuthenticatedToken jwt = new JwtPreAuthenticatedToken(token);
-                Authentication authenticated = authenticationManager.authenticate(jwt);
-                SecurityContextHolder.getContext().setAuthentication(authenticated);
-            } catch (Exception e) {
-                // 토큰이 유효하지 않으면 인증 없이 진행 (결과는 401/403로 정리)
-                SecurityContextHolder.clearContext();
-                log.debug("JWT auth failed: {}", e.getMessage());
+        // 이미 인증된 경우 재인증 생략
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            String authz = request.getHeader("Authorization");
+            if (authz != null && authz.startsWith("Bearer ")) {
+                String token = authz.substring(7).trim();
+                try {
+                    // Provider가 토큰을 처리할 수 있도록 커스텀 Authentication으로 래핑
+                    JwtPreAuthenticatedToken jwt = new JwtPreAuthenticatedToken(token);
+                    Authentication authenticated = authenticationManager.authenticate(jwt);
+                    SecurityContextHolder.getContext().setAuthentication(authenticated);
+
+                    // CustomUserDetails가 있으면 memberNo를 요청 속성에 전달(컨트롤러/서비스에서 활용 가능)
+                    Object principal = authenticated.getPrincipal();
+                    if (principal instanceof CustomUserDetails cud && cud.getMemberNo() != null) {
+                        request.setAttribute("memberNo", cud.getMemberNo());
+                    }
+                } catch (Exception e) {
+                    // 토큰이 유효하지 않으면 인증 없이 진행 (결과는 401/403로 정리)
+                    SecurityContextHolder.clearContext();
+                    log.debug("JWT auth failed: {}", e.getMessage());
+                }
             }
         }
 
@@ -47,6 +56,4 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         chain.doFilter(request, response);
     }
-
-
 }
