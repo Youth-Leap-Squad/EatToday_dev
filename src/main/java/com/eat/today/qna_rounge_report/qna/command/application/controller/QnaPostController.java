@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/qna-posts")
+@RequestMapping("/qna-posts")
 @RequiredArgsConstructor
 public class QnaPostController {
 
@@ -21,7 +21,7 @@ public class QnaPostController {
     @PostMapping
     public ResponseEntity<QnaPostResponse> create(@RequestBody @Valid CreateQnaPostRequest req) {
         QnaPostResponse created = qnaPostService.create(req);
-        return ResponseEntity.created(URI.create("/api/qna-posts/" + created.id()))
+        return ResponseEntity.created(URI.create("/qna-posts/" + created.id()))
                 .body(created);
     }
 
