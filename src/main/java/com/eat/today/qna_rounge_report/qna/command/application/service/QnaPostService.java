@@ -19,7 +19,7 @@ public class QnaPostService {
     // 문의 게시글 생성
     public QnaPostResponse create(CreateQnaPostRequest req) {
         QnaPost saved = qnaPostRepository.save(
-                new QnaPost(req.memberNo(), req.inquiryContent(), req.inquiryAt())
+                new QnaPost(req.memberNo(), req.inquiryTitle(), req.inquiryContent(), req.inquiryAt())
         );
         return QnaPostResponse.from(saved);
     }
