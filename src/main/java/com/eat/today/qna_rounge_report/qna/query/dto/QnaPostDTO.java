@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class QnaPostDTO {
     private Integer qnaPostNo;
     private Integer memberNo;
+    private String inquiryTitle;
     private String inquiryContent;
     private String inquiryAt;
 

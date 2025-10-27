@@ -4,10 +4,11 @@
 <mapper namespace="com.eat.today.qna_rounge_report.qna.query.repository.QnaMapper">
 
     <resultMap id="qnaPostMap" type="com.eat.today.qna_rounge_report.qna.query.dto.QnaPostDTO">
-        <id     column="qna_post_no"    property="qnaPostNo"/>
-        <result column="member_no"      property="memberNo"/>
+        <id     column="qna_post_no"     property="qnaPostNo"/>
+        <result column="member_no"       property="memberNo"/>
+        <result column="inquiry_title"   property="inquiryTitle"/>
         <result column="inquiry_content" property="inquiryContent"/>
-        <result column="inquiry_at"     property="inquiryAt"/>
+        <result column="inquiry_at"      property="inquiryAt"/>
         <association property="questioner" resultMap="requestNameMap"/>
     </resultMap>
 
@@ -38,6 +39,7 @@
             qp.qna_post_no,
             qp.member_no,
             m.member_id AS questioner_name,
+            qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
         FROM qna_post qp
@@ -55,13 +57,15 @@
         qp.qna_post_no,
         qp.member_no,
         m.member_id AS questioner_name,
+        qp.inquiry_title,
         qp.inquiry_content,
         qp.inquiry_at
         FROM qna_post qp
         JOIN member m ON m.member_no = qp.member_no
         <where>
             <if test="keyword != null and keyword != ''">
-                qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%')
+                (qp.inquiry_title LIKE CONCAT('%', #{keyword}, '%')
+                OR qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="keyword == null or keyword == ''">
                 1 = 0
@@ -76,7 +80,8 @@
         FROM qna_post qp
         <where>
             <if test="keyword != null and keyword != ''">
-                qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%')
+                (qp.inquiry_title LIKE CONCAT('%', #{keyword}, '%')
+                OR qp.inquiry_content LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="keyword == null or keyword == ''">
                 1 = 0
@@ -89,6 +94,7 @@
             qp.qna_post_no,
             qp.member_no,
             m.member_id AS questioner_name,
+            qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
         FROM qna_post qp
@@ -107,6 +113,7 @@
             qp.qna_post_no,
             qp.member_no,
             m.member_id AS questioner_name,
+            qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
         FROM qna_post qp
