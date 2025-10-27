@@ -21,7 +21,7 @@ public class JwtTokenService {
                     .getBytes(StandardCharsets.UTF_8)
     );
 
-    public record JwtPayload(String username, List<String> roles) {}
+    public record JwtPayload(String username, Long memberNo, List<String> roles) {}
 
     /** 토큰 검증 */
     public JwtPayload parseAndValidate(String token) {
@@ -38,7 +38,13 @@ public class JwtTokenService {
             List<String> roles = (List<String>) claims.get("roles");
             if (roles == null) roles = List.of();
 
-            return new JwtPayload(username, roles);
+            Long memberNo = null;
+            Object raw = claims.get("memberNo");
+            if (raw instanceof Integer i) memberNo = i.longValue();
+            else if (raw instanceof Long l) memberNo = l;
+            else if (raw instanceof String s && !s.isBlank()) memberNo = Long.parseLong(s);
+
+            return new JwtPayload(username, memberNo, roles);
         } catch (JwtException e) {
             throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.", e);
         }
@@ -59,6 +65,14 @@ public class JwtTokenService {
     public String issueToken(String username,
                              Collection<? extends GrantedAuthority> authorities,
                              Duration ttl) {
+        return issueToken(username, null, authorities, ttl);
+    }
+
+    /** 토큰 발급(회원번호 포함) */
+    public String issueToken(String username,
+                             Long memberNo,
+                             Collection<? extends GrantedAuthority> authorities,
+                             Duration ttl) {
         Instant now = Instant.now();
         List<String> roles = new ArrayList<>();
         if (authorities != null) {
@@ -69,10 +83,13 @@ public class JwtTokenService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
+        if (memberNo != null) {
+            claims.put("memberNo", memberNo);
+        }
 
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)
+                .addClaims(claims)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plus(ttl)))
                 .signWith(key, SignatureAlgorithm.HS256)
