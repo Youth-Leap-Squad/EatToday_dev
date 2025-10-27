@@ -10,6 +10,7 @@ public interface PostService {
     List<AlcoholDTO> getAlcohols(int page, int size);
 
     // 승인된/미승인/전체 안주 조회
+    
     List<FoodDTO> getApprovedFoods(int page, int size);
     List<FoodDTO> getUnapprovedFoods(int page, int size);
     List<FoodDTO> getAllFoods(int page, int size);
@@ -43,4 +44,9 @@ public interface PostService {
 
     // 인기 게시글 TOP N
     List<PopularFoodDTO> getPopularFoods(int limit);
+
+
+    FoodDTO getFoodById(int boardNo);
+
+
 }

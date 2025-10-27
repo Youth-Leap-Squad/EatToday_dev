@@ -17,6 +17,7 @@ public interface PostMapper {
     List<AlcoholSimpleDTO> selectAlcoholExplainAndPicture();
 
     // 승인된/미승인/전체 안주
+    FoodDTO findFoodById(@Param("boardNo") int boardNo);
     List<FoodDTO> selectApprovedFoodList(@Param("offset") int offset, @Param("limit") int limit);
     List<FoodDTO> selectUnapprovedFoodList(@Param("offset") int offset, @Param("limit") int limit);
     List<FoodDTO> selectAllFoodList(@Param("offset") int offset, @Param("limit") int limit);
