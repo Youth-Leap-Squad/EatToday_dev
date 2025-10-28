@@ -1,32 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.eat.today.qna_rounge_report.rounge.query.repository.PhotoReviewMapper">
 
-    <resultMap id="photoReviewMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
+    <resultMap id="prFileUploadMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PrFileUploadDTO">
+        <id     column="pr_file_no"     property="prFileNo"/>
+        <result column="pr_file_name"   property="prFileName"/>
+        <result column="pr_file_type"   property="prFileType"/>
+        <result column="pr_file_rename" property="prFileRename"/>
+        <result column="pr_file_path"   property="prFilePath"/>
+        <result column="pr_file_at"     property="prFileAt"/>
+        <result column="review_no"      property="reviewNo"/>
+        <result column="pr_file_url"    property="prFileUrl"/>
+    </resultMap>
+
+    <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <result column="member_name" property="memberName"/>
+    </resultMap>
+
+    <resultMap id="photoReviewWithFilesMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
+        <id     column="review_no"      property="reviewNo"/>
         <result column="board_no"       property="boardNo"/>
         <result column="member_no"      property="memberNo"/>
         <result column="review_title"   property="reviewTitle"/>
         <result column="review_date"    property="reviewDate"/>
         <result column="review_content" property="reviewContent"/>
         <result column="review_like"    property="reviewLike"/>
-        <association property="member" resultMap="memberMap"/>
+        <association property="member"  resultMap="memberMap"/>
+        <collection property="files"
+                    ofType="com.eat.today.qna_rounge_report.rounge.query.dto.PrFileUploadDTO"
+                    select="selectFilesByReviewNo"
+                    column="review_no"/>
     </resultMap>
 
-    <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestNameDTO">
-        <result column="member_id" property="memberName"/>
-    </resultMap>
-
-    <select id="selectAllOrderByDateDescPaged" resultMap="photoReviewMap">
+    <select id="selectFilesByReviewNo" resultMap="prFileUploadMap">
         SELECT
-            pr.board_no
-             , pr.member_no
-             , m.member_id
-             , pr.review_title
-             , pr.review_date
-             , pr.review_content
-             , pr.review_like
+            prf.pr_file_no,
+            prf.pr_file_name,
+            prf.pr_file_type,
+            prf.pr_file_rename,
+            prf.pr_file_path,
+            prf.pr_file_at,
+            prf.review_no,
+            CONCAT('/reviews/', prf.pr_file_path, '/', prf.pr_file_rename) AS pr_file_url
+        FROM pr_file_upload prf
+        WHERE prf.review_no = #{review_no}
+        ORDER BY prf.pr_file_no ASC
+    </select>
+
+    <select id="selectAllOrderByDateDescPaged" resultMap="photoReviewWithFilesMap">
+        SELECT
+            pr.review_no,
+            pr.board_no,
+            pr.member_no,
+            m.member_name,
+            pr.review_title,
+            pr.review_date,
+            pr.review_content,
+            pr.review_like
         FROM photo_review pr
                  JOIN member m ON m.member_no = pr.member_no
         ORDER BY pr.review_date DESC
@@ -37,15 +68,16 @@
         SELECT COUNT(*) FROM photo_review
     </select>
 
-    <select id="selectAllOrderByLikeDescPaged" resultMap="photoReviewMap">
+    <select id="selectAllOrderByLikeDescPaged" resultMap="photoReviewWithFilesMap">
         SELECT
-            pr.board_no
-             , pr.member_no
-             , m.member_id
-             , pr.review_title
-             , pr.review_date
-             , pr.review_content
-             , pr.review_like
+            pr.review_no,
+            pr.board_no,
+            pr.member_no,
+            m.member_name,
+            pr.review_title,
+            pr.review_date,
+            pr.review_content,
+            pr.review_like
         FROM photo_review pr
                  JOIN member m ON m.member_no = pr.member_no
         ORDER BY pr.review_like DESC
@@ -56,20 +88,21 @@
         SELECT COUNT(*) FROM photo_review
     </select>
 
-    <select id="searchByKeywordPaged" resultMap="photoReviewMap">
+    <select id="searchByKeywordPaged" resultMap="photoReviewWithFilesMap">
         SELECT
-        pr.board_no
-        , pr.member_no
-        , m.member_id
-        , pr.review_title
-        , pr.review_date
-        , pr.review_content
-        , pr.review_like
+        pr.review_no,
+        pr.board_no,
+        pr.member_no,
+        m.member_name,
+        pr.review_title,
+        pr.review_date,
+        pr.review_content,
+        pr.review_like
         FROM photo_review pr
         JOIN member m ON m.member_no = pr.member_no
         <where>
             <if test="keyword != null and keyword != ''">
-                (pr.review_title   LIKE CONCAT('%', #{keyword}, '%')
+                (pr.review_title LIKE CONCAT('%', #{keyword}, '%')
                 OR pr.review_content LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="keyword == null or keyword == ''">
@@ -85,7 +118,7 @@
         FROM photo_review pr
         <where>
             <if test="keyword != null and keyword != ''">
-                (pr.review_title   LIKE CONCAT('%', #{keyword}, '%')
+                (pr.review_title LIKE CONCAT('%', #{keyword}, '%')
                 OR pr.review_content LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="keyword == null or keyword == ''">
@@ -94,11 +127,12 @@
         </where>
     </select>
 
-    <select id="selectByAlcoholNoPaged" resultMap="photoReviewMap">
+    <select id="selectByAlcoholNoPaged" resultMap="photoReviewWithFilesMap">
         SELECT
+            pr.review_no,
             pr.board_no,
             pr.member_no,
-            m.member_id,
+            m.member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
@@ -111,11 +145,12 @@
             LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <select id="selectByAlcoholNoLikeDescPaged" resultMap="photoReviewMap">
+    <select id="selectByAlcoholNoLikeDescPaged" resultMap="photoReviewWithFilesMap">
         SELECT
+            pr.review_no,
             pr.board_no,
             pr.member_no,
-            m.member_id,
+            m.member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
@@ -135,15 +170,16 @@
         WHERE fp.alcohol_no = #{alcoholNo}
     </select>
 
-    <select id="selectByMemberNoPaged" resultMap="photoReviewMap">
+    <select id="selectByMemberNoPaged" resultMap="photoReviewWithFilesMap">
         SELECT
-            pr.board_no
-             , pr.member_no
-             , m.member_id
-             , pr.review_title
-             , pr.review_date
-             , pr.review_content
-             , pr.review_like
+            pr.review_no,
+            pr.board_no,
+            pr.member_no,
+            m.member_name,
+            pr.review_title,
+            pr.review_date,
+            pr.review_content,
+            pr.review_like
         FROM photo_review pr
                  JOIN member m ON m.member_no = pr.member_no
         WHERE pr.member_no = #{memberNo}
