@@ -3,6 +3,8 @@ package com.eat.today.event.worldcup.command.application.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name="worldcup_join_member")
 @NoArgsConstructor
@@ -25,4 +27,8 @@ public class WorldcupJoinMember {
 
     @Column(name = "alcohol_no", nullable = false)
     private int alcoholId;
+
+    @Column(name = "participated_at")
+    private LocalDate participatedAt;
+
 }

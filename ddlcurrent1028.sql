@@ -230,6 +230,7 @@ CREATE TABLE `worldcup_join_member` (
                                         `worldcup_no` INT NOT NULL,
                                         `member_no` INT NOT NULL,
                                         `alcohol_no` INT NOT NULL,
+                                        `participated_at` DATE DEFAULT (CURRENT_DATE),
                                         CONSTRAINT PK_WORLDCUP_JOIN_MEMBER_NO PRIMARY KEY(worldcup_join_member_no),
                                         CONSTRAINT FK_MESSAGE_NO_MEMBER_NO FOREIGN KEY(worldcup_no) REFERENCES worldcup(worldcup_no),
                                         CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_2 FOREIGN KEY(member_no) REFERENCES member(member_no),
@@ -810,14 +811,14 @@ VALUES
     (9, 3, 3);
 
 -- 11) 월드컵 참여 회원 (worldcup_join_member)
---     ID를 고정적으로 지정해 아래 picks에서 참조
-INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no,alcohol_no)
+INSERT INTO worldcup_join_member (worldcup_join_member_no, worldcup_no, member_no,alcohol_no,participated_at)
 VALUES
-    (1, 1, 2,1),
-    (2, 1, 3,2),
-    (3, 1, 4,1),
-    (4, 2, 5,2),
-    (5, 2, 2,3);
+    (1, 1, 2,1,'2025-10-17'),
+    (2, 1, 3,2,'2025-10-18'),
+    (3, 1, 4,1,'2025-10-19'),
+    (4, 2, 5,2,'2025-10-20'),
+    (5, 2, 2,3,'2025-10-25');
+
 
 -- 12) 개인별 월드컵 후보 안주 (Individual_world_cup_food)
 --     worldcup 1: eventFood(1=치킨, 3=스테이크)
