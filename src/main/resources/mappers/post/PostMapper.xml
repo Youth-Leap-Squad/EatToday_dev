@@ -25,6 +25,13 @@
         ORDER BY alcohol_no DESC
     </select>
 
+    <select id="countApprovedFoodsByAlcohol" resultType="long">
+        SELECT COUNT(*)
+        FROM food_post
+        WHERE alcohol_no = #{alcoholNo}
+        AND confirmed_yn = 'T'
+    </select>
+
     <!-- PostMapper.xml -->
     <select id="findFoodById" resultType="com.eat.today.post.query.dto.FoodDTO">
         SELECT

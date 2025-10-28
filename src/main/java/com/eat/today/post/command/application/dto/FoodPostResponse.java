@@ -15,10 +15,7 @@ public class FoodPostResponse {
     private String boardTitle;
     private String boardContent;
     private String foodExplain;
-
-    // 기존 String 대신 배열 형태로 내려줌
     private List<String> foodPictures;
-
     private String boardDate;
     private Integer boardSeq;
     private Boolean confirmedYn;

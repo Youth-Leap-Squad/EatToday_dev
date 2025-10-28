@@ -23,7 +23,6 @@ public class JwtTokenService {
 
     public record JwtPayload(String username, Long memberNo, List<String> roles) {}
 
-    /** 토큰 검증 */
     public JwtPayload parseAndValidate(String token) {
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder()
@@ -50,7 +49,6 @@ public class JwtTokenService {
         }
     }
 
-    /** 권한 변환 */
     public List<GrantedAuthority> toGrantedAuthorities(List<String> roles) {
         if (roles == null) return List.of();
         List<GrantedAuthority> list = new ArrayList<>();
@@ -61,14 +59,12 @@ public class JwtTokenService {
         return list;
     }
 
-    /** 토큰 발급 */
     public String issueToken(String username,
                              Collection<? extends GrantedAuthority> authorities,
                              Duration ttl) {
         return issueToken(username, null, authorities, ttl);
     }
 
-    /** 토큰 발급(회원번호 포함) */
     public String issueToken(String username,
                              Long memberNo,
                              Collection<? extends GrantedAuthority> authorities,
