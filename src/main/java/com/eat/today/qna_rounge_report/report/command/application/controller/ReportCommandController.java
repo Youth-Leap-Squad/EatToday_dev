@@ -15,7 +15,7 @@ import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reports")
+@RequestMapping("/reports")
 public class ReportCommandController {
 
     private final ReportService reportService;
@@ -23,7 +23,7 @@ public class ReportCommandController {
     @PostMapping
     public ResponseEntity<CreateReportResponse> create(@RequestBody @Valid CreateReportRequest req) {
         CreateReportResponse created = reportService.create(req);
-        return ResponseEntity.created(URI.create("/api/reports/" + created.id()))
+        return ResponseEntity.created(URI.create("/reports/" + created.id()))
                 .body(created);
     }
 }

@@ -16,4 +16,5 @@ public class WorldcupJoinResponseAddDTO {
     private int foodId;
     private int worldcupJoinMemberNo;   // 새로 생성된 joinMember PK
     private String message;
+    private boolean pointGranted;   // ✅ 추가
 }
