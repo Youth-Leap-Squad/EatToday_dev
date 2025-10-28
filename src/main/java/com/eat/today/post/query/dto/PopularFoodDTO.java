@@ -8,5 +8,6 @@ public class PopularFoodDTO {
     private String boardTitle;
     private String foodPicture;
     private String memberId;
+    private String  profileImageUrl;
     private int totalLikes;
 }

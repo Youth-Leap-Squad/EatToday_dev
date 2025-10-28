@@ -9,6 +9,7 @@ public class FoodDTO {
     private Integer alcoholNo;
     private Integer memberNo;
     private String memberId;
+    private String  profileImageUrl;
     private String boardTitle;
     private String boardContent;
     private String foodExplain;
