@@ -688,16 +688,137 @@ VALUES
 
 INSERT INTO photo_review (board_no, member_no, review_title, review_date, review_content, review_like)
 VALUES
-    (1, 1,'치맥 인증샷', '2025-09-05', '정말 시원하고 맛있었어요!', 12),
-    (2, 2,'삼겹살엔 역시 소주', '2025-09-06', '소주 없으면 섭섭하죠.', 8),
-    (3, 4,'스테이크와 와인', '2025-09-07', '레드 와인이 고기랑 너무 잘 어울려요.', 15),
-    (5, 10,'피맥 말고 피-라', '2025-09-06', '라거도 잘 어울리네', 6),
-    (6, 11,'화이트와인엔 치즈', '2025-09-07', '산도/지방 밸런스 굿', 10),
-    (7, 12,'골소 소주 국룰', '2025-09-08', '매콤상큼 술 진도 쭉', 4),
-    (8, 17,'감튀엔 하이볼', '2025-09-09', '탄산감이 느끼함 컷', 7),
-    (9, 1,'스모키 스모키', '2025-09-10', '고급진 안주 매칭', 9),
-    (10, 2,'막걸리엔 파전', '2025-09-11', '전/막 조합은 진리', 8),
-    (1, 3,'치맥 2차 인증', '2025-09-12', '이번엔 양념치킨', 5);
+-- 게시글 16: 두부김치와 소주
+    (16, 12, '두부김치 첫맛 노트',            '2025-10-11 18:45:00', '담백+매콤 밸런스 최고.', 4),
+    (16, 13, '부드러움 끝판왕 두부김치',      '2025-10-11 19:05:00', '부드러워서 계속 먹음.', 5),
+    (16, 14, '소주 궁합 미쳤다 두부김치',     '2025-10-11 19:40:00', '소주랑 진짜 잘 맞아요.', 9),
+    (16, 15, '김치 맛이 살아있다',            '2025-10-11 20:10:00', '김치가 너무 맛있네.', 3),
+    (16, 16, '기본 안주의 정석',               '2025-10-11 20:50:00', '기본 안주 끝판왕.', 8),
+    (16, 17, '따뜻할 때 진가 발휘',            '2025-10-11 21:30:00', '따뜻할 때 더 맛있어요.', 6),
+
+-- 게시글 29: 계란말이와 소주
+    (29, 23, '촉촉한 계란말이 한줄평',         '2025-09-26 18:40:00', '촉촉하고 부드러워요.', 6),
+    (29, 24, '간이 딱 맞는 계란말이',          '2025-09-26 19:00:00', '간이 딱 맞음.', 5),
+    (29, 25, '달걀 향 가득 후기',              '2025-09-26 19:20:00', '달걀 향이 좋아요.', 4),
+    (29, 26, '의외로 소주랑 찰떡',              '2025-09-26 19:45:00', '소주랑 은근 잘 맞네.', 7),
+    (29, 27, '아이들 취향저격 맛',             '2025-09-26 20:10:00', '아이들도 좋아할 맛.', 3),
+    (29, 28, '속 꽉 찬 계란말이',               '2025-09-26 20:40:00', '속재료가 꽉 찼어요.', 8),
+
+-- 게시글 30: 김치찌개와 소주
+    (30, 6,  '진하고 얼큰한 국물맛',            '2025-09-25 19:45:00', '국물이 진하고 얼큰.', 9),
+    (30, 7,  '밥도둑 인정 후기',                '2025-09-25 20:10:00', '밥도둑 인정.', 7),
+    (30, 8,  '돼지고기 누린내 無',              '2025-09-25 20:35:00', '돼지고기 냄새 안 남.', 4),
+    (30, 9,  '술이 저절로 들어간다',            '2025-09-25 21:00:00', '술이 저절로.', 10),
+    (30, 10, '자극 덜하고 깔끔',                 '2025-09-25 21:20:00', '자극적이지 않음.', 3),
+    (30, 11, '칼칼한 맛의 매력',                 '2025-09-25 21:45:00', '칼칼해서 좋아요.', 6),
+    (30, 12, '양 넉넉해서 만족',                 '2025-09-25 22:10:00', '양도 넉넉.', 5),
+    (30, 13, '깊은 맛이 스며든 찌개',            '2025-09-25 22:40:00', '깊은 맛이 나요.', 8),
+    (30, 14, '밥 추가는 필수였다',               '2025-09-25 23:05:00', '밥 추가 필수.', 7),
+    (30, 15, '한 그릇 후 속이 따뜻',             '2025-09-25 23:30:00', '속이 따뜻해짐.', 6),
+
+-- 게시글 18: 숙성회와 와인
+    (18, 10, '입에서 사라지는 숙성회',           '2025-10-06 19:20:00', '입에서 사라지는 식감.', 13),
+    (18, 11, '화이트와인 케미 폭발',              '2025-10-06 19:45:00', '화이트와인과 환상.', 12),
+    (18, 12, '선도 유지 훌륭했던 접시',           '2025-10-06 20:05:00', '선도 유지 훌륭.', 8),
+    (18, 13, '비린내 0, 깔끔 그 자체',            '2025-10-06 20:25:00', '비린내 전혀 없음.', 7),
+    (18, 14, '맛의 밸런스가 좋다',                '2025-10-06 20:45:00', '밸런스가 좋아요.', 9),
+    (18, 15, '양도 넉넉해서 만족',                '2025-10-06 21:10:00', '양도 충분합니다.', 6),
+    (18, 16, '플레이팅이 예쁜 숙성회',            '2025-10-06 21:35:00', '접시 플레이팅 예쁨.', 5);
+
+INSERT INTO pr_file_upload
+(pr_file_name, pr_file_type, pr_file_rename, pr_file_path, pr_file_at, review_no, pr_file_url)
+VALUES
+    -- 🍲 두부김치와 소주 (board 16, review_no 12~22)
+    ('tofusoju1.png','image/png','tofusoju1.png','/images/photo_review','2025-10-11 18:45:00',1,'/images/photo_review/tofusoju1.png'),
+    ('tofusoju2.png','image/png','tofusoju2.png','/images/photo_review','2025-10-11 18:45:00',2,'/images/photo_review/tofusoju2.png'),
+    ('tofusoju3.png','image/png','tofusoju3.png','/images/photo_review','2025-10-11 18:45:00',3,'/images/photo_review/tofusoju3.png'),
+    ('tofusoju4.png','image/png','tofusoju4.png','/images/photo_review','2025-10-11 18:45:00',4,'/images/photo_review/tofusoju4.png'),
+    ('tofusoju5.png','image/png','tofusoju5.png','/images/photo_review','2025-10-11 18:45:00',5,'/images/photo_review/tofusoju5.png'),
+    ('tofusoju6.png','image/png','tofusoju6.png','/images/photo_review','2025-10-11 18:45:00',6,'/images/photo_review/tofusoju6.png'),
+
+    -- 🍳 계란말이와 소주 (board 29, review_no 23~28)
+    ('egg1.png','image/png','egg1.png','/images/photo_review','2025-09-26 18:40:00',7,'/images/photo_review/egg1.png'),
+    ('egg2.png','image/png','egg2.png','/images/photo_review','2025-09-26 18:40:00',8,'/images/photo_review/egg2.png'),
+    ('egg3.png','image/png','egg3.png','/images/photo_review','2025-09-26 18:40:00',9,'/images/photo_review/egg3.png'),
+    ('egg4.png','image/png','egg4.png','/images/photo_review','2025-09-26 18:40:00',10,'/images/photo_review/egg4.png'),
+    ('egg5.png','image/png','egg5.png','/images/photo_review','2025-09-26 18:40:00',11,'/images/photo_review/egg5.png'),
+    ('egg6.png','image/png','egg6.png','/images/photo_review','2025-09-26 18:40:00',12,'/images/photo_review/egg6.png'),
+
+-- 김치찌개+소주
+('kimchi-stew-soju1.jpeg',  'image/jpeg', 'kimchi-stew-soju1.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 13, '/images/photo_review/kimchi-stew-soju1.jpeg'),
+('kimchi-stew-soju2.jpeg',  'image/jpeg', 'kimchi-stew-soju2.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 14, '/images/photo_review/kimchi-stew-soju2.jpeg'),
+('kimchi-stew-soju3.jpeg',  'image/jpeg', 'kimchi-stew-soju3.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 15, '/images/photo_review/kimchi-stew-soju3.jpeg'),
+('kimchi-stew-soju4.jpeg',  'image/jpeg', 'kimchi-stew-soju4.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 16, '/images/photo_review/kimchi-stew-soju4.jpeg'),
+('kimchi-stew-soju5.jpeg',  'image/jpeg', 'kimchi-stew-soju5.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 17, '/images/photo_review/kimchi-stew-soju5.jpeg'),
+('kimchi-stew-soju6.jpeg',  'image/jpeg', 'kimchi-stew-soju6.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 18, '/images/photo_review/kimchi-stew-soju6.jpeg'),
+('kimchi-stew-soju7.jpeg',  'image/jpeg', 'kimchi-stew-soju7.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 19, '/images/photo_review/kimchi-stew-soju7.jpeg'),
+('kimchi-stew-soju8.jpeg',  'image/jpeg', 'kimchi-stew-soju8.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 20, '/images/photo_review/kimchi-stew-soju8.jpeg'),
+('kimchi-stew-soju9.jpeg',  'image/jpeg', 'kimchi-stew-soju9.jpeg',  '/images/photo_review', '2025-10-20 21:00:03', 21, '/images/photo_review/kimchi-stew-soju9.jpeg'),
+('kimchi-stew-soju10.jpeg', 'image/jpeg', 'kimchi-stew-soju10.jpeg', '/images/photo_review', '2025-10-20 21:00:03', 22, '/images/photo_review/kimchi-stew-soju10.jpeg'),
+
+-- 🥢 숙성회와 와인 (board 18, review_no 10~20)
+('sashimiwine1.jpeg','image/jpeg','sashimiwine1.jpeg','/images/photo_review','2025-10-06 19:20:00',23,'/images/photo_review/sashimiwine1.jpeg'),
+('sashimiwine2.jpeg','image/jpeg','sashimiwine2.jpeg','/images/photo_review','2025-10-06 19:20:00',24,'/images/photo_review/sashimiwine2.jpeg'),
+('sashimiwine3.jpeg','image/jpeg','sashimiwine3.jpeg','/images/photo_review','2025-10-06 19:20:00',25,'/images/photo_review/sashimiwine3.jpeg'),
+('sashimiwine4.png','image/png','sashimiwine4.png','/images/photo_review','2025-10-06 19:20:00',26,'/images/photo_review/sashimiwine4.png'),
+('sashimiwine5.jpeg','image/jpeg','sashimiwine5.jpeg','/images/photo_review','2025-10-06 19:20:00',27,'/images/photo_review/sashimiwine5.jpeg'),
+('sashimiwine6.png','image/png','sashimiwine6.png','/images/photo_review','2025-10-06 19:20:00',28,'/images/photo_review/sashimiwine6.png'),
+('sashimiwine7.jpeg','image/jpeg','sashimiwine7.jpeg','/images/photo_review','2025-10-06 19:20:00',29,'/images/photo_review/sashimiwine7.jpeg');
+
+-- -- 두부김치와 소주
+-- ('IMG_20251011_184510.jpg','image/jpeg','pr_20251011_184510_c3.jpg','/var/eattoday/uploads/photo-review','2025-10-11 18:45:10',
+--  (SELECT review_no FROM photo_review WHERE review_title='두부김치 첫맛 노트'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251011_184510_c3.jpg'),
+--
+-- ('IMG_20251011_190501.jpg','image/jpeg','pr_20251011_190501_d4.jpg','/var/eattoday/uploads/photo-review','2025-10-11 19:05:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='부드러움 끝판왕 두부김치'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251011_190501_d4.jpg'),
+--
+-- -- 계란말이와 소주
+-- ('IMG_20250926_184001.jpg','image/jpeg','pr_20250926_184001_e5.jpg','/var/eattoday/uploads/photo-review','2025-09-26 18:40:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='촉촉한 계란말이 한줄평'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250926_184001_e5.jpg'),
+--
+-- ('IMG_20250926_190002.jpg','image/jpeg','pr_20250926_190002_f6.jpg','/var/eattoday/uploads/photo-review','2025-09-26 19:00:02',
+--  (SELECT review_no FROM photo_review WHERE review_title='간이 딱 맞는 계란말이'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250926_190002_f6.jpg'),
+--
+-- -- 김치찌개와 소주
+-- ('IMG_20250925_194505.jpg','image/jpeg','pr_20250925_194505_g7.jpg','/var/eattoday/uploads/photo-review','2025-09-25 19:45:05',
+--  (SELECT review_no FROM photo_review WHERE review_title='진하고 얼큰한 국물맛'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250925_194505_g7.jpg'),
+--
+-- ('IMG_20250925_201000.jpg','image/jpeg','pr_20250925_201000_h8.jpg','/var/eattoday/uploads/photo-review','2025-09-25 20:10:00',
+--  (SELECT review_no FROM photo_review WHERE review_title='밥도둑 인정 후기'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250925_201000_h8.jpg'),
+--
+-- -- 회무침과 와인
+-- ('IMG_20250921_203002.jpg','image/jpeg','pr_20250921_203002_i9.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:30:02',
+--  (SELECT review_no FROM photo_review WHERE review_title='매콤달콤 밸런스 한줄평'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250921_203002_i9.jpg'),
+--
+-- ('IMG_20250921_205501.jpg','image/jpeg','pr_20250921_205501_j0.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:55:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='식감 살아있는 회무침'),
+--  'http://localhost:8003/uploads/photo-review/pr_20250921_205501_j0.jpg'),
+--
+-- -- 감바스 알 아히요
+-- ('IMG_20251018_183001.jpg','image/jpeg','pr_20251018_183001_k1.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:30:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='올리브 향 가득 감바스'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251018_183001_k1.jpg'),
+--
+-- ('IMG_20251018_185501.jpg','image/jpeg','pr_20251018_185501_l2.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:55:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='빵 찍어 먹기 최고'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251018_185501_l2.jpg'),
+--
+-- -- 숙성회와 와인
+-- ('IMG_20251006_191501.jpg','image/jpeg','pr_20251006_191501_m3.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:15:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='입에서 사라지는 숙성회'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251006_191501_m3.jpg'),
+--
+-- ('IMG_20251006_194501.jpg','image/jpeg','pr_20251006_194501_n4.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:45:01',
+--  (SELECT review_no FROM photo_review WHERE review_title='화이트와인 케미 폭발'),
+--  'http://localhost:8003/uploads/photo-review/pr_20251006_194501_n4.jpg');
+
 
 INSERT INTO follow (follower_no, following_no) VALUES
                                                    (2, 3),   -- soju_love  -> beer_queen
