@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class FindProfileDTO {
-    private String memberName;
+    private String memberId;
     private String memberBirth;
     private String memberPhone;
     private String memberEmail;

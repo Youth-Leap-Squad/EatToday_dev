@@ -1,16 +1,12 @@
 server:
-  port: 17284
+  port: 8080
 
 spring:
-  security:
-    user:
-      name: user
-      password: 1234
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/menudb
-    username: swcamp
-    password: swcamp
+    url: jdbc:mariadb://localhost:3306/mydb
+    username: root
+    password: root
   jpa:
     generate-ddl: false
     show-sql: true
@@ -36,11 +32,25 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-    auth-code-expiration-millis: 1800000  # 30 * 60 * 1000 == 30분
+    auth-code-expiration-millis: 1800000  # 30분
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+      enabled: true
+
 mybatis:
   mapper-locations: classpath*:/mappers/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+# 파일 업로드 설정
+app:
+  upload:
+    path: uploads/profile
+    max-size: 5242880  # 5MB
+    dir: uploads  # 이미지 저장 디렉토리
+    public-base-url: http://localhost:8080/uploads  # 공개 이미지 URL 기본 경로
 
 logging:
   level:
@@ -50,6 +60,3 @@ logging:
           member:
             query: debug  # 로그찍기
 
-# 이메일 설정 예시 (Gmail 사용 시)
-# 실제 사용 시에는 환경변수나 별도 설정 파일로 관리하는 것을 권장합니다.
-# Gmail의 경우 앱 비밀번호를 사용해야 합니다.
