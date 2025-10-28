@@ -1,6 +1,6 @@
-SET FOREIGN_KEY_CHECKS = 1;
+
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
-SET FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 1;
 DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;

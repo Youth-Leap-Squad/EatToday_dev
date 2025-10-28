@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/.")
+@RequestMapping("/command")
 public class PostCommandController {
 
     private final PostCommandService svc;
