@@ -287,6 +287,7 @@ CREATE TABLE `albti_survey` (
 CREATE TABLE `albti_join_member` (
                                      alBTI_member_no        INT NOT NULL AUTO_INCREMENT,
                                      member_no              INT NOT NULL,
+                                     participated_at        date null,
                                      CONSTRAINT PK_albti_join_member PRIMARY KEY (alBTI_member_no),
                                      CONSTRAINT FK_ajm_member FOREIGN KEY (member_no) REFERENCES member(member_no)
 )ENGINE=INNODB COMMENT '술BTI게임 참여회원';
@@ -690,10 +691,10 @@ VALUES
 
 INSERT INTO worldcup (worldcup_start_date, worldcup_finish_date)
 VALUES
-    ('2025-09-01', '2025-09-07'),
-    ('2025-09-08', '2025-09-14'),
-    ('2025-09-15', '2025-09-21'),
-    ('2025-09-22', '2025-09-28');
+    ('2025-10-27', '2025-11-02'),
+    ('2025-11-03', '2025-11-09'),
+    ('2025-11-10', '2025-11-16'),
+    ('2025-11-17', '2025-11-23');
 
 INSERT INTO eventFood (board_no, food_content, num_of_wins,worldcup_winning_food)
 VALUES
@@ -853,12 +854,12 @@ VALUES
     ('잔잔한 분위기에서 깊은 대화를 나누는 걸 선호한다', 2, 8); -- 차분함 vs 로맨틱
 
 -- 15) 술BTI 참여 (albti_join_member)
-INSERT INTO albti_join_member (member_no)
+INSERT INTO albti_join_member (member_no,participated_at)
 VALUES
-    ( 1),
-    ( 3),
-    ( 2),
-    ( 4);
+    ( 1,'2025-10-24'),
+    ( 3,'2025-10-25'),
+    ( 2,'2025-10-26'),
+    ( 4,'2025-10-27');
 
 -- 16) 회원별 술BTI 설문 결과 (albti_output)
 INSERT INTO albti_output (alBTI_no, alBTI_alcohol_explain, board_no, alBTI_member_no)
@@ -1062,6 +1063,7 @@ FROM score_sum s
          JOIN albti a ON s.alBTI_no = a.alBTI_no
          JOIN max_score m ON s.member_no = m.member_no AND s.total_score = m.top_score
 GROUP BY s.member_no;
+
 
 UPDATE food_post SET confirmed_yn = 'T'
 WHERE confirmed_yn IN ('1', 'T', 't', 'Y', 'y', 'TRUE', 'true') OR confirmed_yn = 1;
