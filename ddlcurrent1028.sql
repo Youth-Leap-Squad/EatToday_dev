@@ -1,4 +1,4 @@
-# SET FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 1;
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `albti_answer`;
@@ -108,9 +108,9 @@ CREATE TABLE `food_post` (
                              `alcohol_no` INT NOT NULL,
                              `member_no` INT NOT NULL,
                              `board_title` VARCHAR(255) NOT NULL,
-                             `board_content` VARCHAR(255) NOT NULL,
-                             `food_explain` VARCHAR(255) NOT NULL,
-                             `food_picture` VARCHAR(255),
+                             `board_content` LONGTEXT NOT NULL,
+                             `food_explain` LONGTEXT NOT NULL,
+                             `food_picture` VARCHAR(2000),
                              `board_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                              `board_seq` INT NOT NULL DEFAULT 0,
                              `confirmed_yn` CHAR(1) NOT NULL DEFAULT 'T',

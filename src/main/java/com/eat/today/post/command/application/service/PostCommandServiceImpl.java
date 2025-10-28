@@ -205,23 +205,33 @@ public class PostCommandServiceImpl implements PostCommandService {
     }
 
     @Override
-    public FoodPostResponse updatePostWithImages(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req, MultipartFile[] images) {
-        assertMemberExists(currentMemberNo);
-        List<String> urls = imageStorageService.storeAll(images, "foods");
-        if (urls != null && !urls.isEmpty()) {
-            req.setFoodPicture(String.join(",", urls));
-        }
-        return updatePost(boardNo, currentMemberNo, req);
-    }
-
-    @Override
     public FoodPostResponse createPostWithImages(CreateFoodPostRequest req, MultipartFile[] images) {
-        assertMemberExists(req.getMemberNo()); // 없는 회원 금지
-        List<String> urls = imageStorageService.storeAll(images, "foods");
+        assertMemberExists(req.getMemberNo());
+
+        // ✅ null/빈 배열 방어
+        List<String> urls = (images == null || images.length == 0)
+                ? List.of()
+                : imageStorageService.storeAll(images, "foods");
+
         if (urls != null && !urls.isEmpty()) {
             req.setFoodPicture(String.join(",", urls));
         }
         return createPost(req);
+    }
+
+    @Override
+    public FoodPostResponse updatePostWithImages(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req, MultipartFile[] images) {
+        assertMemberExists(currentMemberNo);
+
+        // ✅ null/빈 배열 방어
+        List<String> urls = (images == null || images.length == 0)
+                ? List.of()
+                : imageStorageService.storeAll(images, "foods");
+
+        if (urls != null && !urls.isEmpty()) {
+            req.setFoodPicture(String.join(",", urls));
+        }
+        return updatePost(boardNo, currentMemberNo, req);
     }
 
     /* ================= 댓글/반응/즐겨찾기 ================= */

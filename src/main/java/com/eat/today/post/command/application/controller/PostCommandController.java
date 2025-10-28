@@ -78,11 +78,22 @@ public class PostCommandController {
         try {
             CreateFoodPostRequest req = objectMapper.readValue(metaJson, CreateFoodPostRequest.class);
             req.setMemberNo(user.getMemberNo());
-            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
+
+            // ✅ Base64 인라인 이미지 가드
+            String content = req.getBoardContent();
+            if (content != null && content.contains("data:image/")) {
+                return ResponseEntity.unprocessableEntity().body("INLINE_IMAGE_NOT_ALLOWED");
+            }
+
+            MultipartFile[] toUse = (images != null && images.length > 0)
+                    ? images
+                    : (image != null ? new MultipartFile[]{image} : null);
+
             FoodPostResponse body = svc.createPostWithImages(req, toUse);
             return ResponseEntity.status(HttpStatus.CREATED).body(body);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            // ✅ 디버깅 용이하게 오류 메시지 반환
+            return ResponseEntity.badRequest().body("BAD_REQUEST: " + e.getMessage());
         }
     }
 
@@ -97,11 +108,19 @@ public class PostCommandController {
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("UNAUTHORIZED");
         try {
             UpdateFoodPostRequest req = objectMapper.readValue(metaJson, UpdateFoodPostRequest.class);
-            MultipartFile[] toUse = (images != null) ? images : (image != null ? new MultipartFile[]{image} : null);
+
+            if (req.getBoardContent() != null && req.getBoardContent().contains("data:image/")) {
+                return ResponseEntity.unprocessableEntity().body("INLINE_IMAGE_NOT_ALLOWED");
+            }
+
+            MultipartFile[] toUse = (images != null && images.length > 0)
+                    ? images
+                    : (image != null ? new MultipartFile[]{image} : null);
+
             FoodPostResponse body = svc.updatePostWithImages(boardNo, user.getMemberNo(), req, toUse);
             return ResponseEntity.ok(body);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("BAD_REQUEST: " + e.getMessage());
         }
     }
 
