@@ -11,7 +11,7 @@ import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/qna-comments")
+@RequestMapping("/qna-comments")
 public class QnaCommentController {
 
     private final QnaCommentService service;
@@ -20,7 +20,7 @@ public class QnaCommentController {
     @PostMapping
     public ResponseEntity<QnaCommentResponse> create(@RequestBody @Valid CreateQnaCommentRequest req) {
         QnaCommentResponse created = service.create(req);
-        return ResponseEntity.created(URI.create("/api/qna-comments/" + created.id()))
+        return ResponseEntity.created(URI.create("/qna-comments/" + created.id()))
                 .body(created);
     }
 
