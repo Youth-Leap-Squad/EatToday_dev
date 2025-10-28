@@ -1,6 +1,8 @@
 package com.eat.today.member.command.application.service;
 
+import com.eat.today.member.command.domain.aggregate.MemberEntity;
 import com.eat.today.member.command.domain.aggregate.ProfileImageEntity;
+import com.eat.today.member.command.domain.repository.MemberRepository;
 import com.eat.today.member.command.domain.repository.ProfileImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class ProfileImageService {
 
     private final ProfileImageRepository profileImageRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${app.upload.path:/uploads/profile}")
     private String uploadPath;
@@ -181,5 +184,41 @@ public class ProfileImageService {
             profileImageRepository.save(image);
             log.info("기본 프로필 사진 설정 완료: {}", memberEmail);
         }
+    }
+    
+    // === 새로운 간단한 방법 ===
+    
+    /**
+     * 파일만 저장하고 파일명 반환
+     */
+    public String saveProfileImage(MultipartFile file) throws IOException {
+        validateFile(file);
+        String storedFileName = generateStoredFileName(file.getOriginalFilename());
+        saveFile(file, storedFileName);
+        return storedFileName;
+    }
+    
+    /**
+     * member 테이블에 프로필 이미지 URL 업데이트
+     */
+    public void updateMemberProfileImage(Integer memberNo, String imageUrl) {
+        Optional<MemberEntity> memberOpt = memberRepository.findById(memberNo);
+        if (memberOpt.isPresent()) {
+            MemberEntity member = memberOpt.get();
+            member.setProfileImageUrl(imageUrl);
+            memberRepository.save(member);
+            log.info("회원 {} 프로필 이미지 업데이트: {}", memberNo, imageUrl);
+        } else {
+            throw new RuntimeException("회원을 찾을 수 없습니다: " + memberNo);
+        }
+    }
+    
+    /**
+     * member_no로 프로필 이미지 URL 조회
+     */
+    @Transactional(readOnly = true)
+    public String getProfileImageUrl(Integer memberNo) {
+        Optional<MemberEntity> memberOpt = memberRepository.findById(memberNo);
+        return memberOpt.map(MemberEntity::getProfileImageUrl).orElse(null);
     }
 }

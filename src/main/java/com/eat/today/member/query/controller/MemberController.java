@@ -34,4 +34,10 @@ public class MemberController {
     public FindMyLevelDTO findMyLevel(@RequestParam Integer memberNo) {
         return memberService.findMyLevel(memberNo);
     }
+    
+    // member_no로 email 조회
+    @GetMapping("/email-by-no")
+    public String getEmailByNo(@RequestParam Integer memberNo) {
+        return memberService.getEmailByNo(memberNo);
+    }
 }

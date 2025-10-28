@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 public class PhotoReviewDTO {
+    private Integer reviewNo;
     private Integer boardNo;
     private Integer memberNo;
     private String reviewTitle;
@@ -15,4 +16,6 @@ public class PhotoReviewDTO {
     private Integer reviewLike;
 
     private RequestNameDTO member;
+
+    private java.util.List<PrFileUploadDTO> files;
 }

@@ -48,8 +48,16 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
     @Override
     public void registMember(CommandMemberDTO commandMemberDTO) {
 
-        // 아이디 생성
-        commandMemberDTO.setMemberId(UUID.randomUUID().toString());   //랜덤 식별자 -> 나중에 사용자 입력값으로 변경
+        // memberId가 없으면 중복 체크 후 에러 처리
+        if (commandMemberDTO.getMemberId() == null || commandMemberDTO.getMemberId().trim().isEmpty()) {
+            throw new IllegalArgumentException("닉네임(memberId)은 필수입니다.");
+        }
+        
+        // 닉네임 중복 체크
+        Optional<MemberEntity> existingMember = memberRepository.findByMemberId(commandMemberDTO.getMemberId());
+        if (existingMember.isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
 
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         MemberEntity memberEntity = modelMapper.map(commandMemberDTO, MemberEntity.class);

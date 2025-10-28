@@ -54,6 +54,12 @@ public class MemberServiceImpl implements  MemberService{
         return sqlSession.getMapper(MemberMapper.class)
                 .findMyLevel(memberNo);
     }
+    
+    @Override
+    public String getEmailByNo(Integer memberNo) {
+        return sqlSession.getMapper(MemberMapper.class)
+                .getEmailByNo(memberNo);
+    }
 
     @Override
     public UserDetails loadMemberByMemberName(String memberEmail) {

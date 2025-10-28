@@ -39,26 +39,28 @@ public class ProfileImageController {
     /**
      * 프로필 사진 업로드
      */
-    @PostMapping("/profile-image")
+    @PostMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> uploadProfileImage(
-            @RequestParam("email") String memberEmail,
+            @RequestParam("memberNo") Integer memberNo,
             @RequestParam("file") MultipartFile file) {
         
         try {
-            ProfileImageEntity uploadedImage = profileImageService.uploadProfileImage(memberEmail, file);
+            // 파일 저장
+            String storedFileName = profileImageService.saveProfileImage(file);
+            String imageUrl = "http://localhost:8080/uploads/profile/" + storedFileName;
             
-            ProfileImageResponseDTO responseDTO = modelMapper.map(uploadedImage, ProfileImageResponseDTO.class);
-            responseDTO.setImageUrl("/members/profile-image/" + uploadedImage.getId());
+            // member 테이블에 프로필 이미지 URL 업데이트
+            profileImageService.updateMemberProfileImage(memberNo, imageUrl);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "프로필 사진이 성공적으로 업로드되었습니다.");
             response.put("status", "success");
-            response.put("data", responseDTO);
+            response.put("imageUrl", imageUrl);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("프로필 사진 업로드 실패: {}", memberEmail, e);
+            log.error("프로필 사진 업로드 실패: {}", memberNo, e);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "프로필 사진 업로드에 실패했습니다: " + e.getMessage());
@@ -68,23 +70,18 @@ public class ProfileImageController {
         }
     }
 
-    /**
-     * 프로필 사진 조회
-     */
-    @GetMapping("/profile-image/{memberEmail}")
-    public ResponseEntity<Map<String, Object>> getProfileImage(@PathVariable String memberEmail) {
+
+    // 프로필 사진 조회 (member_no 기준)
+    @GetMapping("/profile-image/{memberNo}")
+    public ResponseEntity<Map<String, Object>> getProfileImage(@PathVariable Integer memberNo) {
         try {
-            Optional<ProfileImageEntity> imageOpt = profileImageService.getActiveProfileImage(memberEmail);
+            String imageUrl = profileImageService.getProfileImageUrl(memberNo);
             
-            if (imageOpt.isPresent()) {
-                ProfileImageEntity image = imageOpt.get();
-                ProfileImageResponseDTO responseDTO = modelMapper.map(image, ProfileImageResponseDTO.class);
-                responseDTO.setImageUrl("/members/profile-image/" + image.getId());
-                
+            if (imageUrl != null) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("message", "프로필 사진 조회 성공");
                 response.put("status", "success");
-                response.put("data", responseDTO);
+                response.put("imageUrl", imageUrl);
                 
                 return ResponseEntity.ok(response);
             } else {
@@ -96,7 +93,7 @@ public class ProfileImageController {
             }
             
         } catch (Exception e) {
-            log.error("프로필 사진 조회 실패: {}", memberEmail, e);
+            log.error("프로필 사진 조회 실패: {}", memberNo, e);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "프로필 사진 조회에 실패했습니다.");
@@ -107,9 +104,9 @@ public class ProfileImageController {
     }
 
     /**
-     * 프로필 사진 파일 다운로드/조회
+     * 프로필 사진 파일 다운로드/조회 (이미지 ID로)
      */
-    @GetMapping("/profile-image/{imageId}")
+    @GetMapping("/profile-image/file/{imageId}")
     public ResponseEntity<Resource> getProfileImageFile(@PathVariable Long imageId) {
         try {
             // 이미지 ID로 파일 정보 조회 (간단한 구현)

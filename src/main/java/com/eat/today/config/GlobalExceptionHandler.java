@@ -19,4 +19,5 @@ class GlobalExceptionHandler {
     public String handleIllegalState(IllegalStateException ex){
         return ex.getMessage();
     }
+
 }

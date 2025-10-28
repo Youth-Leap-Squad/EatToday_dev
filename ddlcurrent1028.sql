@@ -1,4 +1,5 @@
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
+SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
@@ -53,6 +54,7 @@ CREATE TABLE `member` (
                           member_at VARCHAR(255) NOT NULL DEFAULT 0 COMMENT '계정 생성일',
                           member_level INT COMMENT '회원등급',
                           report_count INT NOT NULL DEFAULT 0 COMMENT '신고 누적 횟수',
+                          profile_image_url VARCHAR(500) NULL COMMENT '프로필 이미지 URL',
                           CONSTRAINT PK_member PRIMARY KEY (member_no),
                           INDEX idx_member_email (member_email)
 ) ENGINE=INNODB COMMENT '회원 정보';
