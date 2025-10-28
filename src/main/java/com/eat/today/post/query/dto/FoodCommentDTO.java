@@ -6,6 +6,7 @@ import lombok.Data;
 public class FoodCommentDTO {
     private int foodCommentNo;
     private String memberId;
+    private String  profileImageUrl;
     private String fcContent;
     private String fcDate;
 }

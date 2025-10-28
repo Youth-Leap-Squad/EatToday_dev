@@ -61,4 +61,5 @@ public interface PostCommandService {
 
     FoodPostResponse updatePostWithImages(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req,
                                           org.springframework.web.multipart.MultipartFile[] images);
+
 }

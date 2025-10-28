@@ -15,7 +15,7 @@
         <result column="pr_file_url"    property="prFileUrl"/>
     </resultMap>
 
-    <!-- ===== 작성자(회원) 매핑: 번호 + 이름 ===== -->
+    <!-- ===== 작성자(회원) 매핑: 번호 + (ID를 memberName 필드로 매핑) ===== -->
     <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestNameDTO">
         <id     column="member_no"   property="memberNo"/>
         <result column="member_name" property="memberName"/>
@@ -41,8 +41,7 @@
                     column="review_no"/>
     </resultMap>
 
-    <!-- ===== 리뷰별 파일 조회: pr_file_url을 웹경로로 보정 =====
-         /public 이후 경로 + 파일명 앞에 /reviews 프리픽스(정적매핑 경로)에 맞춰 생성 -->
+    <!-- ===== 리뷰별 파일 조회: 정적 경로(/images/photo_review)로 URL 생성 ===== -->
     <select id="selectFilesByReviewNo" resultMap="prFileUploadMap">
         SELECT
             prf.pr_file_no,
@@ -63,9 +62,9 @@
         SELECT
             pr.review_no,
             pr.board_no,
-            pr.member_no,            -- 루트 DTO용
-            m.member_no   AS member_no,   -- association(member)용
-            m.member_name,
+            pr.member_no,
+            m.member_no   AS member_no,
+            m.member_id   AS member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
@@ -87,7 +86,7 @@
             pr.board_no,
             pr.member_no,
             m.member_no   AS member_no,
-            m.member_name,
+            m.member_id   AS member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
@@ -109,7 +108,7 @@
         pr.board_no,
         pr.member_no,
         m.member_no   AS member_no,
-        m.member_name,
+        m.member_id   AS member_name,
         pr.review_title,
         pr.review_date,
         pr.review_content,
@@ -150,14 +149,14 @@
             pr.board_no,
             pr.member_no,
             m.member_no   AS member_no,
-            m.member_name,
+            m.member_id   AS member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
             pr.review_like
         FROM photo_review pr
                  JOIN food_post fp ON fp.board_no = pr.board_no
-                 JOIN member m     ON m.member_no = pr.member_no
+                 JOIN member    m  ON m.member_no = pr.member_no
         WHERE fp.alcohol_no = #{alcoholNo}
         ORDER BY pr.review_date DESC
             LIMIT #{limit} OFFSET #{offset}
@@ -170,14 +169,14 @@
             pr.board_no,
             pr.member_no,
             m.member_no   AS member_no,
-            m.member_name,
+            m.member_id   AS member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,
             pr.review_like
         FROM photo_review pr
                  JOIN food_post fp ON fp.board_no = pr.board_no
-                 JOIN member m     ON m.member_no = pr.member_no
+                 JOIN member    m  ON m.member_no = pr.member_no
         WHERE fp.alcohol_no = #{alcoholNo}
         ORDER BY pr.review_like DESC, pr.review_date DESC
             LIMIT #{limit} OFFSET #{offset}
@@ -197,7 +196,7 @@
             pr.board_no,
             pr.member_no,
             m.member_no   AS member_no,
-            m.member_name,
+            m.member_id   AS member_name,
             pr.review_title,
             pr.review_date,
             pr.review_content,

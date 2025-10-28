@@ -2,12 +2,12 @@ package com.eat.today.post.command.application.service;
 
 import com.eat.today.member.command.application.service.MemberPointService;
 import com.eat.today.member.command.domain.aggregate.PointPolicy;
-// <<< [추가] 회원 존재 검증을 위한 리포지토리
 import com.eat.today.member.command.domain.repository.MemberRepository;
-
 import com.eat.today.post.command.application.dto.*;
 import com.eat.today.post.command.domain.aggregate.*;
 import com.eat.today.post.command.domain.repository.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,15 +32,18 @@ public class PostCommandServiceImpl implements PostCommandService {
     private final FoodCommentRepository commentRepo;
     private final ImageStorageService imageStorageService;
     private final MemberPointService memberPointService;
+
+    // 회원 존재 검증
     private final MemberRepository memberRepository;
+
     private final BookmarkFolderRepository bookmarkFolderRepo;
     private final BookmarkRepository bookmarkRepo;
+
+    private final ObjectMapper objectMapper;
 
     private static String nowString() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
-
-    private final ObjectMapper objectMapper;
 
     private static List<String> splitCsv(String s) {
         if (s == null || s.isBlank()) return List.of();
@@ -70,6 +69,7 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .boardNo(p.getBoardNo())
                 .alcoholNo(p.getAlcohol().getAlcoholNo())
                 .memberNo(p.getMember().getMemberNo())
+                .memberId(p.getMember() != null ? p.getMember().getMemberId() : null)
                 .boardTitle(p.getBoardTitle())
                 .boardContent(p.getBoardContent())
                 .foodExplain(p.getFoodExplain())
@@ -84,18 +84,14 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .build();
     }
 
-
     /* ================= 공통 가드 ================= */
-
     private void assertMemberExists(Integer memberNo) {
         if (memberNo == null || !memberRepository.existsById(memberNo)) {
             throw new jakarta.persistence.EntityNotFoundException("존재하지 않는 회원입니다: " + memberNo);
         }
     }
 
-
     /* ================= 술 종류 ================= */
-
     private static AlcoholResponse toAlcoholResponse(Alcohol a) {
         return AlcoholResponse.builder()
                 .alcoholNo(a.getAlcoholNo())
@@ -151,11 +147,9 @@ public class PostCommandServiceImpl implements PostCommandService {
     }
 
     /* ================= 안주(게시글) ================= */
-
     @Override
     public FoodPostResponse createPost(CreateFoodPostRequest req) {
         assertMemberExists(req.getMemberNo());
-
         Alcohol alcohol = alcoholRepo.findById(req.getAlcoholNo())
                 .orElseThrow(() -> new EntityNotFoundException("해당 술 정보를 찾을 수 없습니다."));
         Member member = Member.onlyId(req.getMemberNo());
@@ -176,17 +170,14 @@ public class PostCommandServiceImpl implements PostCommandService {
 
         FoodPost saved = postRepo.save(post);
 
-
         // 게시물 등록 시 포인트 지급
         try {
             memberPointService.grantPoints(req.getMemberNo(), PointPolicy.POST_CREATE);
         } catch (Exception e) {
             log.error("게시물 등록 포인트 지급 실패 - 회원번호: {}, 게시물번호: {}", req.getMemberNo(), saved.getBoardNo(), e);
         }
-
         return toResponse(saved);
     }
-
 
     @Override
     public void increaseView(Integer boardNo) {
@@ -195,13 +186,12 @@ public class PostCommandServiceImpl implements PostCommandService {
         p.setBoardSeq((p.getBoardSeq() == null ? 0 : p.getBoardSeq()) + 1);
     }
 
-
     @Override
     public FoodPostResponse updatePost(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req) {
         assertMemberExists(currentMemberNo);
-
         FoodPost post = postRepo.findById(boardNo)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+
         if (!post.getMember().getMemberNo().equals(currentMemberNo)) {
             throw new org.springframework.security.access.AccessDeniedException("작성자만 수정할 수 있습니다.");
         }
@@ -215,33 +205,36 @@ public class PostCommandServiceImpl implements PostCommandService {
     }
 
     @Override
-    public FoodPostResponse updatePostWithImages(Integer boardNo,
-                                                 Integer currentMemberNo,
-                                                 UpdateFoodPostRequest req,
-                                                 MultipartFile[] images) {
-        assertMemberExists(currentMemberNo);
-
-        List<String> urls = imageStorageService.storeAll(images, "foods");
-        if (urls != null && !urls.isEmpty()) {
-            req.setFoodPicture(String.join(",", urls));
-        }
-        return updatePost(boardNo, currentMemberNo, req);
-    }
-
-    @Override
     public FoodPostResponse createPostWithImages(CreateFoodPostRequest req, MultipartFile[] images) {
-        // <<< [추가] 없는 회원 금지
         assertMemberExists(req.getMemberNo());
 
-        List<String> urls = imageStorageService.storeAll(images, "foods");
+        // ✅ null/빈 배열 방어
+        List<String> urls = (images == null || images.length == 0)
+                ? List.of()
+                : imageStorageService.storeAll(images, "foods");
+
         if (urls != null && !urls.isEmpty()) {
             req.setFoodPicture(String.join(",", urls));
         }
         return createPost(req);
     }
 
-    /* ================= 댓글/반응/즐겨찾기 ================= */
+    @Override
+    public FoodPostResponse updatePostWithImages(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req, MultipartFile[] images) {
+        assertMemberExists(currentMemberNo);
 
+        // ✅ null/빈 배열 방어
+        List<String> urls = (images == null || images.length == 0)
+                ? List.of()
+                : imageStorageService.storeAll(images, "foods");
+
+        if (urls != null && !urls.isEmpty()) {
+            req.setFoodPicture(String.join(",", urls));
+        }
+        return updatePost(boardNo, currentMemberNo, req);
+    }
+
+    /* ================= 댓글/반응/즐겨찾기 ================= */
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public void deletePost(Integer boardNo) {
@@ -253,7 +246,6 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public void cancelPost(Integer boardNo, Integer memberNo) {
         assertMemberExists(memberNo);
-
         FoodPost post = postRepo.findById(boardNo)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
         if (!post.getMember().getMemberNo().equals(memberNo)) {
@@ -276,7 +268,6 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public CommentResponse addComment(AddCommentRequest req) {
         assertMemberExists(req.getMemberNo());
-
         FoodPost post = postRepo.findById(req.getBoardNo())
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
@@ -310,13 +301,13 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public CommentResponse updateCommentById(Integer commentId, Integer memberNo, String content) {
         assertMemberExists(memberNo);
-
         FoodComment c = commentRepo.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
 
         if (!c.getMember().getMemberNo().equals(memberNo)) {
             throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
         }
+
         c.setContent(content);
         c.setUpdatedAt(nowString());
 
@@ -333,7 +324,6 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public void deleteCommentById(Integer commentId, Integer memberNo) {
         assertMemberExists(memberNo);
-
         FoodComment c = commentRepo.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
         if (!c.getMember().getMemberNo().equals(memberNo)) {
@@ -344,7 +334,6 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     private ReactionResponse toReactionResponse(FoodPost p) {
         String mid = (p.getMember() != null) ? p.getMember().getMemberId() : null;
-
         return ReactionResponse.builder()
                 .boardNo(p.getBoardNo())
                 .boardTitle(p.getBoardTitle())
@@ -364,14 +353,12 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public ReactionResponse addReaction(Integer boardNo, ReactRequest req) {
         assertMemberExists(req.getMemberNo());
-
         return changeReaction(boardNo, req);
     }
 
     @Override
     public ReactionResponse changeReaction(Integer boardNo, ReactRequest req) {
         assertMemberExists(req.getMemberNo());
-
         FoodPost post = postRepo.findById(boardNo)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
@@ -409,12 +396,13 @@ public class PostCommandServiceImpl implements PostCommandService {
     @Override
     public void deleteReaction(Integer boardNo, Integer memberNo) {
         assertMemberExists(memberNo);
-
         FoodPost post = postRepo.findById(boardNo)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+
         FoodPostLikeId id = new FoodPostLikeId(memberNo, boardNo);
         FoodPostLike like = likeRepo.findById(id).orElse(null);
         if (like == null) return;
+
         post.decreaseLike(like.getLikesType());
         likeRepo.delete(like);
     }
@@ -432,6 +420,7 @@ public class PostCommandServiceImpl implements PostCommandService {
         assertMemberExists(memberNo);
         bookmarkFolderRepo.findByMember_MemberNoAndFolderName(memberNo, folderName)
                 .ifPresent(x -> { throw new IllegalArgumentException("동일한 폴더명이 있습니다."); });
+
         BookmarkFolder f = BookmarkFolder.builder()
                 .member(Member.onlyId(memberNo))
                 .folderName(folderName)
@@ -457,10 +446,11 @@ public class PostCommandServiceImpl implements PostCommandService {
     public void addBookmarkToFolder(Integer memberNo, Integer folderId, Integer boardNo) {
         assertMemberExists(memberNo);
         assertFolderOwner(memberNo, folderId);
+
         FoodPost post = postRepo.findById(boardNo)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        BookmarkFolder folder = bookmarkFolderRepo.getReferenceById(folderId);
 
+        BookmarkFolder folder = bookmarkFolderRepo.getReferenceById(folderId);
         BookmarkKey key = new BookmarkKey(folderId, boardNo);
         if (!bookmarkRepo.existsById(key)) {
             bookmarkRepo.save(Bookmark.builder()
@@ -482,5 +472,4 @@ public class PostCommandServiceImpl implements PostCommandService {
         removeBookmarkFromFolder(memberNo, fromFolderId, boardNo);
         addBookmarkToFolder(memberNo, toFolderId, boardNo);
     }
-
 }

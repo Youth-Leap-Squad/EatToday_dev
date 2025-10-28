@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,12 +20,12 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final CommandMemberService commandMemberService;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenService jwtTokenService; // 토큰 파싱/검증 전담
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
     public JwtAuthenticationProvider(CommandMemberService commandMemberService,
                                      PasswordEncoder passwordEncoder,
-                                     JwtTokenService jwtTokenService) { // 주입
+                                     JwtTokenService jwtTokenService) {
         this.commandMemberService = commandMemberService;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
@@ -33,10 +34,10 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
-        // 1) 로그인(/login) 시도: 아이디/비밀번호
+        // 1) 로그인 폼 (username/password)
         if (authentication instanceof UsernamePasswordAuthenticationToken up) {
-            String username = (String) up.getPrincipal();   // email 또는 phone 중 하나로 통일
-            String rawPw    = (String) up.getCredentials();
+            String username = (String) up.getPrincipal();
+            String rawPw = (String) up.getCredentials();
 
             UserDetails user = commandMemberService.loadUserByUsername(username);
             if (user == null) throw new UsernameNotFoundException("No user: " + username);
@@ -46,7 +47,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         }
 
-        // 2) API 호출 시도: Bearer JWT
+        // 2) API Bearer JWT
         if (authentication instanceof JwtPreAuthenticatedToken jwtAuth) {
             String token = jwtAuth.getToken();
 
@@ -55,12 +56,13 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
                 throw new BadCredentialsException("Token missing subject");
             }
             UserDetails user = commandMemberService.loadUserByUsername(payload.username());
+            if (user == null) throw new UsernameNotFoundException("No user: " + payload.username());
 
-
-            // 권한은 토큰에서 읽거나, DB(=user.getAuthorities())와 병합
-            List authorities = jwtTokenService.toGrantedAuthorities(payload.roles());
-
-            return new UsernamePasswordAuthenticationToken(user, null, authorities);
+            List<GrantedAuthority> authorities = jwtTokenService.toGrantedAuthorities(payload.roles());
+            // DB 권한과 병합하고 싶다면 아래 주석을 사용
+            // Set<GrantedAuthority> merged = new HashSet<>(authorities);
+            // merged.addAll(user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(user, null, authorities.isEmpty() ? user.getAuthorities() : authorities);
         }
 
         throw new ProviderNotFoundException("Unsupported auth type: " + authentication.getClass());

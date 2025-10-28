@@ -27,16 +27,18 @@ public class FoodPost {
     private Member member;
 
     @Column(name="board_title")
-    private String  boardTitle;
+    private String boardTitle;
 
-    @Column(name="board_content", columnDefinition="TEXT")
-    private String  boardContent;
+    @Lob
+    @Column(name="board_content", columnDefinition = "LONGTEXT")   // ✅ LONGTEXT
+    private String boardContent;
 
-    @Column(name="food_explain",  columnDefinition="TEXT")
-    private String  foodExplain;
+    @Lob
+    @Column(name="food_explain", columnDefinition = "LONGTEXT")    // ✅ LONGTEXT
+    private String foodExplain;
 
-    @Column(name="food_picture")
-    private String  foodPicture;
+    @Column(name="food_picture", length = 2000) // ✅ 여러 URL 콤마 저장 대비
+    private String foodPicture;
 
     @Column(name="board_date")
     private String  boardDate;

@@ -19,36 +19,35 @@ public class PostCommandChainConfig {
     private final AuthenticationManager authenticationManager;
 
     @Bean
-    @Order(4) // PhotoReviewChain(3) 뒤에 오도록 순서 지정 (프로젝트 상황에 맞게 조정)
+    @Order(4)
     public SecurityFilterChain postCommandChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/./**")
+                .securityMatcher("/command/**")  // ✅ 경로 정확히
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // ===== 게시글(foods) – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./foods/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,   "/command/foods/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH,  "/command/foods/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/command/foods/**").authenticated()
 
                         // (관리자 전용) 승인
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/*/approve").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/command/foods/*/approve").hasRole("ADMIN")
 
                         // ===== 댓글 – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/*/comments/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./comments/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./comments/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,   "/command/foods/*/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH,  "/command/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/command/comments/**").authenticated()
 
-                        // ===== 반응(리액션) – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/*/reactions/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/*/reactions/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./foods/*/reactions/**").authenticated()
+                        // ===== 반응 =====
+                        .requestMatchers(HttpMethod.POST,   "/command/foods/*/reactions/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH,  "/command/foods/*/reactions/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/command/foods/*/reactions/**").authenticated()
 
-                        // ===== 즐겨찾기 – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./bookmarks/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./bookmarks/**").authenticated()
+                        // ===== 즐겨찾기 =====
+                        .requestMatchers(HttpMethod.POST,   "/command/bookmarks/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/command/bookmarks/**").authenticated()
 
-                        // 그 외는 허용 (ex. 조회용 GET은 다른 조회 컨트롤러에서 처리)
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(eh -> eh

@@ -10,6 +10,7 @@ public class MyFoodDTO {
     private String  boardContent;
     private String  foodExplain;
     private String  memberId;
+    private String  profileImageUrl;
     private String  foodPicture;
     private String  boardDate;
     private Integer boardSeq;
