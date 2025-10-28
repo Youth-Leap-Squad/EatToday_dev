@@ -19,6 +19,12 @@ public interface CommandMemberService {
 
     //사용자는 회원 탈퇴를 할 수 있다.
     public void withdraw(String memberEmail, String rawPw);
+    
+    // 비밀번호 검증
+    boolean verifyPassword(String memberEmail, String rawPassword);
+    
+    // 비밀번호 변경
+    void changePassword(String memberEmail, String currentPassword, String newPassword);
 
 
 
