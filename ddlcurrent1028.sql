@@ -765,59 +765,59 @@ VALUES
 ('sashimiwine6.png','image/png','sashimiwine6.png','/images/photo_review','2025-10-06 19:20:00',28,'/images/photo_review/sashimiwine6.png'),
 ('sashimiwine7.jpeg','image/jpeg','sashimiwine7.jpeg','/images/photo_review','2025-10-06 19:20:00',29,'/images/photo_review/sashimiwine7.jpeg');
 
--- -- 두부김치와 소주
--- ('IMG_20251011_184510.jpg','image/jpeg','pr_20251011_184510_c3.jpg','/var/eattoday/uploads/photo-review','2025-10-11 18:45:10',
---  (SELECT review_no FROM photo_review WHERE review_title='두부김치 첫맛 노트'),
---  'http://localhost:8003/uploads/photo-review/pr_20251011_184510_c3.jpg'),
---
--- ('IMG_20251011_190501.jpg','image/jpeg','pr_20251011_190501_d4.jpg','/var/eattoday/uploads/photo-review','2025-10-11 19:05:01',
---  (SELECT review_no FROM photo_review WHERE review_title='부드러움 끝판왕 두부김치'),
---  'http://localhost:8003/uploads/photo-review/pr_20251011_190501_d4.jpg'),
---
--- -- 계란말이와 소주
--- ('IMG_20250926_184001.jpg','image/jpeg','pr_20250926_184001_e5.jpg','/var/eattoday/uploads/photo-review','2025-09-26 18:40:01',
---  (SELECT review_no FROM photo_review WHERE review_title='촉촉한 계란말이 한줄평'),
---  'http://localhost:8003/uploads/photo-review/pr_20250926_184001_e5.jpg'),
---
--- ('IMG_20250926_190002.jpg','image/jpeg','pr_20250926_190002_f6.jpg','/var/eattoday/uploads/photo-review','2025-09-26 19:00:02',
---  (SELECT review_no FROM photo_review WHERE review_title='간이 딱 맞는 계란말이'),
---  'http://localhost:8003/uploads/photo-review/pr_20250926_190002_f6.jpg'),
---
--- -- 김치찌개와 소주
--- ('IMG_20250925_194505.jpg','image/jpeg','pr_20250925_194505_g7.jpg','/var/eattoday/uploads/photo-review','2025-09-25 19:45:05',
---  (SELECT review_no FROM photo_review WHERE review_title='진하고 얼큰한 국물맛'),
---  'http://localhost:8003/uploads/photo-review/pr_20250925_194505_g7.jpg'),
---
--- ('IMG_20250925_201000.jpg','image/jpeg','pr_20250925_201000_h8.jpg','/var/eattoday/uploads/photo-review','2025-09-25 20:10:00',
---  (SELECT review_no FROM photo_review WHERE review_title='밥도둑 인정 후기'),
---  'http://localhost:8003/uploads/photo-review/pr_20250925_201000_h8.jpg'),
---
--- -- 회무침과 와인
--- ('IMG_20250921_203002.jpg','image/jpeg','pr_20250921_203002_i9.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:30:02',
---  (SELECT review_no FROM photo_review WHERE review_title='매콤달콤 밸런스 한줄평'),
---  'http://localhost:8003/uploads/photo-review/pr_20250921_203002_i9.jpg'),
---
--- ('IMG_20250921_205501.jpg','image/jpeg','pr_20250921_205501_j0.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:55:01',
---  (SELECT review_no FROM photo_review WHERE review_title='식감 살아있는 회무침'),
---  'http://localhost:8003/uploads/photo-review/pr_20250921_205501_j0.jpg'),
---
--- -- 감바스 알 아히요
--- ('IMG_20251018_183001.jpg','image/jpeg','pr_20251018_183001_k1.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:30:01',
---  (SELECT review_no FROM photo_review WHERE review_title='올리브 향 가득 감바스'),
---  'http://localhost:8003/uploads/photo-review/pr_20251018_183001_k1.jpg'),
---
--- ('IMG_20251018_185501.jpg','image/jpeg','pr_20251018_185501_l2.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:55:01',
---  (SELECT review_no FROM photo_review WHERE review_title='빵 찍어 먹기 최고'),
---  'http://localhost:8003/uploads/photo-review/pr_20251018_185501_l2.jpg'),
---
--- -- 숙성회와 와인
--- ('IMG_20251006_191501.jpg','image/jpeg','pr_20251006_191501_m3.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:15:01',
---  (SELECT review_no FROM photo_review WHERE review_title='입에서 사라지는 숙성회'),
---  'http://localhost:8003/uploads/photo-review/pr_20251006_191501_m3.jpg'),
---
--- ('IMG_20251006_194501.jpg','image/jpeg','pr_20251006_194501_n4.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:45:01',
---  (SELECT review_no FROM photo_review WHERE review_title='화이트와인 케미 폭발'),
---  'http://localhost:8003/uploads/photo-review/pr_20251006_194501_n4.jpg');
+# -- 두부김치와 소주
+# -- ('IMG_20251011_184510.jpg','image/jpeg','pr_20251011_184510_c3.jpg','/var/eattoday/uploads/photo-review','2025-10-11 18:45:10',
+# --  (SELECT review_no FROM photo_review WHERE review_title='두부김치 첫맛 노트'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251011_184510_c3.jpg'),
+# --
+# -- ('IMG_20251011_190501.jpg','image/jpeg','pr_20251011_190501_d4.jpg','/var/eattoday/uploads/photo-review','2025-10-11 19:05:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='부드러움 끝판왕 두부김치'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251011_190501_d4.jpg'),
+# --
+# -- -- 계란말이와 소주
+# -- ('IMG_20250926_184001.jpg','image/jpeg','pr_20250926_184001_e5.jpg','/var/eattoday/uploads/photo-review','2025-09-26 18:40:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='촉촉한 계란말이 한줄평'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250926_184001_e5.jpg'),
+# --
+# -- ('IMG_20250926_190002.jpg','image/jpeg','pr_20250926_190002_f6.jpg','/var/eattoday/uploads/photo-review','2025-09-26 19:00:02',
+# --  (SELECT review_no FROM photo_review WHERE review_title='간이 딱 맞는 계란말이'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250926_190002_f6.jpg'),
+# --
+# -- -- 김치찌개와 소주
+# -- ('IMG_20250925_194505.jpg','image/jpeg','pr_20250925_194505_g7.jpg','/var/eattoday/uploads/photo-review','2025-09-25 19:45:05',
+# --  (SELECT review_no FROM photo_review WHERE review_title='진하고 얼큰한 국물맛'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250925_194505_g7.jpg'),
+# --
+# -- ('IMG_20250925_201000.jpg','image/jpeg','pr_20250925_201000_h8.jpg','/var/eattoday/uploads/photo-review','2025-09-25 20:10:00',
+# --  (SELECT review_no FROM photo_review WHERE review_title='밥도둑 인정 후기'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250925_201000_h8.jpg'),
+# --
+# -- -- 회무침과 와인
+# -- ('IMG_20250921_203002.jpg','image/jpeg','pr_20250921_203002_i9.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:30:02',
+# --  (SELECT review_no FROM photo_review WHERE review_title='매콤달콤 밸런스 한줄평'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250921_203002_i9.jpg'),
+# --
+# -- ('IMG_20250921_205501.jpg','image/jpeg','pr_20250921_205501_j0.jpg','/var/eattoday/uploads/photo-review','2025-09-21 20:55:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='식감 살아있는 회무침'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20250921_205501_j0.jpg'),
+# --
+# -- -- 감바스 알 아히요
+# -- ('IMG_20251018_183001.jpg','image/jpeg','pr_20251018_183001_k1.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:30:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='올리브 향 가득 감바스'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251018_183001_k1.jpg'),
+# --
+# -- ('IMG_20251018_185501.jpg','image/jpeg','pr_20251018_185501_l2.jpg','/var/eattoday/uploads/photo-review','2025-10-18 18:55:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='빵 찍어 먹기 최고'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251018_185501_l2.jpg'),
+# --
+# -- -- 숙성회와 와인
+# -- ('IMG_20251006_191501.jpg','image/jpeg','pr_20251006_191501_m3.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:15:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='입에서 사라지는 숙성회'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251006_191501_m3.jpg'),
+# --
+# -- ('IMG_20251006_194501.jpg','image/jpeg','pr_20251006_194501_n4.jpg','/var/eattoday/uploads/photo-review','2025-10-06 19:45:01',
+# --  (SELECT review_no FROM photo_review WHERE review_title='화이트와인 케미 폭발'),
+# --  'http://localhost:8003/uploads/photo-review/pr_20251006_194501_n4.jpg');
 
 
 INSERT INTO follow (follower_no, following_no) VALUES
