@@ -73,34 +73,37 @@ public class ProfileImageController {
 
     // 프로필 사진 조회 (member_no 기준)
     @GetMapping("/profile-image/{memberNo}")
-    public ResponseEntity<Map<String, Object>> getProfileImage(@PathVariable Integer memberNo) {
-        try {
-            String imageUrl = profileImageService.getProfileImageUrl(memberNo);
-            
-            if (imageUrl != null) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "프로필 사진 조회 성공");
-                response.put("status", "success");
-                response.put("imageUrl", imageUrl);
-                
-                return ResponseEntity.ok(response);
-            } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "프로필 사진이 없습니다.");
-                response.put("status", "not_found");
-                
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            
-        } catch (Exception e) {
-            log.error("프로필 사진 조회 실패: {}", memberNo, e);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "프로필 사진 조회에 실패했습니다.");
-            response.put("status", "error");
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    public ResponseEntity<Resource> getProfileImage(@PathVariable Integer memberNo) throws IOException {
+        // DB에 저장된 건 "전체 URL" 말고 "파일명"을 저장하는 걸 권장
+        // 지금은 imageUrl이 전체 URL일 수도 있으니 둘 다 처리
+        String imageUrl = profileImageService.getProfileImageUrl(memberNo);
+
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
+        // 1) 절대 URL(S3/정적서버)인 경우 → 302로 바로 리다이렉트
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, imageUrl)
+                    .build();
+        }
+
+        // 2) 파일명인 경우 → 로컬에서 읽어 스트리밍
+        Path file = Paths.get(uploadPath).resolve(imageUrl).normalize();
+        Resource resource = new UrlResource(file.toUri());
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        String mime = Optional.ofNullable(java.nio.file.Files.probeContentType(file))
+                .orElse("image/jpeg"); // 기본값
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mime))
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.EXPIRES, "0")
+                .body(resource);
     }
 
     /**
