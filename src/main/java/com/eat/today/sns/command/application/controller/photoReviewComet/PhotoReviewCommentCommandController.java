@@ -54,14 +54,10 @@ public class PhotoReviewCommentCommandController {
     }
 
     @DeleteMapping("/{prcNo}")
-    public ResponseEntity<Map<String,Integer>> deleteSoft(
+    public ResponseEntity<Map<String, Integer>> deleteSoft(
             @PathVariable int prcNo,
-            @RequestBody Map<String,Integer> body) {
-
-        int memberNo = body.getOrDefault("memberNo", 0);
-        int deleted = service.deleteSoft(memberNo, prcNo);
-        return (deleted > 0)
-                ? ResponseEntity.ok(Map.of("deleted", deleted))
-                : ResponseEntity.notFound().build();
+            @RequestParam int memberNo) {
+        int result = service.deleteSoft(memberNo, prcNo);
+        return ResponseEntity.ok(Map.of("deleted", result));
     }
 }
