@@ -1064,18 +1064,3 @@ FROM score_sum s
 GROUP BY s.member_no;
 
 
-UPDATE food_post SET confirmed_yn = 'T'
-WHERE confirmed_yn IN ('1', 'T', 't', 'Y', 'y', 'TRUE', 'true') OR confirmed_yn = 1;
-
-UPDATE food_post SET confirmed_yn = 'F'
-WHERE confirmed_yn IS NULL OR confirmed_yn IN ('0', 'F', 'f', 'N', 'n', 'FALSE', 'false') OR confirmed_yn = 0;
-
-SELECT board_no, confirmed_yn FROM food_post WHERE alcohol_no = 2 ORDER BY board_no DESC;
-
-START TRANSACTION;
-
--- 0/1, '0'/'1', 'Y'/'N' 등을 모두 TF로 통일
-
-ALTER TABLE food_post
-    MODIFY COLUMN confirmed_yn CHAR(1) NOT NULL,
-    ADD CONSTRAINT chk_food_post_confirmed_yn CHECK (confirmed_yn IN ('T','F'));

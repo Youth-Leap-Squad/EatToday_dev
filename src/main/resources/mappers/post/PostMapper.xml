@@ -27,28 +27,33 @@
 
     <!-- PostMapper.xml -->
     <select id="findFoodById" resultType="com.eat.today.post.query.dto.FoodDTO">
-    SELECT
-    f.board_no      AS boardNo,
-    f.alcohol_no    AS alcoholNo,
-    f.member_no     AS memberNo,
-    f.board_title   AS boardTitle,
-    f.board_content AS boardContent,
-    f.food_explain  AS foodExplain,
-    f.food_picture  AS foodPicture,
-    f.board_date    AS boardDate,
-    f.board_seq     AS boardSeq,
-    f.confirmed_yn  AS confirmedYn,
-    f.likes_no_1    AS likesNo1,
-    f.likes_no_2    AS likesNo2,
-    f.likes_no_3    AS likesNo3,
-    f.likes_no_4    AS likesNo4,
-    (f.likes_no_1 + f.likes_no_2 + f.likes_no_3 + f.likes_no_4) AS totalLikes,
-    COUNT(c.board_no) AS commentCount
-    FROM food_post f
-    LEFT JOIN food_comment c ON c.board_no = f.board_no
-    WHERE f.board_no = #{boardNo}
-    GROUP BY f.board_no
-</select>
+        SELECT
+        f.board_no      AS boardNo,
+        f.alcohol_no    AS alcoholNo,
+        f.member_no     AS memberNo,
+        m.member_id     AS memberId,
+        f.board_title   AS boardTitle,
+        f.board_content AS boardContent,
+        f.food_explain  AS foodExplain,
+        f.food_picture  AS foodPicture,
+        f.board_date    AS boardDate,
+        f.board_seq     AS boardSeq,
+        f.confirmed_yn  AS confirmedYn,
+        f.likes_no_1    AS likesNo1,
+        f.likes_no_2    AS likesNo2,
+        f.likes_no_3    AS likesNo3,
+        f.likes_no_4    AS likesNo4,
+        (f.likes_no_1 + f.likes_no_2 + f.likes_no_3 + f.likes_no_4) AS totalLikes,
+        COUNT(c.board_no) AS commentCount
+        FROM food_post f
+        LEFT JOIN food_comment c ON c.board_no = f.board_no
+        LEFT JOIN member m ON m.member_no = f.member_no
+        WHERE f.board_no = #{boardNo}
+        GROUP BY
+        f.board_no, f.alcohol_no, f.member_no, m.member_id,
+        f.board_title, f.board_content, f.food_explain, f.food_picture,
+        f.board_date, f.board_seq, f.confirmed_yn, f.likes_no_1, f.likes_no_2, f.likes_no_3, f.likes_no_4
+    </select>
 
 
     <!-- 조회순 -->
@@ -57,6 +62,7 @@
         f.board_no,
         f.alcohol_no,
         f.member_no,
+        m.member_id AS memberId,   -- ✅ 추가
         f.board_title,
         f.board_content,
         f.food_explain,
@@ -72,11 +78,15 @@
         COUNT(c.board_no) AS commentCount
         FROM food_post f
         LEFT JOIN food_comment c ON c.board_no = f.board_no
+        LEFT JOIN member m ON m.member_no = f.member_no  -- ✅ 추가
         WHERE f.confirmed_yn = 'T'
         GROUP BY f.board_no
         ORDER BY f.board_seq DESC, f.board_no DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
+
+    <!-- 댓글순 / 반응순도 동일하게 m 조인 + m.member_id AS memberId 추가 -->
+
 
     <!-- 댓글순 -->
     <select id="selectFoodsOrderByComments" resultType="com.eat.today.post.query.dto.FoodDTO">
@@ -84,6 +94,7 @@
         f.board_no,
         f.alcohol_no,
         f.member_no,
+        m.member_id AS memberId,
         f.board_title,
         f.board_content,
         f.food_explain,
@@ -99,6 +110,7 @@
         COUNT(c.board_no) AS commentCount
         FROM food_post f
         LEFT JOIN food_comment c ON c.board_no = f.board_no
+        LEFT JOIN member m ON m.member_no = f.member_no
         WHERE f.confirmed_yn = 'T'
         GROUP BY f.board_no
         ORDER BY commentCount DESC, f.board_no DESC
@@ -111,6 +123,7 @@
         f.board_no,
         f.alcohol_no,
         f.member_no,
+        m.member_id AS memberId,
         f.board_title,
         f.board_content,
         f.food_explain,
@@ -126,6 +139,7 @@
         COUNT(c.board_no) AS commentCount
         FROM food_post f
         LEFT JOIN food_comment c ON c.board_no = f.board_no
+        LEFT JOIN member m ON m.member_no = f.member_no
         WHERE f.confirmed_yn = 'T'
         GROUP BY f.board_no
         ORDER BY totalLikes DESC, f.board_no DESC

@@ -70,6 +70,7 @@ public class PostCommandServiceImpl implements PostCommandService {
                 .boardNo(p.getBoardNo())
                 .alcoholNo(p.getAlcohol().getAlcoholNo())
                 .memberNo(p.getMember().getMemberNo())
+                .memberId(p.getMember() != null ? p.getMember().getMemberId() : null)
                 .boardTitle(p.getBoardTitle())
                 .boardContent(p.getBoardContent())
                 .foodExplain(p.getFoodExplain())

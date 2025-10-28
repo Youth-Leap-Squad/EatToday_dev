@@ -11,6 +11,7 @@ public class FoodPostResponse {
     private Integer boardNo;
     private Integer alcoholNo;
     private Integer memberNo;
+    private String memberId;
     private String boardTitle;
     private String boardContent;
     private String foodExplain;
