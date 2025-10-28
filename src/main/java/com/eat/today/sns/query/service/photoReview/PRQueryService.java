@@ -23,4 +23,8 @@ public class PRQueryService {
     public List<PRDTO> getListByMember(int memberNo) {
         return mapper.findByMemberNo(memberNo);
     }
+
+    public List<PRDTO> getLatestByBoard(int boardNo) {
+        return mapper.findLatestByBoard(boardNo);
+    }
 }

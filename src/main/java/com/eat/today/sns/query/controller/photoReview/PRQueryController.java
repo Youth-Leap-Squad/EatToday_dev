@@ -35,4 +35,10 @@ public class PRQueryController {
                                        @RequestParam(defaultValue = "10") int size){
         return service.getListByMember(memberNo);
     }
+
+    // boardNo별 최신순 6개 조회
+    @GetMapping("/latest")
+    public List<PRDTO> getLatestByBoard(@RequestParam int boardNo) {
+        return service.getLatestByBoard(boardNo);
+    }
 }

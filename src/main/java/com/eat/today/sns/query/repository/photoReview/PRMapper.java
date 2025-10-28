@@ -17,4 +17,7 @@ public interface PRMapper {
 
     // 멤버별 목록 조회
     List<PRDTO> findByMemberNo(@Param("memberNo") int memberNo);
+
+    // 게시판 별 목록 조회
+    List<PRDTO> findLatestByBoard(@Param("boardNo") int boardNo);
 }

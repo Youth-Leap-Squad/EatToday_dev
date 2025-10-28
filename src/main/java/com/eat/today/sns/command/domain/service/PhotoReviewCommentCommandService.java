@@ -19,33 +19,49 @@ public class PhotoReviewCommentCommandService {
         this.repo = repo;
     }
 
-    // 댓글 추가
+    /** 댓글 추가 */
     @Transactional
     public PrcDTO.CreateResponse create(int memberNo, int reviewNo, PrcDTO.CreateRequest req) {
         PhotoReviewCommentEntity e = new PhotoReviewCommentEntity();
         e.setMemberNo(memberNo);
         e.setReviewNo(reviewNo);
-        e.setPrcDetail(req.getDetail());
+
+        // prcDetail 또는 content 둘 다 허용
+        String detail = (req.getPrcDetail() != null && !req.getPrcDetail().isBlank())
+                ? req.getPrcDetail()
+                : null;
+
+        if (detail == null || detail.isBlank()) {
+            throw new IllegalArgumentException("댓글 내용(prcDetail)이 비어 있습니다.");
+        }
+
+        e.setPrcDetail(detail);
         e.setPrcAt(LocalDateTime.now().format(ISO));
         e.setPrcDeleted(false);
+
         var saved = repo.save(e);
         return new PrcDTO.CreateResponse(saved.getPrcNo());
     }
 
-    // 댓글 수정
+    /** 댓글 수정 */
     @Transactional
     public int edit(int memberNo, int prcNo, PrcDTO.UpdateRequest req) {
-        return repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo)
-                .map(entity -> {
-                    entity.setPrcDetail(req.getDetail());
-                    entity.setPrcAt(LocalDateTime.now().format(ISO));
-                    repo.save(entity);
-                    return 1;
-                })
-                .orElse(0);
+        var opt = repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo);
+        if (opt.isEmpty()) return 0;
+        var e = opt.get();
+
+        String newDetail = req.getPrcDetail();
+        if (newDetail == null || newDetail.isBlank()) {
+            throw new IllegalArgumentException("댓글 내용이 비어있습니다.");
+        }
+
+        e.setPrcDetail(newDetail);
+        e.setPrcAt(LocalDateTime.now().format(ISO));
+        repo.save(e);
+        return 1;
     }
 
-    // 삭제
+    /** 댓글 하드 삭제 */
     @Transactional
     public int deleteHard(int memberNo, int prcNo) {
         return repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo)
@@ -56,10 +72,15 @@ public class PhotoReviewCommentCommandService {
                 .orElse(0);
     }
 
+    /** 댓글 소프트 삭제 */
     @Transactional
     public int deleteSoft(int memberNo, int prcNo) {
         return repo.findByPrcNoAndMemberNoAndPrcDeletedFalse(prcNo, memberNo)
-                .map(e -> { e.setPrcDeleted(true); return 1; })
+                .map(e -> {
+                    e.setPrcDeleted(true);
+                    e.setPrcAt(LocalDateTime.now().format(ISO));
+                    return 1;
+                })
                 .orElse(0);
     }
 }
