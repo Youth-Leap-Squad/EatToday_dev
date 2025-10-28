@@ -50,32 +50,6 @@
     GROUP BY f.board_no
 </select>
 
-    <!-- 승인된 안주만 -->
-    <select id="selectApprovedFoodList" resultType="com.eat.today.post.query.dto.FoodDTO">
-        SELECT
-        f.board_no       AS boardNo,
-        f.alcohol_no     AS alcoholNo,
-        f.member_no      AS memberNo,
-        f.board_title    AS boardTitle,
-        f.board_content  AS boardContent,
-        f.food_explain   AS foodExplain,
-        f.food_picture   AS foodPicture,
-        f.board_date     AS boardDate,
-        f.board_seq      AS boardSeq,
-        f.confirmed_yn   AS confirmedYn,
-        f.likes_no_1     AS likesNo1,
-        f.likes_no_2     AS likesNo2,
-        f.likes_no_3     AS likesNo3,
-        f.likes_no_4     AS likesNo4,
-        (f.likes_no_1 + f.likes_no_2 + f.likes_no_3 + f.likes_no_4) AS totalLikes,
-        COUNT(c.board_no) AS commentCount
-        FROM food_post f
-        LEFT JOIN food_comment c ON c.board_no = f.board_no
-        WHERE f.confirmed_yn = 'T'
-        GROUP BY f.board_no
-        ORDER BY f.board_date DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
 
     <!-- 조회순 -->
     <select id="selectFoodsOrderByViews" resultType="com.eat.today.post.query.dto.FoodDTO">
@@ -159,8 +133,8 @@
     </select>
 
 
-    <!-- 승인 안된(미승인)만 -->
-    <select id="selectUnapprovedFoodList" resultType="com.eat.today.post.query.dto.FoodDTO">
+    <!-- 승인된 안주 목록 (주종별) -->
+    <select id="selectApprovedFoodsByAlcohol" resultType="com.eat.today.post.query.dto.FoodDTO">
         SELECT
         fp.board_no      AS boardNo,
         fp.alcohol_no    AS alcoholNo,
@@ -171,18 +145,23 @@
         fp.food_picture  AS foodPicture,
         fp.board_date    AS boardDate,
         fp.board_seq     AS boardSeq,
+        fp.confirmed_yn  AS confirmedYn,
         fp.likes_no_1    AS likesNo1,
         fp.likes_no_2    AS likesNo2,
         fp.likes_no_3    AS likesNo3,
-        fp.likes_no_4    AS likesNo4
+        fp.likes_no_4    AS likesNo4,
+        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS totalLikes,
+        /* 댓글 카운트는 서브쿼리로 */
+        (SELECT COUNT(*) FROM food_comment c WHERE c.board_no = fp.board_no) AS commentCount
         FROM food_post fp
-        JOIN member m ON m.member_no = fp.member_no
-        WHERE fp.confirmed_yn = 'F'
+        LEFT JOIN member m ON m.member_no = fp.member_no
+        WHERE fp.alcohol_no = #{alcoholNo}
+        AND fp.confirmed_yn = 'T'
         ORDER BY fp.board_no DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 승인 여부 무관 전체 -->
+    <!-- 승인 여부 무관 전체 목록 -->
     <select id="selectAllFoodList" resultType="com.eat.today.post.query.dto.FoodDTO">
         SELECT
         fp.board_no      AS boardNo,
@@ -194,12 +173,41 @@
         fp.food_picture  AS foodPicture,
         fp.board_date    AS boardDate,
         fp.board_seq     AS boardSeq,
+        fp.confirmed_yn  AS confirmedYn,
         fp.likes_no_1    AS likesNo1,
         fp.likes_no_2    AS likesNo2,
         fp.likes_no_3    AS likesNo3,
-        fp.likes_no_4    AS likesNo4
+        fp.likes_no_4    AS likesNo4,
+        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS totalLikes,
+        (SELECT COUNT(*) FROM food_comment c WHERE c.board_no = fp.board_no) AS commentCount
         FROM food_post fp
-        JOIN member m ON m.member_no = fp.member_no
+        LEFT JOIN member m ON m.member_no = fp.member_no
+        ORDER BY fp.board_no DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 미승인 목록 -->
+    <select id="selectUnapprovedFoodList" resultType="com.eat.today.post.query.dto.FoodDTO">
+        SELECT
+        fp.board_no      AS boardNo,
+        fp.alcohol_no    AS alcoholNo,
+        fp.board_title   AS boardTitle,
+        fp.board_content AS boardContent,
+        fp.food_explain  AS foodExplain,
+        m.member_id      AS memberId,
+        fp.food_picture  AS foodPicture,
+        fp.board_date    AS boardDate,
+        fp.board_seq     AS boardSeq,
+        fp.confirmed_yn  AS confirmedYn,
+        fp.likes_no_1    AS likesNo1,
+        fp.likes_no_2    AS likesNo2,
+        fp.likes_no_3    AS likesNo3,
+        fp.likes_no_4    AS likesNo4,
+        (fp.likes_no_1 + fp.likes_no_2 + fp.likes_no_3 + fp.likes_no_4) AS totalLikes,
+        (SELECT COUNT(*) FROM food_comment c WHERE c.board_no = fp.board_no) AS commentCount
+        FROM food_post fp
+        LEFT JOIN member m ON m.member_no = fp.member_no
+        WHERE fp.confirmed_yn = 'F'
         ORDER BY fp.board_no DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -243,29 +251,6 @@
         LIMIT #{limit}
     </select>
 
-    <!-- 특정 술에 대한 승인된 안주 조회 -->
-    <select id="selectApprovedFoodsByAlcohol" resultType="com.eat.today.post.query.dto.FoodDTO">
-        SELECT
-        fp.board_no      AS boardNo,
-        fp.alcohol_no    AS alcoholNo,
-        fp.board_title   AS boardTitle,
-        fp.board_content AS boardContent,
-        fp.food_explain  AS foodExplain,
-        m.member_id      AS memberId,
-        fp.food_picture  AS foodPicture,
-        fp.board_date    AS boardDate,
-        fp.board_seq     AS boardSeq,
-        fp.likes_no_1    AS likesNo1,
-        fp.likes_no_2    AS likesNo2,
-        fp.likes_no_3    AS likesNo3,
-        fp.likes_no_4    AS likesNo4
-        FROM food_post fp
-        JOIN member m ON m.member_no = fp.member_no
-        WHERE fp.alcohol_no = #{alcoholNo}
-        AND fp.confirmed_yn = 'T'
-        ORDER BY fp.board_no DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
 
     <!-- food_post_likes -->
     <select id="selectFoodLikesFromPost"

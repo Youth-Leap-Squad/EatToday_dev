@@ -44,6 +44,7 @@ public class WebSecurity {
         );
 
         http.addFilter(getAuthenticationFilter(authenticationManager()));
+        http.addFilterBefore(new JwtAuthorizationFilter(authenticationManager()), AuthenticationFilter.class);
 
 
         // 로그아웃 설정

@@ -23,6 +23,8 @@ public interface PostCommandService {
 
     void cancelPost(Integer boardNo, Integer memberNo);
 
+    void increaseView(Integer boardNo);
+
     // --- 댓글 ---
     CommentResponse addComment(AddCommentRequest req);
 

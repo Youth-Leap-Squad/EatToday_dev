@@ -1,5 +1,6 @@
 package com.eat.today.post.command.domain.aggregate;
 
+import com.eat.today.common.jpa.BooleanTFConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,7 +44,9 @@ public class FoodPost {
     @Column(name="board_seq")
     private Integer boardSeq;
 
-    @Column(name="confirmed_yn")
+
+    @Convert(converter = BooleanTFConverter.class)
+    @Column(name = "confirmed_yn", columnDefinition = "CHAR(1)") // DB가 CHAR(1) 'T'/'F' 라면 명시
     private Boolean confirmedYn;
 
     @Column(name="likes_no_1")

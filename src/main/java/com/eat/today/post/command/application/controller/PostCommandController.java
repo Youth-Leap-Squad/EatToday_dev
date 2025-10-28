@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/command")
+@RequestMapping("/.")
 public class PostCommandController {
 
     private final PostCommandService svc;
@@ -237,5 +237,11 @@ public class PostCommandController {
     public void moveBookmark(@AuthenticationPrincipal CustomUserDetails user,
                              @RequestBody MoveBookmarkRequest req) {
         svc.moveBookmark(user.getMemberNo(), req.getFromFolderId(), req.getToFolderId(), req.getBoardNo());
+    }
+
+    @PatchMapping("/foods/{boardNo}/view")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void increaseView(@PathVariable Integer boardNo) {
+        svc.increaseView(boardNo);
     }
 }

@@ -20,6 +20,9 @@ public interface MemberService extends UserDetailsService {
 
     // 받은 포인트에 따른 등급을 확인할 수 있다.
     public FindMyLevelDTO findMyLevel(Integer memberNo);
+    
+    // member_no로 email 조회
+    public String getEmailByNo(Integer memberNo);
 
     UserDetails loadMemberByMemberName(String memberEmail);
 

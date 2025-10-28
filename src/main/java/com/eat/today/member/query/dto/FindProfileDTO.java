@@ -9,6 +9,6 @@ public class FindProfileDTO {
     private String memberPhone;
     private String memberEmail;
     private int memberLevel;
-
     private boolean memberActive;
+    private String profileImageUrl; // 프로필 이미지 URL (추가)
 }

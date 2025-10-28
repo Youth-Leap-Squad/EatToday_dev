@@ -48,8 +48,16 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
     @Override
     public void registMember(CommandMemberDTO commandMemberDTO) {
 
-        // 아이디 생성
-        commandMemberDTO.setMemberId(UUID.randomUUID().toString());   //랜덤 식별자 -> 나중에 사용자 입력값으로 변경
+        // memberId가 없으면 중복 체크 후 에러 처리
+        if (commandMemberDTO.getMemberId() == null || commandMemberDTO.getMemberId().trim().isEmpty()) {
+            throw new IllegalArgumentException("닉네임(memberId)은 필수입니다.");
+        }
+        
+        // 닉네임 중복 체크
+        Optional<MemberEntity> existingMember = memberRepository.findByMemberId(commandMemberDTO.getMemberId());
+        if (existingMember.isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
 
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         MemberEntity memberEntity = modelMapper.map(commandMemberDTO, MemberEntity.class);
@@ -155,9 +163,66 @@ public class CommandMemberServiceImpl implements CommandMemberService, UserDetai
     }
 
     @Override
+    public boolean verifyPassword(String memberEmail, String rawPassword) {
+        if (memberEmail == null || rawPassword == null) {
+            return false;
+        }
+        
+        List<MemberEntity> members = memberRepository.findByMemberEmail(memberEmail);
+        if (members == null || members.isEmpty()) {
+            return false;
+        }
+        
+        MemberEntity member = members.get(0);
+        // BCrypt로 암호화된 비밀번호와 입력받은 평문 비밀번호 비교
+        return bCryptPasswordEncoder.matches(rawPassword, member.getMemberPw());
+    }
+
+    @Override
+    public void changePassword(String memberEmail, String currentPassword, String newPassword) {
+        if (memberEmail == null || currentPassword == null || newPassword == null) {
+            throw new IllegalArgumentException("이메일, 현재 비밀번호, 새 비밀번호는 필수입니다.");
+        }
+
+        List<MemberEntity> members = memberRepository.findByMemberEmail(memberEmail);
+        if (members == null || members.isEmpty()) {
+            throw new IllegalArgumentException("해당 이메일의 회원을 찾을 수 없습니다: " + memberEmail);
+        }
+
+        MemberEntity member = members.get(0);
+
+        // 현재 비밀번호 검증
+        if (!bCryptPasswordEncoder.matches(currentPassword, member.getMemberPw())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호로 변경
+        member.setMemberPw(bCryptPasswordEncoder.encode(newPassword));
+        log.info("비밀번호 변경 완료: {}", memberEmail);
+    }
+
+    @Override
     public void withdraw(String memberEmail, String rawPw) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'withdraw'");
+        if (memberEmail == null || rawPw == null) {
+            throw new IllegalArgumentException("이메일과 비밀번호는 필수입니다.");
+        }
+
+        List<MemberEntity> members = memberRepository.findByMemberEmail(memberEmail);
+        if (members == null || members.isEmpty()) {
+            throw new IllegalArgumentException("해당 이메일의 회원을 찾을 수 없습니다: " + memberEmail);
+        }
+
+        MemberEntity member = members.get(0);
+
+        // 비밀번호 검증
+        if (!bCryptPasswordEncoder.matches(rawPw, member.getMemberPw())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 회원 탈퇴 처리: member_status를 'withdraw'로 변경
+        member.setMemberStatus("withdraw");
+        member.setMemberActive(false); // 추가로 비활성화도 처리
+        log.info("회원 탈퇴 완료: {} (status: withdraw)", memberEmail);
     }
 }
 

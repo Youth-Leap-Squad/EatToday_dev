@@ -21,6 +21,7 @@ public class PhotoReviewCommentController {
         this.service = service;
     }
 
+    // 사진 리뷰 댓글
     @GetMapping("/{reviewNo}")
     public ResponseEntity<List<PhotoReviewCommentDTO>> list(@PathVariable int reviewNo) {
         return ResponseEntity.ok(service.getByReviewNo(reviewNo));

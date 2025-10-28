@@ -54,6 +54,10 @@ public class MemberEntity {
     @Column(name = "member_level", nullable = false)
     private Integer memberLevel = 0;
 
+    // 프로필 이미지 URL
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
     /** 편의 메서드들 */
 
     public MemberEntity() {}

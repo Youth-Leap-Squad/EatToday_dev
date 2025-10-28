@@ -1,5 +1,6 @@
 SET FOREIGN_KEY_CHECKS = 1;
 -- memberPhone을 아이디 역할에서 memberEmail로 변경
+SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `albti_answer`;
 DROP TABLE IF EXISTS `albti_output`;
 DROP TABLE IF EXISTS `albti_join_member`;
@@ -10,7 +11,6 @@ DROP TABLE IF EXISTS `pr_file_upload`;
 DROP TABLE IF EXISTS `lounge`;
 DROP TABLE IF EXISTS `report_history`;
 DROP TABLE IF EXISTS `world_cup_picks`;
-DROP TABLE IF EXISTS `bookmark_folder`;
 DROP TABLE IF EXISTS `bookmark`;
 DROP TABLE IF EXISTS `food_post_likes`;
 DROP TABLE IF EXISTS `food_comment`;
@@ -18,7 +18,11 @@ DROP TABLE IF EXISTS `individual_world_cup_food`;
 DROP TABLE IF EXISTS `qna_comment`;
 
 -- 중간 계층
-DROP TABLE IF EXISTS `direct_message`;
+DROP TABLE IF EXISTS `dm_message_read`;
+DROP TABLE IF EXISTS `dm_message`;
+DROP TABLE IF EXISTS `dm_room_member`;
+DROP TABLE IF EXISTS `note_message`;
+DROP TABLE IF EXISTS `dm_room`;
 DROP TABLE IF EXISTS `photo_review`;
 DROP TABLE IF EXISTS `eventFood`;
 DROP TABLE IF EXISTS `worldcup_alcohol`;
@@ -51,37 +55,38 @@ CREATE TABLE `member` (
                           member_at VARCHAR(255) NOT NULL DEFAULT 0 COMMENT '계정 생성일',
                           member_level INT COMMENT '회원등급',
                           report_count INT NOT NULL DEFAULT 0 COMMENT '신고 누적 횟수',
+                          profile_image_url VARCHAR(500) NULL COMMENT '프로필 이미지 URL',
                           CONSTRAINT PK_member PRIMARY KEY (member_no),
                           INDEX idx_member_email (member_email)
 ) ENGINE=INNODB COMMENT '회원 정보';
 
 CREATE TABLE IF NOT EXISTS `email_verification` (
-                                      `id`            BIGINT       NOT NULL AUTO_INCREMENT,
-                                      `email`         VARCHAR(255) NOT NULL,
-                                      `token`         VARCHAR(255) NOT NULL,
-                                      `expires_at`    DATETIME     NOT NULL,
-                                      `used`          TINYINT(1)   NOT NULL DEFAULT 0,
-                                      `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                      PRIMARY KEY (`id`),
-                                      UNIQUE KEY `uk_email_verification_token` (`token`),
-                                      KEY `idx_email_verification_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                                                    `id`            BIGINT       NOT NULL AUTO_INCREMENT,
+                                                    `email`         VARCHAR(255) NOT NULL,
+    `token`         VARCHAR(255) NOT NULL,
+    `expires_at`    DATETIME     NOT NULL,
+    `used`          TINYINT(1)   NOT NULL DEFAULT 0,
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_email_verification_token` (`token`),
+    KEY `idx_email_verification_email` (`email`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `profile_image` (
-                                 `id`                BIGINT       NOT NULL AUTO_INCREMENT,
-                                 `member_email`      VARCHAR(255) NOT NULL,
-                                 `original_file_name` VARCHAR(255) NOT NULL,
-                                 `stored_file_name`  VARCHAR(255) NOT NULL,
-                                 `file_path`        VARCHAR(500) NOT NULL,
-                                 `file_size`        BIGINT       NOT NULL,
-                                 `content_type`     VARCHAR(100) NOT NULL,
-                                 `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                 `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
-                                 `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
-                                 PRIMARY KEY (`id`),
-                                 KEY `idx_profile_image_email` (`member_email`),
-                                 KEY `idx_profile_image_active` (`is_active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='프로필 사진 정보';
+                                               `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+                                               `member_email`      VARCHAR(255) NOT NULL,
+    `original_file_name` VARCHAR(255) NOT NULL,
+    `stored_file_name`  VARCHAR(255) NOT NULL,
+    `file_path`        VARCHAR(500) NOT NULL,
+    `file_size`        BIGINT       NOT NULL,
+    `content_type`     VARCHAR(100) NOT NULL,
+    `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `is_active`         TINYINT(1)   NOT NULL DEFAULT 1,
+    `is_default`        TINYINT(1)   NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_profile_image_email` (`member_email`),
+    KEY `idx_profile_image_active` (`is_active`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='프로필 사진 정보';
 
 
 CREATE TABLE `secession` (
@@ -118,6 +123,7 @@ CREATE TABLE `food_post` (
                              CONSTRAINT `FK_FOOD_POST_MEMBER` FOREIGN KEY (`member_no`) REFERENCES `member`(`member_no`)
 ) ENGINE=INNODB COMMENT='안주 게시글';
 
+
 CREATE TABLE `photo_review` (
                                 review_no     INT NOT NULL AUTO_INCREMENT,
                                 board_no      INT NOT NULL,
@@ -143,6 +149,7 @@ CREATE TABLE `lounge` (
 CREATE TABLE `qna_post` (
                             qna_post_no INT NOT NULL AUTO_INCREMENT COMMENT '문의사항 번호',
                             member_no INT NOT NULL COMMENT '문의자',
+                            inquiry_title   VARCHAR(255) NOT NULL COMMENT '문의 제목',
                             inquiry_content VARCHAR(255) NOT NULL COMMENT '문의 내용',
                             inquiry_at VARCHAR(255) NOT NULL DEFAULT 0 COMMENT '작성 일자',
                             CONSTRAINT PK_qna_post PRIMARY KEY (qna_post_no),
@@ -183,6 +190,7 @@ CREATE TABLE `pr_file_upload` (
                                   pr_file_path VARCHAR(255) NOT NULL,
                                   pr_file_at   VARCHAR(255) NOT NULL,
                                   review_no    INT NOT NULL,
+                                  pr_file_url VARCHAR(255) NOT NULL,
                                   CONSTRAINT PK_pr_file_upload PRIMARY KEY (pr_file_no),
                                   CONSTRAINT FK_prfile_review FOREIGN KEY (review_no) REFERENCES photo_review(review_no)
 )ENGINE=INNODB COMMENT '사진 리뷰 파일 업로드';
@@ -245,30 +253,16 @@ CREATE TABLE IF NOT EXISTS `report` (
     ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=INNODB COMMENT '신고';
 
-CREATE TABLE bookmark_folder (
-                                 folder_id   INT AUTO_INCREMENT PRIMARY KEY,
-                                 member_no   INT NOT NULL,
-                                 folder_name VARCHAR(100) NOT NULL,
-                                 created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                 CONSTRAINT FK_FOLDER_MEMBER FOREIGN KEY (member_no)
-                                     REFERENCES member(member_no) ON DELETE CASCADE,
-                                 UNIQUE KEY ux_member_foldername (member_no, folder_name), -- 같은 회원 내 중복명 방지
-                                 KEY idx_folder_member (member_no)
-) ENGINE=InnoDB COMMENT='즐겨찾기 폴더';
-
--- 즐겨찾기(폴더 내 중복 방지만 보장: PK로 해결)
 CREATE TABLE bookmark (
-                          folder_id  INT NOT NULL,
-                          board_no   INT NOT NULL,
-                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                          PRIMARY KEY (folder_id, board_no),
-                          CONSTRAINT FK_BOOKMARK_FOLDER FOREIGN KEY (folder_id)
-                              REFERENCES bookmark_folder(folder_id) ON DELETE CASCADE,
-                          CONSTRAINT FK_BOOKMARK_FOOD_POST FOREIGN KEY (board_no)
-                              REFERENCES food_post(board_no) ON DELETE CASCADE,
-                          KEY idx_bm_folder (folder_id),
-                          KEY idx_bm_board (board_no) -- 역조회/정합성 체크에 유용
-) ENGINE=InnoDB COMMENT='즐겨찾기 항목';
+                          member_no INT NOT NULL,
+                          board_no  INT NOT NULL,
+                          PRIMARY KEY (member_no, board_no),
+                          CONSTRAINT FK_BOOKMARK_MEMBER     FOREIGN KEY (member_no) REFERENCES member(member_no),
+                          CONSTRAINT FK_BOOKMARK_FOOD_POST  FOREIGN KEY (board_no)  REFERENCES food_post(board_no)
+) ENGINE=INNODB COMMENT='즐겨찾기';
+
+
+
 
 CREATE TABLE `albti` (
                          alBTI_no      INT NOT NULL AUTO_INCREMENT,
@@ -312,9 +306,6 @@ CREATE TABLE `photo_review_comment` (
                                         CONSTRAINT FK_prc_review FOREIGN KEY (review_no) REFERENCES photo_review(review_no)
 )ENGINE=INNODB COMMENT '사진리뷰댓글';
 
-
-
-
 CREATE TABLE `worldcup_alcohol` (
                                     `worldcup_alcohol_no` INT NOT NULL AUTO_INCREMENT,
                                     `alcohol_no` INT NOT NULL,
@@ -324,34 +315,88 @@ CREATE TABLE `worldcup_alcohol` (
                                     CONSTRAINT FK_WORLDCUP_ALCOHOL_WORLDCUP FOREIGN KEY (worldcup_no) REFERENCES worldcup(worldcup_no)
 ) ENGINE=INNODB COMMENT '월드컵술';
 
+-- 1) 방
+CREATE TABLE dm_room (
+                         room_no     INT AUTO_INCREMENT PRIMARY KEY,
+                         room_name   VARCHAR(255) NOT NULL,
+                         is_group    BOOLEAN NOT NULL DEFAULT 0,
+                         private_key VARCHAR(255) UNIQUE,
+                         created_at  VARCHAR(255) NOT NULL
+) ENGINE=InnoDB COMMENT='DM 방';
 
-CREATE TABLE `direct_message` (
-                                  `message_no` INT NOT NULL AUTO_INCREMENT,
-                                  `send_member_id` INT NOT NULL,
-                                  `receive_member_id` INT NOT NULL,
-                                  `dm_content` VARCHAR(255) NOT NULL,
-                                  `dm_date` VARCHAR(255) NOT NULL,
-                                  `dm_read` BOOLEAN NOT NULL DEFAULT 0 COMMENT '메세지 읽음 여부',
-                                  CONSTRAINT PK_MESSAGE_NO PRIMARY KEY (message_no),
-                                  CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_3 FOREIGN KEY(send_member_id) REFERENCES member(member_no),
-                                  CONSTRAINT FK_MESSAGE_NO_MEMBER_NO_4 FOREIGN KEY(receive_member_id) REFERENCES member(member_no)
-)ENGINE=INNODB COMMENT 'DM';
+-- 2) 방-멤버
+CREATE TABLE dm_room_member (
+                                room_no   INT NOT NULL,
+                                member_no INT NOT NULL,
+                                role      ENUM('OWNER','MEMBER') DEFAULT 'MEMBER',
+                                joined_at VARCHAR(255) NOT NULL,
+                                PRIMARY KEY (room_no, member_no),
+                                CONSTRAINT FK_room_member_room   FOREIGN KEY (room_no)   REFERENCES dm_room(room_no)   ON DELETE CASCADE,
+                                CONSTRAINT FK_room_member_member FOREIGN KEY (member_no) REFERENCES member(member_no)  ON DELETE CASCADE
+) ENGINE=InnoDB COMMENT='방-멤버';
+
+-- 3) 메시지
+CREATE TABLE dm_message (
+                            message_no INT AUTO_INCREMENT PRIMARY KEY,
+                            room_no    INT NOT NULL,
+                            sender_no  INT NOT NULL,
+                            content    VARCHAR(255) NOT NULL,
+                            sent_at    VARCHAR(255) NOT NULL,
+                            edited     BOOLEAN NOT NULL DEFAULT 0,
+                            edited_at  VARCHAR(255) NULL,
+                            deleted    BOOLEAN NOT NULL DEFAULT 0,
+                            deleted_at VARCHAR(255) NULL,
+                            deleted_by INT NULL,
+                            CONSTRAINT FK_msg_room   FOREIGN KEY (room_no)   REFERENCES dm_room(room_no)  ON DELETE CASCADE,
+                            CONSTRAINT FK_msg_sender FOREIGN KEY (sender_no) REFERENCES member(member_no)
+) ENGINE=InnoDB COMMENT='메시지';
+
+-- 4) 메시지 읽음 (수신자별)
+CREATE TABLE dm_message_read (
+                                 message_no INT NOT NULL,
+                                 member_no  INT NOT NULL,
+                                 read_at    VARCHAR(255) NOT NULL,
+                                 PRIMARY KEY (message_no, member_no),
+                                 CONSTRAINT FK_read_msg    FOREIGN KEY (message_no) REFERENCES dm_message(message_no) ON DELETE CASCADE,
+                                 CONSTRAINT FK_read_member FOREIGN KEY (member_no)  REFERENCES member(member_no)     ON DELETE CASCADE
+) ENGINE=InnoDB COMMENT='읽음 상태';
 
 
 
-CREATE TABLE `dm_file_upload` (
-                                  `dm_file_no` INT NOT NULL AUTO_INCREMENT,
-                                  `dm_file_name` VARCHAR(255) NOT NULL,
-                                  `dm_file_type` VARCHAR(255) NOT NULL,
-                                  `dm_file_rename` VARCHAR(255) NOT NULL,
-                                  `dm_file_path` VARCHAR(255) NOT NULL,
-                                  `dm_file_at` VARCHAR(255) NOT NULL,
-                                  `dm_key` INT NOT NULL,
-                                  CONSTRAINT  PK_DM_FILE_UPLOAD  PRIMARY KEY (dm_file_no),
-                                  CONSTRAINT  FK_DM_FILE_UPLOAD_DIRECT_MESSAGE  FOREIGN KEY (dm_key) REFERENCES direct_message(message_no)
-)ENGINE=INNODB COMMENT 'DM파일업로드';
+DROP TABLE IF EXISTS dm_file_upload;
 
+CREATE TABLE note_message (
+                              note_id         INT AUTO_INCREMENT PRIMARY KEY,
+                              sender_no       INT NOT NULL,
+                              receiver_no     INT NOT NULL,
+                              subject         VARCHAR(255) NULL,
+                              content         VARCHAR(255) NOT NULL,
+                              sent_at_txt     VARCHAR(255) NOT NULL,
+                              is_read         BOOLEAN NOT NULL DEFAULT 0,
+                              read_at_txt     VARCHAR(255) NULL,
+                              reply_to_id     INT NULL,
+                              sender_deleted  BOOLEAN NOT NULL DEFAULT 0,
+                              receiver_deleted BOOLEAN NOT NULL DEFAULT 0,
+                              CONSTRAINT FK_note_sender   FOREIGN KEY (sender_no)   REFERENCES member(member_no),
+                              CONSTRAINT FK_note_receiver FOREIGN KEY (receiver_no) REFERENCES member(member_no),
+                              CONSTRAINT FK_note_reply    FOREIGN KEY (reply_to_id) REFERENCES note_message(note_id)
+) ENGINE=InnoDB COMMENT='쪽지';
 
+CREATE TABLE dm_file_upload (
+                                dm_file_no     INT NOT NULL AUTO_INCREMENT,
+                                note_id     INT NOT NULL,
+                                dm_file_name   VARCHAR(255) NOT NULL,
+                                dm_file_type   VARCHAR(255)  NOT NULL,
+                                dm_file_rename VARCHAR(255) NOT NULL,
+                                dm_file_path   VARCHAR(255) NOT NULL,
+                                dm_file_at     VARCHAR(255)  NOT NULL,
+                                dm_file_size   LONG NOT NULL,
+                                dm_file_hash   VARCHAR(255)  NULL,
+                                PRIMARY KEY (dm_file_no),
+                                CONSTRAINT FK_DM_FILE__MESSAGE
+                                    FOREIGN KEY (note_id) REFERENCES note_message(note_id)
+                                        ON DELETE CASCADE
+) ENGINE=InnoDB COMMENT='DM 파일 업로드';
 
 CREATE TABLE `food_post_likes` (
                                    `member_no` INT NOT NULL,
@@ -521,7 +566,7 @@ VALUES
 (1, 3, '나쵸와 맥주', '영화볼 때 딱 좋은 간단 안주', '살짝 짠맛이 맥주를 부른다', '/images/food/nacho.jpg',
  '2025-10-09 22:00:00', 200, 'T', 13, 9, 4, 2),
 -- 18. 회와 와인
-(8, 2, '광어회와 와인', '신선한 회에 화이트와인의 깔끔한 맛', '일식 안주 느낌', '/images/food/sashimi.jpg',
+(8, 2, '숙성회와 와인', '신선한 회에 화이트와인의 깔끔한 맛', '일식 안주 느낌', '/images/food/sashimi.jpg',
  '2025-10-06 19:00:00', 300, 'T', 15, 12, 5, 3),
 -- 19. 족발과 맥주
 (1, 1, '족발엔 맥주도 괜찮다', '달짝지근한 족발에 시원한 맥주', '탄산이 기름기를 잡는다', '/images/food/jokbalbeer.jpg',
@@ -623,37 +668,12 @@ INSERT INTO follow (follower_no, following_no) VALUES
                                                    (10, 2),  -- vodka_star  -> soju_love
                                                    (10, 4),  -- vodka_star  -> wine_master
                                                    (10, 8);  -- vodka_star  -> champagne_boy
-
-INSERT INTO bookmark_folder (member_no, folder_name)
+INSERT INTO bookmark (member_no, board_no)
 VALUES
-    (1, '맛집 모음'),
-    (1, '퇴근 후 안주'),
-    (2, '술안주 베스트'),
-    (3, '집밥 느낌');
-
-INSERT INTO bookmark (folder_id, board_no)
-VALUES
-    (1, 10),
-    (1, 11),
-    (2, 12),
-    (2, 14),
-    (3, 8),
-    (3, 15),
-    (4, 9),
-    (4, 13);
-
-INSERT INTO direct_message (send_member_id, receive_member_id, dm_content, dm_date, dm_read)
-VALUES
-    (2, 3, '이번 주말에 치맥 어때?', '2025-09-05', FALSE),
-    (3, 2, '좋아! 치킨집 예약할게.', '2025-09-05', TRUE),
-    (4, 5, '다음에 막걸리 한잔 하자', '2025-09-06', FALSE),
-    (2,4,'다음 주에 피자 라거 콜?','2025-09-12', FALSE),
-    (4,2,'콜! 치즈 플래터도 가자','2025-09-12', TRUE),
-    (5,9,'하이볼집 리스트 공유해줘~','2025-09-13', FALSE),
-    (3,2,'주말에 와인바 갈래?','2025-09-14', FALSE),
-    (9,5,'막걸리집 추천 있음','2025-09-14', TRUE),
-    (11,2,'싱글몰트 테이스팅 하자','2025-09-15', FALSE),
-    (2,3,'치킨/양념 vs 후라이드?','2025-09-15', TRUE);
+    (2, 1),
+    (3, 2),
+    (4, 3),
+    (5, 4);
 
 INSERT INTO report (member_no, member_no2, report_title, report_content, report_yn, report_date, report_source)
 VALUES
@@ -713,11 +733,6 @@ VALUES
 (6, '음식이 별로였어요..', '2025-09-12 19:00:00', 3, TRUE);
 
 
--- 2) 사진 리뷰 파일 업로드
-INSERT INTO pr_file_upload (pr_file_name, pr_file_type, pr_file_rename, pr_file_path, pr_file_at, review_no)
-VALUES
-    ('chicken.jpg', 'image/jpeg', 'chicken_1.jpg', '/uploads/review/1', '2025-09-05', 1),
-    ('samgyeopsal.jpg', 'image/jpeg', 'sam_1.jpg', '/uploads/review/2', '2025-09-06', 2);
 
 -- 3) 라운지(리뷰-술 매핑)
 --   리뷰1=맥주(1), 리뷰2=소주(2), 리뷰3=와인(8)
@@ -727,10 +742,6 @@ VALUES
     (2, 2),
     (3, 8);
 
--- 4) DM 파일 업로드
-INSERT INTO dm_file_upload (dm_file_name, dm_file_type, dm_file_rename, dm_file_path, dm_file_at, dm_key)
-VALUES
-    ('menu.png', 'image/png', 'menu_20250905.png', '/uploads/dm/1', '2025-09-05', 1);
 
 -- 5) 안주 게시글 반응(좋아요/싫어요 등 타입 가정)
 INSERT INTO food_post_likes (member_no, board_no, likes_type)
@@ -767,10 +778,10 @@ VALUES
     (12, '2025-09-10');
 
 -- 9) 문의(QnA) 게시글 (테이블명이 qnd_post로 정의되어 있으므로 그 이름 사용)
-INSERT INTO qna_post (member_no, inquiry_content, inquiry_at)
+INSERT INTO qna_post (member_no, inquiry_title, inquiry_content, inquiry_at)
 VALUES
-    (2, '사진 리뷰가 안 올라가요', '2025-09-12'),
-    (3, '월드컵 일정이 궁금합니다', '2025-09-13');
+    (2, '사진 업로드 오류', '사진 리뷰가 안 올라가요', '2025-09-12'),
+    (3, '월드컵 일정 문의', '월드컵 일정이 궁금합니다', '2025-09-13');
 
 
 -- 문의 게시글 답변
@@ -886,7 +897,7 @@ VALUES
 -- =========================
 -- PATCH: schema alignment
 -- =========================
-USE mydb;
+# USE mydb;
 
 -- 1) email_verification 정합화
 --    - verified 컬럼 없으면 추가
@@ -896,97 +907,97 @@ USE mydb;
 
 -- 1-1) verified 컬럼 추가 (없을 때만)
 SET @has_verified := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verified'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verified'
 );
 SET @sql := IF(@has_verified = 0,
-  'ALTER TABLE `email_verification` ADD COLUMN `verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `expires_at`',
-  'DO 0');
+               'ALTER TABLE `email_verification` ADD COLUMN `verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `expires_at`',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-2) used -> verified 값 이관 (used 있을 때만)
 SET @has_used := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'used'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'used'
 );
 SET @sql := IF(@has_used = 1,
-  'UPDATE `email_verification` SET `verified` = `used` WHERE `verified` <> `used`',
-  'DO 0');
+               'UPDATE `email_verification` SET `verified` = `used` WHERE `verified` <> `used`',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-3) used 컬럼 삭제 (있을 때만)
 SET @sql := IF(@has_used = 1,
-  'ALTER TABLE `email_verification` DROP COLUMN `used`',
-  'DO 0');
+               'ALTER TABLE `email_verification` DROP COLUMN `used`',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-4) type 컬럼 추가 (없을 때만)
 SET @has_type := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'type'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'type'
 );
 SET @sql := IF(@has_type = 0,
-  'ALTER TABLE `email_verification` ADD COLUMN `type` VARCHAR(31) NOT NULL DEFAULT ''EMAIL_VERIFICATION'' AFTER `verified`',
-  'DO 0');
+               'ALTER TABLE `email_verification` ADD COLUMN `type` VARCHAR(31) NOT NULL DEFAULT ''EMAIL_VERIFICATION'' AFTER `verified`',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-5) token 유니크 키 보강 (없을 때만)
 SET @has_token_uk := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'uk_email_verification_token'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'uk_email_verification_token'
 );
 SET @sql := IF(@has_token_uk = 0,
-  'ALTER TABLE `email_verification` ADD UNIQUE KEY `uk_email_verification_token` (`token`)',
-  'DO 0');
+               'ALTER TABLE `email_verification` ADD UNIQUE KEY `uk_email_verification_token` (`token`)',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-6) email 인덱스 보강 (없을 때만)
 SET @has_email_idx := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'idx_email_verification_email'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND INDEX_NAME = 'idx_email_verification_email'
 );
 SET @sql := IF(@has_email_idx = 0,
-  'CREATE INDEX `idx_email_verification_email` ON `email_verification` (`email`)',
-  'DO 0');
+               'CREATE INDEX `idx_email_verification_email` ON `email_verification` (`email`)',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 1-7) verification_code 컬럼 추가 (없을 때만)
 SET @has_verification_code := (
-  SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verification_code'
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification' AND COLUMN_NAME = 'verification_code'
 );
 SET @sql := IF(@has_verification_code = 0,
-  'ALTER TABLE `email_verification` ADD COLUMN `verification_code` VARCHAR(6) NOT NULL DEFAULT ''000000'' AFTER `email`',
-  'DO 0');
+               'ALTER TABLE `email_verification` ADD COLUMN `verification_code` VARCHAR(6) NOT NULL DEFAULT ''000000'' AFTER `email`',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 
 -- 2) Individual_world_cup_food → eventFood FK 대소문자/테이블명 정합화
 --    (만약 잘못된 참조가 있으면 제거 후 올바르게 생성)
 SET @bad_fk := (
-  SELECT CONSTRAINT_NAME
-  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
-  WHERE CONSTRAINT_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'Individual_world_cup_food'
-    AND REFERENCED_TABLE_NAME = 'eventfood'           -- 잘못된 소문자 참조
-  LIMIT 1
+    SELECT CONSTRAINT_NAME
+    FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'Individual_world_cup_food'
+      AND REFERENCED_TABLE_NAME = 'eventfood'           -- 잘못된 소문자 참조
+    LIMIT 1
 );
 SET @sql := IF(@bad_fk IS NOT NULL,
-  CONCAT('ALTER TABLE `Individual_world_cup_food` DROP FOREIGN KEY `', @bad_fk, '`'),
-  'DO 0');
+               CONCAT('ALTER TABLE `Individual_world_cup_food` DROP FOREIGN KEY `', @bad_fk, '`'),
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- 올바른 FK가 없으면 생성
 SET @good_fk_exists := (
-  SELECT COUNT(*)
-  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
-  WHERE CONSTRAINT_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'Individual_world_cup_food'
-    AND REFERENCED_TABLE_NAME = 'eventFood'
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'Individual_world_cup_food'
+      AND REFERENCED_TABLE_NAME = 'eventFood'
 );
 SET @sql := IF(@good_fk_exists = 0,
-  'ALTER TABLE `Individual_world_cup_food` ADD CONSTRAINT `FK_INDIVIDUAL_FOOD_EVENTFOOD` FOREIGN KEY (`food_no`) REFERENCES `eventFood`(`food_no`)',
-  'DO 0');
+               'ALTER TABLE `Individual_world_cup_food` ADD CONSTRAINT `FK_INDIVIDUAL_FOOD_EVENTFOOD` FOREIGN KEY (`food_no`) REFERENCES `eventFood`(`food_no`)',
+               'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 
@@ -1008,11 +1019,11 @@ SET member_level = 0
 WHERE member_level IS NULL;
 
 -- 5) 확인용 쿼리 (실행 후 확인)
--- SELECT member_no, member_email, member_pw, member_level 
--- FROM member 
+-- SELECT member_no, member_email, member_pw, member_level
+-- FROM member
 -- WHERE member_email IN (
 --     'high.holic@example.com',
---     'sake.trip@example.com', 
+--     'sake.trip@example.com',
 --     'wine.note@example.com',
 --     'beer.runner@example.com',
 --     'soju.writer@example.com'
@@ -1051,3 +1062,19 @@ FROM score_sum s
          JOIN albti a ON s.alBTI_no = a.alBTI_no
          JOIN max_score m ON s.member_no = m.member_no AND s.total_score = m.top_score
 GROUP BY s.member_no;
+
+UPDATE food_post SET confirmed_yn = 'T'
+WHERE confirmed_yn IN ('1', 'T', 't', 'Y', 'y', 'TRUE', 'true') OR confirmed_yn = 1;
+
+UPDATE food_post SET confirmed_yn = 'F'
+WHERE confirmed_yn IS NULL OR confirmed_yn IN ('0', 'F', 'f', 'N', 'n', 'FALSE', 'false') OR confirmed_yn = 0;
+
+SELECT board_no, confirmed_yn FROM food_post WHERE alcohol_no = 2 ORDER BY board_no DESC;
+
+START TRANSACTION;
+
+-- 0/1, '0'/'1', 'Y'/'N' 등을 모두 TF로 통일
+
+ALTER TABLE food_post
+    MODIFY COLUMN confirmed_yn CHAR(1) NOT NULL,
+    ADD CONSTRAINT chk_food_post_confirmed_yn CHECK (confirmed_yn IN ('T','F'));

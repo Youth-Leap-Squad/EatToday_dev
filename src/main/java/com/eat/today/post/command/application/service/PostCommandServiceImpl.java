@@ -176,6 +176,7 @@ public class PostCommandServiceImpl implements PostCommandService {
 
         FoodPost saved = postRepo.save(post);
 
+
         // 게시물 등록 시 포인트 지급
         try {
             memberPointService.grantPoints(req.getMemberNo(), PointPolicy.POST_CREATE);
@@ -185,6 +186,15 @@ public class PostCommandServiceImpl implements PostCommandService {
 
         return toResponse(saved);
     }
+
+
+    @Override
+    public void increaseView(Integer boardNo) {
+        FoodPost p = postRepo.findById(boardNo)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+        p.setBoardSeq((p.getBoardSeq() == null ? 0 : p.getBoardSeq()) + 1);
+    }
+
 
     @Override
     public FoodPostResponse updatePost(Integer boardNo, Integer currentMemberNo, UpdateFoodPostRequest req) {

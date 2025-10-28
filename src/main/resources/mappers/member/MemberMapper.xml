@@ -45,4 +45,11 @@
         WHERE m.member_no = #{memberNo}
     </select>
 
+    <!-- member_no로 email 조회 -->
+    <select id="getEmailByNo" parameterType="java.lang.Integer" resultType="string">
+        SELECT m.member_email
+        FROM member m
+        WHERE m.member_no = #{memberNo}
+    </select>
+
 </mapper>

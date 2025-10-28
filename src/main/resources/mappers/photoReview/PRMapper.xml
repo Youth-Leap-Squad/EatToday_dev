@@ -14,6 +14,7 @@
         <result property="prFileRename"  column="pr_file_rename"/>
         <result property="prFilePath"    column="pr_file_path"/>
         <result property="prFileAt"      column="pr_file_at"/>
+        <result column="pr_file_url"  property="prFileUrl"/>
     </resultMap>
 
     <!-- 리뷰 + 파일 조인용 resultMap -->
@@ -98,6 +99,21 @@
                  LEFT JOIN pr_file_upload f ON r.review_no = f.review_no
         WHERE r.member_no = #{memberNo}
         ORDER BY r.review_no DESC, f.pr_file_no ASC
+    </select>
+
+    <select id="findLatestByBoard" resultType="com.eat.today.sns.query.dto.photoReview.PRDTO">
+        SELECT
+            pr.review_no      AS reviewNo,
+            pr.board_no       AS boardNo,
+            pr.member_no      AS memberNo,
+            pr.review_title   AS reviewTitle,
+            pr.review_content AS reviewContent,
+            pr.review_date    AS reviewDate,
+            pr.review_like    AS reviewLike
+        FROM photo_review pr
+        WHERE pr.board_no = #{boardNo}
+        ORDER BY pr.review_date DESC
+            LIMIT 6
     </select>
 
 </mapper>
