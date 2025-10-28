@@ -23,22 +23,23 @@
     </resultMap>
 
     <resultMap id="requestNameMap" type="com.eat.today.member.query.dto.RequestNameDTO">
-        <result column="questioner_name" property="memberName"/>
+        <result column="questioner_id" property="memberName"/>
     </resultMap>
 
     <resultMap id="answererMap" type="com.eat.today.member.query.dto.RequestNameDTO">
-        <result column="answerer_name" property="memberName"/>
+        <result column="answerer_id" property="memberName"/>
     </resultMap>
 
     <resultMap id="questionerMap" type="com.eat.today.member.query.dto.RequestNameDTO">
-        <result column="questioner_name" property="memberName"/>
+        <result column="questioner_id" property="memberName"/>
     </resultMap>
 
+    <!-- 게시글 목록 -->
     <select id="selectPostsOrderByDateDescPaged" resultMap="qnaPostMap">
         SELECT
             qp.qna_post_no,
             qp.member_no,
-            m.member_name AS questioner_name,
+            m.member_id AS questioner_id,
             qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
@@ -52,11 +53,12 @@
         SELECT COUNT(*) FROM qna_post
     </select>
 
+    <!-- 검색 -->
     <select id="searchPostsPaged" resultMap="qnaPostMap">
         SELECT
         qp.qna_post_no,
         qp.member_no,
-        m.member_name AS questioner_name,
+        m.member_id AS questioner_id,
         qp.inquiry_title,
         qp.inquiry_content,
         qp.inquiry_at
@@ -89,11 +91,12 @@
         </where>
     </select>
 
+    <!-- 특정 회원 글 -->
     <select id="selectPostsByMemberNoPaged" resultMap="qnaPostMap">
         SELECT
             qp.qna_post_no,
             qp.member_no,
-            m.member_name AS questioner_name,
+            m.member_id AS questioner_id,
             qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
@@ -108,11 +111,12 @@
         SELECT COUNT(*) FROM qna_post WHERE member_no = #{memberNo}
     </select>
 
+    <!-- 상세 -->
     <select id="selectPostById" resultMap="qnaPostMap">
         SELECT
             qp.qna_post_no,
             qp.member_no,
-            m.member_name AS questioner_name,
+            m.member_id AS questioner_id,
             qp.inquiry_title,
             qp.inquiry_content,
             qp.inquiry_at
@@ -121,6 +125,7 @@
         WHERE qp.qna_post_no = #{qnaPostNo}
     </select>
 
+    <!-- 댓글 -->
     <select id="selectCommentsByPostIdPaged" resultMap="qnaCommentMap">
         SELECT
             qc.comment_no,
@@ -128,8 +133,8 @@
             qc.comment_member_no,
             qc.comment_content,
             qc.comment_at,
-            am.member_name AS answerer_name,
-            qm.member_name AS questioner_name
+            am.member_id AS answerer_id,
+            qm.member_id AS questioner_id
         FROM qna_comment qc
                  JOIN member am ON am.member_no = qc.comment_member_no
                  JOIN qna_post qp ON qp.qna_post_no = qc.qna_post_no
