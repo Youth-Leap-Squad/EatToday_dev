@@ -1001,7 +1001,6 @@ SET @sql := IF(@good_fk_exists = 0,
                'DO 0');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-
 -- 3) report 더미데이터 오타 보정: qnd_post -> qna_post
 UPDATE `report`
 SET `report_source` = 'qna_post'
