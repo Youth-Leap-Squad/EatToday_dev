@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Paths;
 
 @Configuration
-public class StaticResourceConfig implements WebMvcConfigurer {
+public class SNSStaticResourceConfig implements WebMvcConfigurer {
 
     @Value("${app.upload.path:uploads}")
     private String uploadPath;

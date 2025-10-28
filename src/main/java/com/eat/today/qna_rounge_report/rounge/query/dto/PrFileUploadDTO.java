@@ -13,4 +13,6 @@ public class PrFileUploadDTO {
     private String prFilePath;
     private String prFileAt;
     private Integer reviewNo;
+
+    private String prFileUrl;
 }
