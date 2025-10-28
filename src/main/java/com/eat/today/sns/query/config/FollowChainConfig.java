@@ -1,4 +1,4 @@
-package com.eat.today.post.query.config;
+package com.eat.today.sns.query.config;
 
 import com.eat.today.configure.security.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
@@ -14,41 +14,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-public class PostCommandChainConfig {
+public class FollowChainConfig {
 
     private final AuthenticationManager authenticationManager;
 
     @Bean
-    @Order(4) // PhotoReviewChain(3) 뒤에 오도록 순서 지정 (프로젝트 상황에 맞게 조정)
-    public SecurityFilterChain postCommandChain(HttpSecurity http) throws Exception {
+    @Order(6) // PhotoReview(3), Post(4), DM(5) 뒤 — 필요시 간격 더 벌려도 됨
+    public SecurityFilterChain followCommandChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/./**")
+                // 팔로우 관련 커맨드 엔드포인트만 매칭 (query용 GET은 별도 체인/컨트롤러에서)
+                .securityMatcher(
+                        "/./follows/**",
+                        "/./follow-requests/**",
+                        "/./blocks/**"
+                )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ===== 게시글(foods) – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./foods/**").authenticated()
+                        // ===== 팔로우/언팔로우 =====
+                        .requestMatchers(HttpMethod.POST, "/./follows/**").authenticated()   // follow
+                        .requestMatchers(HttpMethod.DELETE, "/./follows/**").authenticated()   // unfollow
 
-                        // (관리자 전용) 승인
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/*/approve").hasRole("ADMIN")
+                        // ===== 팔로우 요청(비공개 계정 승인 플로우) =====
+                        .requestMatchers(HttpMethod.POST, "/./follow-requests/**").authenticated()  // 요청 보내기
+                        .requestMatchers(HttpMethod.PATCH, "/./follow-requests/**").authenticated()  // 승인/거절 처리
 
-                        // ===== 댓글 – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/*/comments/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./comments/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./comments/**").authenticated()
+                        // ===== 차단/차단 해제 =====
+                        .requestMatchers(HttpMethod.POST, "/./blocks/**").authenticated()   // block
+                        .requestMatchers(HttpMethod.DELETE, "/./blocks/**").authenticated()   // unblock
 
-                        // ===== 반응(리액션) – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./foods/*/reactions/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/./foods/*/reactions/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./foods/*/reactions/**").authenticated()
-
-                        // ===== 즐겨찾기 – 로그인 필수 =====
-                        .requestMatchers(HttpMethod.POST, "/./bookmarks/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/./bookmarks/**").authenticated()
-
-                        // 그 외는 허용 (ex. 조회용 GET은 다른 조회 컨트롤러에서 처리)
+                        // 그 외는 허용 (조회 GET 등은 다른 체인에서 처리)
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(eh -> eh
