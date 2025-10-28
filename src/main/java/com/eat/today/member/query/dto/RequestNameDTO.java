@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class RequestNameDTO {
+    private Integer memberNo;
     private String memberName;
 }

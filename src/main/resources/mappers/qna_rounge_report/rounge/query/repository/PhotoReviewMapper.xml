@@ -3,6 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.eat.today.qna_rounge_report.rounge.query.repository.PhotoReviewMapper">
 
+    <!-- ===== 파일 업로드 DTO 매핑 ===== -->
     <resultMap id="prFileUploadMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PrFileUploadDTO">
         <id     column="pr_file_no"     property="prFileNo"/>
         <result column="pr_file_name"   property="prFileName"/>
@@ -14,10 +15,13 @@
         <result column="pr_file_url"    property="prFileUrl"/>
     </resultMap>
 
+    <!-- ===== 작성자(회원) 매핑: 번호 + 이름 ===== -->
     <resultMap id="memberMap" type="com.eat.today.member.query.dto.RequestNameDTO">
+        <id     column="member_no"   property="memberNo"/>
         <result column="member_name" property="memberName"/>
     </resultMap>
 
+    <!-- ===== 포토리뷰 + 파일들 + 작성자 ===== -->
     <resultMap id="photoReviewWithFilesMap" type="com.eat.today.qna_rounge_report.rounge.query.dto.PhotoReviewDTO">
         <id     column="review_no"      property="reviewNo"/>
         <result column="board_no"       property="boardNo"/>
@@ -26,13 +30,19 @@
         <result column="review_date"    property="reviewDate"/>
         <result column="review_content" property="reviewContent"/>
         <result column="review_like"    property="reviewLike"/>
-        <association property="member"  resultMap="memberMap"/>
+
+        <!-- 작성자 정보 -->
+        <association property="member" resultMap="memberMap"/>
+
+        <!-- 첨부파일 목록 -->
         <collection property="files"
                     ofType="com.eat.today.qna_rounge_report.rounge.query.dto.PrFileUploadDTO"
                     select="selectFilesByReviewNo"
                     column="review_no"/>
     </resultMap>
 
+    <!-- ===== 리뷰별 파일 조회: pr_file_url을 웹경로로 보정 =====
+         /public 이후 경로 + 파일명 앞에 /reviews 프리픽스(정적매핑 경로)에 맞춰 생성 -->
     <select id="selectFilesByReviewNo" resultMap="prFileUploadMap">
         SELECT
             prf.pr_file_no,
@@ -42,17 +52,19 @@
             prf.pr_file_path,
             prf.pr_file_at,
             prf.review_no,
-            CONCAT('/reviews/', prf.pr_file_path, '/', prf.pr_file_rename) AS pr_file_url
+            CONCAT('/images/photo_review/', prf.pr_file_rename) AS pr_file_url
         FROM pr_file_upload prf
         WHERE prf.review_no = #{review_no}
         ORDER BY prf.pr_file_no ASC
     </select>
 
+    <!-- 최신순 페이지 -->
     <select id="selectAllOrderByDateDescPaged" resultMap="photoReviewWithFilesMap">
         SELECT
             pr.review_no,
             pr.board_no,
-            pr.member_no,
+            pr.member_no,            -- 루트 DTO용
+            m.member_no   AS member_no,   -- association(member)용
             m.member_name,
             pr.review_title,
             pr.review_date,
@@ -68,11 +80,13 @@
         SELECT COUNT(*) FROM photo_review
     </select>
 
+    <!-- 좋아요순 페이지 -->
     <select id="selectAllOrderByLikeDescPaged" resultMap="photoReviewWithFilesMap">
         SELECT
             pr.review_no,
             pr.board_no,
             pr.member_no,
+            m.member_no   AS member_no,
             m.member_name,
             pr.review_title,
             pr.review_date,
@@ -88,11 +102,13 @@
         SELECT COUNT(*) FROM photo_review
     </select>
 
+    <!-- 키워드 검색(제목/내용) -->
     <select id="searchByKeywordPaged" resultMap="photoReviewWithFilesMap">
         SELECT
         pr.review_no,
         pr.board_no,
         pr.member_no,
+        m.member_no   AS member_no,
         m.member_name,
         pr.review_title,
         pr.review_date,
@@ -127,11 +143,13 @@
         </where>
     </select>
 
+    <!-- 주종 필터: 최신순 -->
     <select id="selectByAlcoholNoPaged" resultMap="photoReviewWithFilesMap">
         SELECT
             pr.review_no,
             pr.board_no,
             pr.member_no,
+            m.member_no   AS member_no,
             m.member_name,
             pr.review_title,
             pr.review_date,
@@ -145,11 +163,13 @@
             LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <!-- 주종 필터: 좋아요순 -->
     <select id="selectByAlcoholNoLikeDescPaged" resultMap="photoReviewWithFilesMap">
         SELECT
             pr.review_no,
             pr.board_no,
             pr.member_no,
+            m.member_no   AS member_no,
             m.member_name,
             pr.review_title,
             pr.review_date,
@@ -170,11 +190,13 @@
         WHERE fp.alcohol_no = #{alcoholNo}
     </select>
 
+    <!-- 특정 회원 리뷰 -->
     <select id="selectByMemberNoPaged" resultMap="photoReviewWithFilesMap">
         SELECT
             pr.review_no,
             pr.board_no,
             pr.member_no,
+            m.member_no   AS member_no,
             m.member_name,
             pr.review_title,
             pr.review_date,
