@@ -33,8 +33,9 @@
     <select id="findMyLevel" parameterType="java.lang.Integer"
             resultType="com.eat.today.member.query.dto.FindMyLevelDTO">
         SELECT
-            m.member_name  AS memberName,
+            m.member_id    AS memberId,
             m.member_level AS memberLevel,
+            m.member_role  AS memberRole,
             CASE
                 WHEN m.member_role = 'ADMIN' THEN '관리자'
                 WHEN m.member_level >= 500   THEN '골드'
