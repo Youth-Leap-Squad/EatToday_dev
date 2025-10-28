@@ -16,7 +16,7 @@
     <select id="findMyProfileByEmail" parameterType="java.lang.String"
             resultType="com.eat.today.member.query.dto.FindProfileDTO">
         SELECT
-            m.member_name  AS memberName,
+            m.member_id  AS memberId,
             m.member_birth AS memberBirth,
             m.member_phone AS memberPhone,
             m.member_email AS memberEmail,
