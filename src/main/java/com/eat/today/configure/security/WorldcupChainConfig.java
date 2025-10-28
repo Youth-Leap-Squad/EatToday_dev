@@ -27,6 +27,7 @@ public class WorldcupChainConfig {
                         // ✅ 로그인 사용자만 가능한 기능
                         .requestMatchers(
                                 "/worldcup/join",
+                                "/worldcup/check",    // 🔥 추가
                                 "/worldcup/repick"
                         ).authenticated()
 

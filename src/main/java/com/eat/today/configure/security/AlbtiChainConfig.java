@@ -32,8 +32,15 @@ public class AlbtiChainConfig {
                                 "/albti/answer/again",
                                 "/albti/member/add-bulk",
                                 "/albti/member/add",
-                                "/albti/getalbtiresult"
+                                "/albti/getalbtiresult",
+                                "/albti/survey/list"
                         ).authenticated()
+
+//                        .requestMatchers(
+//                                "/albti/member/add-bulk",
+//                                "/albti/survey/list",
+//                                "/albti/getalbtiresult"
+//                        ).permitAll()
 
                         // ✅ 그 외 모든 albti 요청은 일단 허용
                         .anyRequest().permitAll()

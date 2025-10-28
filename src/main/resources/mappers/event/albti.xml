@@ -30,7 +30,7 @@
         </association>
     </resultMap>
 
-    <!-- 조회 쿼리 -->
+    <!-- ✅ 수정된 조회 쿼리 aaaababaaa-->
     <select id="selectAlbti" parameterType="int" resultMap="AlbtiResultMap">
         SELECT
         r.member_no,
@@ -39,22 +39,30 @@
         o.alBTI_alcohol_explain,
         f.food_explain,
         f.food_picture
-        FROM albti_final_result r      <!-- 점수계산로직이 있는 뷰로 조회 -->
-        LEFT JOIN albti_output o ON r.member_no = o.alBTI_member_no
-        LEFT JOIN food_post f ON o.board_no = f.board_no
-        WHERE r.member_no = #{member_no}
-<!--        SELECT-->
-<!--        r.member_no,-->
-<!--        r.final_type,-->
-<!--        r.final_detail,-->
-<!--        GROUP_CONCAT(DISTINCT o.alBTI_alcohol_explain SEPARATOR '/') AS alBTI_alcohol_explain,-->
-<!--        GROUP_CONCAT(DISTINCT f.food_explain SEPARATOR '/') AS food_explain,-->
-<!--        GROUP_CONCAT(DISTINCT f.food_picture SEPARATOR '/') AS food_picture-->
-<!--        FROM albti_final_result r-->
-<!--        LEFT JOIN albti_output o ON r.member_no = o.alBTI_member_no-->
-<!--        LEFT JOIN food_post f ON o.board_no = f.board_no-->
-<!--        WHERE r.member_no = #{member_no}-->
-<!--        GROUP BY r.member_no, r.final_type, r.final_detail-->
-    </select>
+        FROM albti_final_result r
 
+        <!--        /* final_type 을 '/'로 분해한 후보들 중 랜덤 1개를 뽑는 파생 테이블 */-->
+        JOIN (
+        SELECT
+        r2.member_no,
+        SUBSTRING_INDEX(SUBSTRING_INDEX(r2.final_type, '/', n.n), '/', -1) AS picked_type
+        FROM albti_final_result r2
+        JOIN (
+        SELECT 1 AS n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5
+        ) n
+        ON n.n &lt;= LENGTH(r2.final_type) - LENGTH(REPLACE(r2.final_type, '/', '')) + 1
+        WHERE r2.member_no = #{member_no}
+        ORDER BY RAND()
+        LIMIT 1
+        ) t ON t.member_no = r.member_no
+
+        <!--        /* 선택된 유형으로 알BTI / 추천 술 / 추천 안주 랜덤 1개 */-->
+        LEFT JOIN albti a ON a.alBTI_category = t.picked_type
+        LEFT JOIN albti_output o ON o.alBTI_no = a.alBTI_no
+        LEFT JOIN food_post f ON f.alcohol_no = a.alcohol_no
+
+        <!--        /* 같은 술(alcohol_no) 내에서도 안주를 랜덤 1개 */-->
+        ORDER BY RAND()
+        LIMIT 1
+    </select>
 </mapper>

@@ -9,6 +9,7 @@ import java.util.List;
 public class AlbtiMemberAddBulkResponseDTO {
     private String message; // 저장 완료 메시지
     private List<AlbtiAnswerResponseDTO> savedAnswers; // 저장된 답변 리스트
+    private boolean pointGranted; // ✅ 오늘 포인트 지급 여부
 
     @Getter
     @AllArgsConstructor
