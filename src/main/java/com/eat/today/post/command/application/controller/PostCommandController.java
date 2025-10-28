@@ -238,4 +238,10 @@ public class PostCommandController {
                              @RequestBody MoveBookmarkRequest req) {
         svc.moveBookmark(user.getMemberNo(), req.getFromFolderId(), req.getToFolderId(), req.getBoardNo());
     }
+
+    @PatchMapping("/foods/{boardNo}/view")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void increaseView(@PathVariable Integer boardNo) {
+        svc.increaseView(boardNo);
+    }
 }
