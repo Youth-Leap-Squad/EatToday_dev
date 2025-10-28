@@ -16,10 +16,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageStorageService {
 
-    @Value("${app.upload.dir:/var/eattoday/uploads}")
+    @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
-    @Value("${app.upload.public-base-url:http://localhost:8003/uploads}")
+    @Value("${app.upload.public-base-url:http://localhost:8080/uploads}")
     private String publicBaseUrl;
 
     public String store(MultipartFile file, String subDir) {
